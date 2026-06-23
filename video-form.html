@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>動画登録</title>
+
+<style>
+body{
+  background:#02142c;
+  color:white;
+  font-family:'Noto Sans JP';
+}
+
+.container{
+  max-width:600px;
+  margin:50px auto;
+}
+
+input,button{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+}
+
+button{
+  background:#d6002a;
+  color:white;
+  border:none;
+}
+</style>
+</head>
+
+<body>
+<script>
+const ADMIN_PASSWORD = "19980725";
+
+function checkAuth(){
+
+  if(sessionStorage.getItem("adminAuth") === "true"){
+    return;
+  }
+
+  const input = prompt("管理者パスワードを入力してください");
+
+  if(input === null){
+    location.href = "index.html";
+    return;
+  }
+
+  if(input === ADMIN_PASSWORD){
+    sessionStorage.setItem("adminAuth", "true");
+  }else{
+    alert("パスワードが違います");
+    location.href = "member-only.html"; // ←戻り先は合わせる
+  }
+}
+
+checkAuth();
+</script>
+
+<div class="container">
+<h1>動画登録</h1>
+
+<input type="date" id="date">
+<input type="text" id="title" placeholder="試合名（例: vs ○○高校）">
+
+<select id="category">
+  <option value="公式戦">公式戦</option>
+  <option value="OP戦">OP戦</option>
+  <option value="その他">その他</option>
+</select>
+
+<input type="text" id="url" placeholder="YouTubeリンク">
+
+<button onclick="saveVideo()">登録</button>
+
+<button id="deleteBtn" onclick="deleteVideo()" style="background:#555;">
+  削除
+</button>
+
+<button onclick="goVideoList()">試合動画一覧へ戻る</button>
+<button onclick="goMember()">部員専用ページへ戻る</button>
+
+</div>
+
+<script>
+function saveVideo(){
+
+  const date = document.getElementById("date").value;
+  const title = document.getElementById("title").value;
+  const url = document.getElementById("url").value;
+  const category = document.getElementById("category").value;
+
+  if(!date || !title || !url){
+    alert("入力してください");
+    return;
+  }
+
+  const videoId = url.split("v=")[1];
+
+  let videos = JSON.parse(localStorage.getItem("videos")) || [];
+  const edit = JSON.parse(localStorage.getItem("editVideo"));
+
+  if(edit){
+
+    videos = videos.map(v => v.id === edit.id ? {
+      date: date,
+      title: title,
+      id: videoId,
+      category: category
+    } : v);
+
+    localStorage.removeItem("editVideo");
+
+  }else{
+
+    videos.unshift({
+      date: date,
+      title: title,
+      id: videoId,
+      category: category
+    });
+
+  }
+
+  localStorage.setItem("videos", JSON.stringify(videos));
+
+  if(edit){
+
+    alert("更新しました");
+    location.href = "video-list.html";
+
+  }else{
+
+    alert("登録しました");
+
+    document.getElementById("date").value = "";
+    document.getElementById("title").value = "";
+    document.getElementById("url").value = "";
+
+  }
+}
+
+window.onload = function(){
+
+  const edit = JSON.parse(localStorage.getItem("editVideo"));
+
+  const deleteBtn = document.getElementById("deleteBtn");
+
+  if(!edit){
+    // 新規時は削除ボタン消す
+    deleteBtn.style.display = "none";
+    return;
+  }
+
+  // 編集モード
+  document.getElementById("date").value = edit.date;
+  document.getElementById("title").value = edit.title;
+  document.getElementById("url").value = "https://www.youtube.com/watch?v=" + edit.id;
+  document.getElementById("category").value = edit.category;
+
+  document.querySelector("h1").textContent = "動画編集";
+
+};
+
+</script>
+
+<script>
+function goVideoList(){
+  location.href = "video-list.html";
+}
+
+function goMember(){
+  location.href = "member-only.html";
+}
+
+function deleteVideo(){
+
+  const edit = JSON.parse(localStorage.getItem("editVideo"));
+
+  if(!edit){
+    alert("削除できません");
+    return;
+  }
+
+  if(!confirm("削除しますか？")) return;
+
+  let videos = JSON.parse(localStorage.getItem("videos")) || [];
+
+  videos = videos.filter(v => v.id !== edit.id);
+
+  localStorage.setItem("videos", JSON.stringify(videos));
+
+  localStorage.removeItem("editVideo");
+
+  alert("削除しました");
+  location.href = "video-list.html";
+}
+
+</script>
+
+</body>
+</html>
+`

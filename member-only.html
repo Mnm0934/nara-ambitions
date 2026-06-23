@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>部員専用ページ</title>
+
+<style>
+body{
+  margin:0;
+  background:#02142c;
+  color:white;
+  font-family:'Noto Sans JP', sans-serif;
+}
+
+/* 中央 */
+.container{
+  max-width:900px;
+  margin:100px auto;
+}
+
+/* タイトル */
+h1{
+  text-align:center;
+  margin-bottom:40px;
+}
+
+/* メニュー一覧 */
+.menu{
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+}
+
+/* ボタン */
+.menu a{
+  display:block;
+  padding:15px;
+  background:#0a1f3f;
+  border-left:5px solid #d6002a;
+  text-decoration:none;
+  color:white;
+  font-size:18px;
+  transition:0.2s;
+}
+
+.menu a:hover{
+  background:#d6002a;
+  transform:translateX(5px);
+}
+
+/* ログアウト */
+.logout{
+  margin-top:40px;
+  text-align:center;
+}
+
+button{
+  padding:10px 20px;
+  background:#d6002a;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- 🔒 ログインチェック -->
+<script>
+
+const USERS = {
+  nakano: "1996",
+  admin: "0725"
+};
+
+// ✅ ログインチェック
+const login = localStorage.getItem("login");
+const loginTime = localStorage.getItem("loginTime");
+
+// ✅ 6時間制限
+const limit = 1000 * 60 * 60 * 1;
+
+if(
+  login !== "ok" ||
+  !loginTime ||
+  Date.now() - loginTime > limit
+){
+
+  const inputId = prompt(
+    "🔐 NARA Ambitions Club\n\nIDを入力してください"
+  );
+
+  if(inputId === null || inputId.trim() === ""){
+    alert("キャンセルされました");
+    location.href = "member-login.html";
+  }
+
+  const inputPass = prompt(
+    "🔒 パスワードを入力してください"
+  );
+
+  if(inputPass === null || inputPass.trim() === ""){
+    alert("キャンセルされました");
+    location.href = "member-login.html";
+  }
+
+// 入力を整える
+const id = inputId.trim();
+const pass = inputPass.trim();
+
+if(USERS[id] && USERS[id] === pass){
+
+  localStorage.setItem("login","ok");
+localStorage.setItem("loginTime", Date.now());
+
+  if(id === "admin"){
+    localStorage.setItem("role","admin");
+  }else{
+    localStorage.setItem("role","user");
+  }
+
+}else{
+  alert("IDまたはパスワードが違います");
+  location.href = "member-login.html";
+}
+
+
+}
+
+// ✅ これはログイン処理と分ける（超重要）
+window.onload = function(){
+
+  const role = localStorage.getItem("role");
+
+  if(role !== "admin"){
+    document.querySelectorAll(".admin-only").forEach(el=>{
+      el.style.display = "none";
+    });
+  }
+
+}
+
+</script>
+
+<div class="container">
+
+  <h1>部員専用ページ</h1>
+
+  <div class="menu">
+
+  <!-- ✅ 出欠確認（自作ページ） -->
+  <a href="attendance.html">出欠入力</a>
+  <a href="attendance-list.html">出欠一覧</a>
+
+  <!-- ✅ 活動日程 -->
+  <a href="member-schedule.html">活動日程スケジュール</a>
+
+  <!-- ✅ NEWS更新 -->
+  <a href="news-admin.html">NEWS登録</a>
+
+  <!-- ✅ 成績 -->
+  <a href="game_list.html">試合結果一覧</a>
+  <a href="results-admin.html">選手成績一覧</a>
+<a href="video-list.html">試合動画一覧</a>
+<a href="video-form.html" class="admin-only">試合動画登録(管理者限定)</a>
+  <a href="game_input.html"class="admin-only">成績入力(管理者限定)</a>
+
+  <!-- ✅ 予定登録 -->
+<a href="event.html" class="admin-only">予定登録(管理者限定)</a>
+
+  <!-- ✅ 選手登録 -->
+<a href="members.html" class="admin-only">選手登録(管理者限定)</a>
+
+  <!-- ✅ PDF -->
+  <a href="rules.pdf" target="_blank">部則（PDF）</a>
+  <a href="nyuubu.pdf" target="_blank">入部届（PDF）</a>
+  <a href="kyubu.pdf" target="_blank">休部届（PDF）</a>
+  <a href="taibu.pdf" target="_blank">退部届（PDF）</a>
+
+  <!-- ✅ 昔のHP -->
+  <a href="https://www.ambitions1996.com/">旧ホームページを見る</a>
+
+</div>
+
+  <div class="logout">
+    <button onclick="logout()">ログアウト</button>
+  </div>
+
+</div>
+
+<script>
+function logout(){
+  localStorage.removeItem("login");
+localStorage.removeItem("role");
+localStorage.removeItem("loginTime");
+  location.href = "index.html";
+}
+
+</script>
+
+</body>
+</html>

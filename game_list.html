@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>試合一覧</title>
+
+<style>
+body{
+  background:#e5d58a;
+  text-align:center;
+  font-family:sans-serif;
+}
+
+.box{
+  border:1px solid #333;
+  margin:10px auto;
+  padding:20px;
+  width:80%;
+  background:white;
+}
+
+.win{ background:#4caf50; color:white; }
+.lose{ background:#e53935; color:white; }
+.draw{ background:#999; color:white; }
+
+button{
+  padding:8px 14px;
+  margin:10px;
+  border:none;
+  border-radius:8px;
+  background:#ffcc00;
+  color:black;
+  font-weight:bold;
+}
+
+h2{
+  color:red;
+}
+
+.scoreboard{
+  border-collapse:collapse;
+  margin:15px auto;
+  font-size:16px;   /* ← 大きく */
+  min-width:80%;    /* ← 横に広げる */
+}
+
+.scoreboard th,
+.scoreboard td{
+  border:1px solid #000;
+  padding:6px 10px;
+  background:white;
+  color:black;
+}
+
+.scoreboard th{
+  background:#ddd;
+}
+
+.scoreboard th:first-child{
+  background:#333;
+  color:white;
+  font-weight:bold;
+}
+
+.scoreboard.win{
+  border:2px solid blue;
+}
+
+.scoreboard.lose{
+  border:2px solid red;
+}
+
+.scoreboard.draw{
+  border:2px solid gray;
+}
+
+.scoreboard td:last-child,
+.scoreboard th:last-child{
+  font-weight:bold;
+  background:#ffe;
+}
+
+/* 👇ここに追加 */
+.year, .month{
+  display:none;
+}
+
+select{
+  font-size:26px;
+  padding:12px 20px;
+  border-radius:12px;
+  border:2px solid #333;
+  background:#fff8cc;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+h3{
+  display:inline-block;
+  padding:12px 20px;
+  margin:15px 0;
+  background:#ffcc00;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:24px;
+  font-weight:bold;
+  border:2px solid #333;
+  box-shadow:2px 2px 5px rgba(0,0,0,0.3);
+}
+
+h3:hover{
+  background:#ffb300;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>NARA Ambitions club 試合一覧</h2>
+
+<button onclick="goTop()">TOPへ戻る</button>
+
+<div id="list"></div>
+
+<script>
+
+// ✅ データ取得
+const data = JSON.parse(localStorage.getItem("results")) || [];
+// ✅ 年月ごとにグループ化
+const groups = {};
+
+data.forEach(game=>{
+  const date = new Date(game.date);
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+
+  if(!groups[y]) groups[y] = {};
+  if(!groups[y][m]) groups[y][m] = [];
+
+  groups[y][m].push(game);
+});
+
+let html = "";
+
+Object.keys(groups).sort((a,b)=>b-a).forEach(year=>{
+
+  html += `<h3 onclick="toggleYear(this)">▼ ${year}年</h3>`;
+  html += `<div class="year" style="${year == Object.keys(groups)[0] ? 'display:block' : 'display:none'}">`;
+
+  html += `
+  <select onchange="changeMonth(this, '${year}')">
+    ${Object.keys(groups[year])
+      .sort((a,b)=>b-a)
+      .map(m => `<option value="${m}">${m}月</option>`)
+      .join("")}
+  </select>
+
+  <div id="month-${year}"></div>
+  `;
+
+  const firstMonth = Object.keys(groups[year]).sort((a,b)=>b-a)[0];
+
+  setTimeout(()=>{
+    changeMonth({value:firstMonth}, year);
+  },0);
+
+  html += `</div>`;
+});
+
+// ✅ 最後に1回だけ表示
+document.getElementById("list").innerHTML = html;
+
+
+
+// ✅ 詳細へ
+function goDetail(date,game,opponent){
+
+  localStorage.setItem("viewGame",JSON.stringify({
+    date:date,
+    game:game,
+    opponent:opponent
+  }));
+
+  location.href = "game_detail.html";
+}
+
+function createScoreBoard(my, op, cls, game){
+let topName, topData, bottomName, bottomData;
+
+// ✅ 何回まで表示するか決める
+let maxInning = 9;
+
+// 延長あれば増やす
+for(let i=9; i<my.length; i++){
+  if(my[i] != null || op[i] != null){
+    maxInning = i + 1;
+  }
+}
+
+if(game.batFirst === "away"){
+  // 自チームが先攻
+  topName = "Ambitions";
+  topData = my;
+  bottomName = game.opponent;
+  bottomData = op;
+}else{
+  // 自チームが後攻
+  topName = game.opponent;
+  topData = op;
+  bottomName = "Ambitions";
+  bottomData = my;
+}
+
+  let html = `<table class='scoreboard ${cls}'>`;
+
+  // ✅ ヒット合計計算（打者データから）
+let myHits = 0;
+let opHits = 0;
+
+
+// 自チームのヒット数（H）を計算するための変数
+
+  // batterデータから合計
+  // ※ game単位の結果から取得
+  // thisは外で使えないので関数外参照する必要あり
+
+  // ヘッダー
+  html += "<tr><th></th>";
+  for(let i=0;i<maxInning;i++){
+    html += `<th>${i+1}</th>`;
+  }
+  html += "<th>R</th><th>H</th></tr>";
+
+// ✅ 先に計算！！
+const myTotal = topData.reduce((a,b)=>a+(b||0),0);
+const opTotal = bottomData.reduce((a,b)=>a+(b||0),0);
+
+html += `<tr><th>${topName}</th>`;
+
+for(let i=0;i<maxInning;i++){
+  const v = topData[i];
+
+  html += `<td>${
+    v === null && i === maxInning-1 && myTotal > opTotal && topName !== "Ambitions"
+      ? "×"
+      : (v ?? "-")
+  }</td>`;
+}
+
+  // ✅ ヒット合計（バッターから）
+const gameData = data.find(g =>
+  g.date === game.date &&
+  g.game === game.game &&
+  g.opponent === game.opponent
+);
+
+// ✅ 自チームヒット（打者）
+let totalHits = 0;
+
+if(gameData && gameData.batters){
+  totalHits = gameData.batters.reduce((a,b)=>a+(b.hit||0),0);
+}
+
+// ✅ 相手ヒット（投手の被安打）←これ追加
+if(gameData && gameData.pitchers){
+  opHits = gameData.pitchers.reduce((a,b)=>a+(b.hit||0),0);
+}
+
+// ✅ 上段用
+// ✅ 自チームヒット
+myHits = totalHits;
+
+// ✅ 相手ヒット（投手から）
+if(gameData && gameData.pitchers){
+  opHits = gameData.pitchers.reduce((a,b)=>a+(b.hit||0),0);
+}
+
+const topHits = topName === "Ambitions" ? myHits : opHits;
+
+html += `<td>${myTotal}</td><td>${topHits}</td></tr>`;
+
+    // 相手（ヒット不明なので0 or 空）
+  html += `<tr><th>${bottomName}</th>`;
+
+for(let i=0;i<maxInning;i++){
+  const v = bottomData[i];
+
+  html += `<td>${
+    v === null && i === maxInning-1 && myTotal > opTotal && bottomName === "Ambitions"
+      ? "×"
+      : (v ?? "-")
+  }</td>`;
+}
+
+  const bottomHits = bottomName === "Ambitions" ? myHits : opHits;
+
+html += `<td>${opTotal}</td><td>${bottomHits}</td></tr>`;
+
+// ✅ コールド・延長判定
+let note = "";
+
+if(maxInning < 9){
+  note = `（${maxInning}回コールド）`;
+}else if(maxInning > 9){
+  note = `（延長${maxInning}回）`;
+}
+
+html += "</table>";
+
+html += `<div style="margin-top:5px; font-weight:bold;">${note}</div>`;
+
+return html;
+}
+
+function editGame(id){
+
+  const data = JSON.parse(localStorage.getItem("results")) || [];
+  const target = data.find(g => g.id == id);
+
+  localStorage.setItem("editGame", JSON.stringify(target));
+
+  location.href = "game_input.html";
+}
+
+function goTop(){
+  location.href = "member-only.html";
+}
+
+/* 👇👇👇 ここに追加！！👇👇👇 */
+
+function deleteGame(id){
+
+  if(!confirm("本当に削除しますか？")) return;
+
+  let data = JSON.parse(localStorage.getItem("results")) || [];
+
+  data = data.filter(g => String(g.id) !== String(id));
+
+  localStorage.setItem("results", JSON.stringify(data));
+
+  alert("削除しました");
+
+  location.reload();
+}
+
+function toggleYear(el){
+  const next = el.nextElementSibling;
+
+  if(next.style.display === "none"){
+    next.style.display = "block";
+    el.innerHTML = el.innerHTML.replace("▶","▼");
+  }else{
+    next.style.display = "none";
+    el.innerHTML = el.innerHTML.replace("▼","▶");
+  }
+}
+
+function toggleMonth(el){
+  const next = el.nextElementSibling;
+  next.style.display = next.style.display === "none" ? "block" : "none";
+}
+
+function changeMonth(select, year){
+
+  const month = select.value;
+  const target = document.getElementById(`month-${year}`);
+
+  let html = "";
+
+  groups[year][month].forEach(game=>{
+
+    const my = game.myInnings || [];
+    const op = game.opInnings || [];
+
+    const myTotal = my.reduce((a,b)=>a+(b||0),0);
+    const opTotal = op.reduce((a,b)=>a+(b||0),0);
+
+    let cls = "";
+    let result = "";
+
+    if(myTotal > opTotal){
+      cls = "win"; result = "勝利";
+    }else if(myTotal < opTotal){
+      cls = "lose"; result = "敗北";
+    }else{
+      cls = "draw"; result = "引分";
+    }
+
+    html += `
+    <div class="box ${cls}">
+      ${game.date} ${game.game}<br>
+      vs ${game.opponent}<br>
+      <b>${myTotal} - ${opTotal}</b>
+
+      ${createScoreBoard(my, op, cls, game)}
+
+      <b>${result}</b><br>
+
+      <button onclick="goDetail('${game.date}','${game.game}','${game.opponent}')">詳細</button>
+      <button onclick="editGame('${game.id}')">編集</button>
+      <button onclick="deleteGame('${game.id}')">削除</button>
+    </div>
+    `;
+  });
+
+  target.innerHTML = html;
+}
+
+</script>
+
+</body>
+</html>
