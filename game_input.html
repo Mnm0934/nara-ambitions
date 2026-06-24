@@ -191,8 +191,6 @@ loadMembers();
 <button onclick="goList()">一覧へ</button>
 <button onclick="logout()">ログアウト</button>
 
-<script>
-
 let members = [];
 async function loadMembers() {
   const snapshot = await getDocs(collection(db, "members"));
