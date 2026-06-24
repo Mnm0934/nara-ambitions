@@ -106,17 +106,16 @@ const app = initializeApp({
 
 const db = getFirestore(app);
 
-// グローバル
+// 🔥 ここで window に登録
 window.db = db;
 window.collection = collection;
 window.addDoc = addDoc;
 window.updateDoc = updateDoc;
 window.doc = doc;
 window.getDoc = getDoc;
-window.getDocs = getDocs;   // ←🔥これが必要！
-</script>
+window.getDocs = getDocs;   // ←これも必要！
 
-<script>
+// 🔥 checkAuth もここに入れる
 const ADMIN_PASSWORD = "19980725";
 
 function checkAuth(){
@@ -140,7 +139,16 @@ function checkAuth(){
 }
 
 checkAuth();
+
+// 🔥 loadMembers もここに入れる
+let members = [];
+async function loadMembers() {
+  const snapshot = await getDocs(collection(db, "members"));
+  members = [];
+  snapshot.forEach(doc => members.push(doc.data()));
+}
 </script>
+
 
 <h2>試合結果入力</h2>
 
