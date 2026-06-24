@@ -92,7 +92,8 @@ button{
 </style>
 </head>
 
-<body>
+<body style="display:none;">
+
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -121,19 +122,15 @@ const db = getFirestore(app);
 
 // ✅ 管理者チェック
 onAuthStateChanged(auth, (user) => {
-  const adminEmail = "admin@example.com";
+  const adminEmail = "nara.ambitions1996@gmail.com"; 
 
-  if(!user){
-    location.href = "admin-login.html";
-    return;
+  if (user && user.email === adminEmail) {
+    document.body.style.display = "block";
+  } else {
+    window.location.href = "member-only.html";
   }
-
-  if(user.email !== adminEmail){
-    location.href = "index.html";
-    return;
-  }
-
 });
+
 
 // ✅ グローバルに使えるようにする
 window.db = db;
