@@ -661,12 +661,6 @@ header.small .title img{
   font-weight:bold;
 }
 
-.hero{
-  position:relative;   /* ←追加🔥 */
-  inset:0;
-  z-index:-1;
-}
-
 .win-match{
   border:2px solid #00ff88;
   box-shadow:
@@ -826,17 +820,25 @@ let currentFilter = "all";
 let events = [];
 
 async function loadEvents(){
+  try{
+    const snap = await getDocs(collection(db, "events"));
 
-  const snap = await getDocs(collection(db, "events"));
+    console.log("Firestore OK");
 
-  events = [];
+    events = [];
 
-  snap.forEach(docSnap => {
-    events.push({
-      id: docSnap.id,
-      ...docSnap.data()
+    snap.forEach(docSnap => {
+      events.push({
+        id: docSnap.id,
+        ...docSnap.data()
+      });
     });
-  });
+
+    console.log(events);
+
+  }catch(e){
+    console.error("Firebaseエラー", e);
+  }
 
   renderCalendar();
   renderSchedule();
