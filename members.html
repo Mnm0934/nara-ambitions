@@ -73,6 +73,34 @@ body{
 </head>
 
 <body>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+window.addDoc = addDoc;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
+window.updateDoc = updateDoc;
+</script>
+
 
 <h2>👤 選手登録（管理者）</h2>
 
@@ -127,44 +155,50 @@ if(!isLoggedIn){
 }
 
 // ✅ データ
-let members = JSON.parse(localStorage.getItem("members")) || [];
+let members = [];
 let editIndex = -1;
 
 
 // ✅ 登録
-function addMember(){
+async function addMember(){
+
   const number = document.getElementById("number").value;
   const name = document.getElementById("name").value;
+  const role = document.getElementById("role").value;
 
   if(!name){
-  alert("名前を入力して");
-  return;
-}
-
-  if(number && members.some(m => m.number == number)){
-    alert("背番号が重複");
+    alert("名前を入力して");
     return;
   }
 
-  const role = document.getElementById("role").value;
+  await addDoc(collection(db, "members"), {
+    number: number ? Number(number) : null,
+    name,
+    role,
+    active: true
+  });
 
-members.push({
-  number: number || null,
-  name,
-  role: role || "選手",
-  active: true   // ✅ これ追加🔥
-});
-  save();
-  render();
+  loadMembers();
 
   document.getElementById("number").value = "";
   document.getElementById("name").value = "";
 }
 
-
 // ✅ 保存
-function save(){
-  localStorage.setItem("members", JSON.stringify(members));
+async function loadMembers(){
+
+  const snap = await getDocs(collection(db, "members"));
+
+  members = [];
+
+  snap.forEach(docSnap => {
+    members.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  render();
 }
 
 
@@ -174,26 +208,25 @@ function startEdit(i){
   render();
 }
 
-function saveEdit(i){
+async function saveEdit(i){
+
   const newNumber = document.getElementById("editNumber").value;
   const newName = document.getElementById("editName").value;
 
-  if(!newNumber || !newName){
+  if(!newName){
     alert("入力して");
     return;
   }
 
-  members[i] = {
-  number:newNumber,
-  name:newName,
-  role: members[i].role,
-  active: members[i].active
-};
+  await updateDoc(doc(db, "members", members[i].id), {
+    number: newNumber ? Number(newNumber) : null,
+    name: newName
+  });
 
   editIndex = -1;
-  save();
-  render();
+  loadMembers();
 }
+
 
 function cancelEdit(){
   editIndex = -1;
@@ -202,29 +235,35 @@ function cancelEdit(){
 
 
 // ✅ 削除
-function deleteMember(i){
+async function deleteMember(i){
+
   if(confirm("削除する？")){
-    members.splice(i,1);
-    save();
-    render();
+    await deleteDoc(doc(db, "members", members[i].id));
+    loadMembers();
   }
+
 }
 
-function toggleActive(i){
-  members[i].active = !members[i].active;
+async function toggleActive(i){
 
-  save();
-  render();
+  await updateDoc(doc(db, "members", members[i].id), {
+    active: !members[i].active
+  });
+
+  loadMembers();
 }
-
 
 
 // ✅ 全削除
-function resetAll(){
+async function resetAll(){
+
   if(confirm("全削除する？")){
-    members = [];
-    save();
-    render();
+
+    for(const m of members){
+      await deleteDoc(doc(db, "members", m.id));
+    }
+
+    loadMembers();
   }
 }
 
@@ -241,7 +280,12 @@ function logout(){
 // ✅ 表示
 function render(){
 
-  members.sort((a,b)=>a.number - b.number);
+  members.sort((a,b)=>{
+  if(a.number === null) return 1;
+  if(b.number === null) return -1;
+  return a.number - b.number;
+});
+
 
   let html = "";
 
@@ -290,7 +334,7 @@ function render(){
 }
 
 // 初期表示
-render();
+loadMembers();
 
 </script>
 

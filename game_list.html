@@ -123,53 +123,101 @@ h3:hover{
 
 <div id="list"></div>
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  deleteDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+});
+
+const db = getFirestore(app);
+
+// グローバル化
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
+</script>
+
 <script>
 
 // ✅ データ取得
-const data = JSON.parse(localStorage.getItem("results")) || [];
+let data = [];
+
+async function loadData(){
+
+  const snap = await getDocs(collection(db, "results"));
+
+  data = [];
+
+  snap.forEach(docSnap => {
+    data.push({
+      id: docSnap.id,   // ←超重要🔥
+      ...docSnap.data()
+    });
+  });
+
+  renderList(); // ←後で作る
+}
+
 // ✅ 年月ごとにグループ化
-const groups = {};
+function renderList(){
 
-data.forEach(game=>{
-  const date = new Date(game.date);
-  const y = date.getFullYear();
-  const m = date.getMonth() + 1;
+  const groups = {};
 
-  if(!groups[y]) groups[y] = {};
-  if(!groups[y][m]) groups[y][m] = [];
+  data.forEach(game=>{
+    const date = new Date(game.date);
+    const y = date.getFullYear();
+    const m = date.getMonth() + 1;
 
-  groups[y][m].push(game);
-});
+    if(!groups[y]) groups[y] = {};
+    if(!groups[y][m]) groups[y][m] = [];
 
-let html = "";
+    groups[y][m].push(game);
+  });
 
-Object.keys(groups).sort((a,b)=>b-a).forEach(year=>{
+  let html = "";
 
-  html += `<h3 onclick="toggleYear(this)">▼ ${year}年</h3>`;
-  html += `<div class="year" style="${year == Object.keys(groups)[0] ? 'display:block' : 'display:none'}">`;
+  Object.keys(groups).sort((a,b)=>b-a).forEach(year=>{
 
-  html += `
-  <select onchange="changeMonth(this, '${year}')">
-    ${Object.keys(groups[year])
-      .sort((a,b)=>b-a)
-      .map(m => `<option value="${m}">${m}月</option>`)
-      .join("")}
-  </select>
+    html += `<h3 onclick="toggleYear(this)">▼ ${year}年</h3>`;
+    html += `<div class="year" style="display:block">`;
 
-  <div id="month-${year}"></div>
-  `;
+    html += `
+    <select onchange="changeMonth(this, '${year}')">
+      ${Object.keys(groups[year])
+        .sort((a,b)=>b-a)
+        .map(m => `<option value="${m}">${m}月</option>`)
+        .join("")}
+    </select>
 
-  const firstMonth = Object.keys(groups[year]).sort((a,b)=>b-a)[0];
+    <div id="month-${year}"></div>
+    `;
 
-  setTimeout(()=>{
-    changeMonth({value:firstMonth}, year);
-  },0);
+    const firstMonth = Object.keys(groups[year]).sort((a,b)=>b-a)[0];
 
-  html += `</div>`;
-});
+    setTimeout(()=>{
+      changeMonth({value:firstMonth}, year);
+    },0);
 
-// ✅ 最後に1回だけ表示
-document.getElementById("list").innerHTML = html;
+    html += `</div>`;
+  });
+
+  document.getElementById("list").innerHTML = html;
+
+  // グローバルに持たせる
+  window.groups = groups;
+}
+
 
 
 
@@ -314,13 +362,7 @@ return html;
 }
 
 function editGame(id){
-
-  const data = JSON.parse(localStorage.getItem("results")) || [];
-  const target = data.find(g => g.id == id);
-
-  localStorage.setItem("editGame", JSON.stringify(target));
-
-  location.href = "game_input.html";
+  location.href = "game_input.html?id=" + id;
 }
 
 function goTop(){
@@ -329,19 +371,15 @@ function goTop(){
 
 /* 👇👇👇 ここに追加！！👇👇👇 */
 
-function deleteGame(id){
+async function deleteGame(id){
 
   if(!confirm("本当に削除しますか？")) return;
 
-  let data = JSON.parse(localStorage.getItem("results")) || [];
-
-  data = data.filter(g => String(g.id) !== String(id));
-
-  localStorage.setItem("results", JSON.stringify(data));
+  await deleteDoc(doc(db, "results", id));
 
   alert("削除しました");
 
-  location.reload();
+  loadData(); // ← 再読み込み
 }
 
 function toggleYear(el){
@@ -406,6 +444,8 @@ function changeMonth(select, year){
 
   target.innerHTML = html;
 }
+
+loadData();
 
 </script>
 

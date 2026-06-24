@@ -85,29 +85,56 @@ button{
 <h3>投手成績</h3>
 <div id="pitch"></div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+});
+
+const db = getFirestore(app);
 
 // ✅ 試合取得
-const game = JSON.parse(localStorage.getItem("viewGame"));
-const data = JSON.parse(localStorage.getItem("results")) || [];
 
-const match = data.find(g =>
-  g.date === game.date &&
-  g.game === game.game &&
-  g.opponent === game.opponent
-);
+const params = new URLSearchParams(location.search);
+const id = params.get("id");
 
-if(!match){
-  document.body.innerHTML = "試合データが見つかりません";
-  throw new Error("データなし");
+let match = null;
+
+async function loadGame(){
+
+  if(!id){
+    document.body.innerHTML = "IDなし";
+    return;
+  }
+
+  const ref = doc(db, "results", id);
+  const snap = await getDoc(ref);
+
+  if(!snap.exists()){
+    document.body.innerHTML = "データなし";
+    return;
+  }
+
+  match = snap.data();
+
+  renderAll();
 }
 
-// ✅ 基本情報
-document.getElementById("info").innerHTML = `
-<b>${match.date}</b><br>
-${match.game}<br>
-vs ${match.opponent}
-`;
+function renderAll(){
+
+  // ✅ 基本情報
+  document.getElementById("info").innerHTML = `
+  <b>${match.date}</b><br>
+  ${match.game}<br>
+  vs ${match.opponent}
+  `;
 
 // ================= スコア =================
 
@@ -340,12 +367,16 @@ pitchHTML += "<th>失点</th><th>自責</th><th>防御率</th><th>WHIP</th><th>K
 
 pitchHTML += "</table>";
 
-document.getElementById("pitch").innerHTML = pitchHTML;
+document.getElementById("pitch").innerHTML = pitchHTML; 
+
+}
+
 
 function goList(){
   location.href = "game_list.html";
 }
 
+loadGame();
 </script>
 
 </body>

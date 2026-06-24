@@ -94,31 +94,50 @@ button{
 
 <body>
 
-<script>
-const ADMIN_PASSWORD = "19980725";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-function checkAuth(){
-  if(sessionStorage.getItem("adminAuth") === "true"){
+const firebaseConfig = {
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ✅ 管理者チェック
+onAuthStateChanged(auth, (user) => {
+  const adminEmail = "admin@example.com";
+
+  if(!user){
+    location.href = "admin-login.html";
     return;
   }
 
-  const input = prompt("管理者パスワードを入力してください");
-
-  // ✅ キャンセル押したら戻る
-  if(input === null){
+  if(user.email !== adminEmail){
     location.href = "index.html";
     return;
   }
 
-  if(input === ADMIN_PASSWORD){
-    sessionStorage.setItem("adminAuth", "true");
-  }else{
-    alert("パスワードが違います。もう一度アクセスしてください");
-    location.href = "index.html";
-  }
-}
+});
 
-checkAuth();
+// ✅ グローバルに使えるようにする
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
 </script>
 
 <div class="box">
@@ -183,17 +202,9 @@ color:white;">
 
 <script>
 
-// ✅ logoutはここに入れる
-function logout(){
-  sessionStorage.removeItem("adminAuth");
-  alert("ログアウトしました");
-  location.reload();
-}
-
-
 // ↓↓↓ここから元のコード↓↓↓
 
-let events = JSON.parse(localStorage.getItem("events")) || [];
+let events = [];
 let current = new Date();
 
 // ✅ 戻る
@@ -208,7 +219,7 @@ function goBack(){
 
 
 // ✅ 登録
-function addEvent(isPublic){
+async function addEvent(isPublic){
 
   const date = document.getElementById("date").value;
   const type = document.getElementById("type").value;
@@ -223,41 +234,21 @@ function addEvent(isPublic){
     return;
   }
 
-  // ✅ 同じ日を削除
-  events = events.filter(e => e.date !== date);
+  // ✅ Firestore保存
+await addDoc(collection(db, "events"), {
+  date,
+  type,
+  place,
+  time,
+  opponent,
+  note,
+  result,
+  public: isPublic
+});
 
-  // ✅ 新しく追加
-  events.push({
-    date,
-    type,
-    place,
-    time,
-    opponent,
-    note,
-    result,
-    public: isPublic
-  });
+alert("保存しました");
 
-  localStorage.setItem("events", JSON.stringify(events));
-
-  // ✅ ここから全部中に入れる🔥
-  localStorage.setItem("savedDate", date);
-
-  alert("保存しました");
-
-  const text =
-`📅 ${date} ${type}
-${opponent ? "vs " + opponent : ""}
-${time || ""}
-${place || ""}
-
-出欠入力👇
-https://あなたのサイトURL/attendance.html?date=${date}`;
-
-  const lineURL = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
-  window.open(lineURL, "_blank");
-
-  render();
+loadEvents();
 
   // ✅ 入力リセット
   document.getElementById("date").value = "";
@@ -269,6 +260,39 @@ https://あなたのサイトURL/attendance.html?date=${date}`;
   document.getElementById("result").value = "";
 }
 
+async function loadEvents(){
+
+  events = [];
+
+  const snapshot = await getDocs(collection(db, "events"));
+
+  snapshot.forEach(docSnap => {
+    events.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  render();
+
+  // 🔥 ここに移動
+  const params = new URLSearchParams(location.search);
+  const editDate = params.get("edit");
+
+  if(editDate){
+    const ev = events.find(e => e.date === editDate);
+
+    if(ev){
+      document.getElementById("date").value = ev.date;
+      document.getElementById("type").value = ev.type;
+      document.getElementById("place").value = ev.place;
+      document.getElementById("time").value = ev.time;
+      document.getElementById("opponent").value = ev.opponent;
+      document.getElementById("note").value = ev.note;
+      document.getElementById("result").value = ev.result || "";
+    }
+  }
+}
 
 // 月移動
 function changeMonth(num){
@@ -294,7 +318,9 @@ function render(){
 
   for(let d=1; d<=lastDate; d++){
     const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-    const dayEvents = events.filter(e => e.date === dateStr);
+    const dayEvents = events.filter(e =>
+  e.date === dateStr && e.public === true
+);
 
     let html = `<div class="date">${d}</div>`;
     let className = "cell";
@@ -342,7 +368,7 @@ function showDetail(date){
     結果：${ev.result || "-"}<br>
 
     <button onclick="editEvent('${date}', ${index})">編集</button>
-    <button onclick="removeEvent('${date}', ${index})">削除</button>
+    <button onclick="removeEvent('${ev.id}')">削除</button>
 
     <br><br>
   `;
@@ -378,60 +404,27 @@ document.getElementById("result").value = ev.result || "";
   closeModal();
 }
 
-function removeEvent(date, index){
+async function removeEvent(id){
+
   if(confirm("削除する？")){
-
-    const dayIndexes = [];
-
-    // 同じ日のイベントの位置を全部集める
-    events.forEach((e, i) => {
-      if(e.date === date){
-        dayIndexes.push(i);
-      }
-    });
-
-    // 押した番号の1件だけ削除
-    events.splice(dayIndexes[index], 1);
-
-    localStorage.setItem("events", JSON.stringify(events));
-
-    closeModal();
-    render();
+    await deleteDoc(doc(db, "events", id)); // 🔥 Firestoreから削除
+    loadEvents(); // 再読み込み
   }
+
 }
 
-render();
+loadEvents();
 
-const params = new URLSearchParams(location.search);
-
-// ✅ 新規（空の日クリック）
-const selectedDate = params.get("date");
-
-// ✅ 編集（予定ありクリック）
-const editDate = params.get("edit");
-
-if(selectedDate){
-  document.getElementById("date").value = selectedDate;
-}
-
-if(editDate){
-  const ev = events.find(e => e.date === editDate);
-
-  if(ev){
-    document.getElementById("date").value = ev.date;
-    document.getElementById("type").value = ev.type;
-    document.getElementById("place").value = ev.place;
-    document.getElementById("time").value = ev.time;
-    document.getElementById("opponent").value = ev.opponent;
-    document.getElementById("note").value = ev.note;
-    document.getElementById("result").value = ev.result || ""; // ←これ追加🔥
-  }
-}
 
 function logout(){
-  sessionStorage.removeItem("adminAuth");
-  alert("ログアウトしました");
-  location.reload();
+  import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")
+    .then(({ getAuth, signOut }) => {
+      const auth = getAuth();
+      signOut(auth).then(() => {
+        alert("ログアウトしました");
+        location.href = "index.html";
+      });
+    });
 }
 </script>
 

@@ -125,36 +125,37 @@ th small{
 <div id="tabs"></div>
 <div id="table"></div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.collection = collection;
+window.getDocs = getDocs;
 
 function getMemberNames(){
   return members.map(m => `#${m.number} ${m.name}`);
 }
 
-let data = JSON.parse(localStorage.getItem("attendance")) || [];
+let data = [];
+let events = [];
+let members = [];
 let selectedDate = null;  // ✅ これ追加
 let currentMonth = null;  // ✅ これも追加
-let events = JSON.parse(localStorage.getItem("events")) || [];
-
-let members = JSON.parse(localStorage.getItem("members")) || [];
-
-// ✅ 日付一覧
-const dates = events.map(e => e.date).sort();
-
-const months = {};
-
-events.forEach(e => {
-  const key = e.date.slice(0,7); // 2026-02
-
-  if(!months[key]){
-    months[key] = [];
-  }
-
-  months[key].push(e.date);
-});
-
-const monthKeys = Object.keys(months).sort();
-
+let dates = [];
+let months = {};
+let monthKeys = [];
 
 function renderTitle(selectedMonth){
 
@@ -171,6 +172,24 @@ function renderTitle(selectedMonth){
 
   document.getElementById("title").innerText =
     `${monthText} 出欠一覧（${todayStr} 現在）`;
+}
+
+
+function init(){
+
+  dates = events.map(e => e.date).sort();
+
+  months = {};
+  events.forEach(e => {
+    const key = e.date.slice(0,7);
+
+    if(!months[key]) months[key] = [];
+
+    months[key].push(e.date);
+  });
+
+  monthKeys = Object.keys(months).sort();
+
 }
 
 
@@ -340,7 +359,9 @@ if(rec){
 }
 
 renderTabs();
-changeMonth(monthKeys[0]);
+if(monthKeys.length > 0){
+  changeMonth(monthKeys[0]);
+}
 
 function changeMonth(month){
   currentMonth = month; // ✅ 追加
@@ -358,6 +379,33 @@ function filterDate(date){
   renderTable(currentMonth);
 }
 
+async function loadAll(){
+
+  // 出欠
+  data = [];
+  const attSnap = await getDocs(collection(db, "attendance"));
+  attSnap.forEach(d => {
+    data.push({ ...d.data() });
+  });
+
+  // イベント
+  events = [];
+  const evSnap = await getDocs(collection(db, "events"));
+  evSnap.forEach(d => {
+    events.push(d.data());
+  });
+
+  // メンバー
+  members = [];
+  const memSnap = await getDocs(collection(db, "members"));
+  memSnap.forEach(d => {
+    members.push(d.data());
+  });
+
+  init(); // ←重要
+}
+
+loadAll();
 
 </script>
 

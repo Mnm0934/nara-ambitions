@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>MEMBER</title>
-
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
 <style>
 body{
   margin:0;
   padding-top:140px;
-  font-family:'Oswald', sans-serif;
+  font-family:'Noto Sans JP', 'Oswald', sans-serif;
   background:#02142c;
   color:white;
 }
@@ -40,10 +40,11 @@ font-weight:bold;
   justify-content:center;
   gap:20px;
   padding:15px;
-
+  overflow-x:auto;
+  flex-wrap:nowrap;
+  white-space:nowrap;
   position:sticky;
   top:140px; /* ←ここがポイント🔥 */
-
   z-index:300;
   background:#02142c;
 }
@@ -56,8 +57,9 @@ font-weight:bold;
    box-shadow:0 15px 50px rgba(0,0,0,0.9);
 }
 
-
 .category button{
+  white-space:nowrap;
+  flex-shrink:0;
   padding:20px 40px;
   border:1px solid #555;
   background:#02142c;
@@ -375,21 +377,18 @@ header{
 
 .nav{
   display:flex;
-  gap:20px;
+  flex-wrap:wrap;
+  gap:40px;
+  justify-content:center;
   margin-top:10px;
   background:rgba(0,0,0,0.3);
   backdrop-filter: blur(10px);
-  padding-left:20px;
-  padding-right:20px;
-  flex-wrap:nowrap;
-  overflow-x:auto;
-  scrollbar-width:none;
+  padding:10px 20px;
+  max-width:1200px;
+  margin-left:auto;
+  margin-right:auto;
+  box-sizing:border-box;
 }
-
-.nav::-webkit-scrollbar{
-  display:none;
-}
-
 .nav a{
   color:white;
   text-decoration:none;
@@ -796,6 +795,13 @@ header.small .title img{
   transform:scale(0.9);
 }
 
+.category button{
+  white-space: nowrap;
+  flex-shrink: 0;              /* ✅ これ重要（潰れ防止） */
+}
+
+
+
 </style>
 
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -807,7 +813,7 @@ header.small .title img{
 
 <header>
   <div class="title">
-    <img src="title.gif" alt="NARA AMBITIONS CLUB">
+    <img src="title.gif">
   </div>
 
   <div class="menu-btn">
@@ -817,13 +823,13 @@ header.small .title img{
   </div>
 
   <nav class="nav">
-    <a href="index.html">HOME</a>
-    <a href="index.html#news-feature">NEWS</a>
-    <a href="member.html" class="active">選手・スタッフ</a>
+<a href="index.html">HOME</a>
+<a href="index.html#news-feature">NEWS</a>
+<a href="member.html" class="active">選手・スタッフ</a>
     <a href="schedule.html">スケジュール</a>
     <a href="index.html#sns">SNS</a>
-    <a href="index.html#member">部員専用</a>
-  </nav>
+    <a href="member-only.html">部員専用</a>
+   </nav>
 </header>
 
 
@@ -1672,6 +1678,7 @@ menuBtn.addEventListener("click", () => {
   menuBtn.classList.toggle("active");
   nav.classList.toggle("active");
 });
+
 // ✅ URLから名前取得
 const params = new URLSearchParams(window.location.search);
 const no = params.get("no");

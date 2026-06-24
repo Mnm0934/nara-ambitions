@@ -235,6 +235,25 @@ footer{
 </head>
 
 <body>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+</script>
 
 <!-- ✅ ヘッダー追加 -->
 <header>
@@ -274,106 +293,98 @@ footer{
 </footer>
 
 <script>
-function renderNews(){
-  const news = JSON.parse(localStorage.getItem("news")) || [];
 
-// ✅ 承認済みだけにする
-const approvedNews = news.filter(n => n.approved === true);
+let newsData = [];
 
-const box = document.getElementById("news-list");
+// ✅ Firebaseから取得
+async function loadNews(){
 
-box.innerHTML = "";
+  const snap = await getDocs(collection(db, "news"));
 
-// ✅ 日付順
-approvedNews.sort((a,b) => new Date(b.date) - new Date(a.date));
+  newsData = [];
 
-  approvedNews.forEach((n, i) => {
-  box.innerHTML += `
-    <div onclick="openModal(${i})" class="news-link">
+  snap.forEach(docSnap => {
+    newsData.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
 
-      <div class="news-item">
-        <div style="display:flex;align-items:center;gap:15px;">
-
-          ${n.img ? `
-            <img src="${n.img}" style="width:100px;height:70px;object-fit:cover;">
-          ` : ""}
-
-          <div>
-            <div class="date">${n.date}</div>
-            <div class="title">${n.title}</div>
-          </div>
-
-        </div>
-      </div>
-
-    </div> <!-- ←これ追加（超重要） -->
-  `;
-});
+  renderNews();
 }
 
 
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
+// ✅ 一覧表示
+function renderNews(){
 
-if(id !== null){
-
-  const news = JSON.parse(localStorage.getItem("news")) || [];
-
-// ✅ 承認済みだけ
-const approvedNews = news.filter(n => n.approved === true);
-
-const n = approvedNews[id];
+  const approvedNews = newsData.filter(n => n.approved === true);
 
   const box = document.getElementById("news-list");
 
-  box.innerHTML = `
-    <h2>${n.title}</h2>
-    <p style="color:#aaa;">${n.date}</p>
+  box.innerHTML = "";
 
-    ${n.img ? `<img src="${n.img}" style="width:100%;margin:20px 0;">` : ""}
+  approvedNews.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-    <p>${n.content || ""}</p>
-  `;
+  approvedNews.forEach((n, i) => {
 
-}else{
-  renderNews();   // ← 元の一覧表示
+    box.innerHTML += `
+      <div onclick="openModal(${i})" class="news-link">
+
+        <div class="news-item">
+          <div style="display:flex;align-items:center;gap:15px;">
+
+            ${n.img ? `
+  <img src="${n.img}" style="width:100px;height:70px;object-fit:cover;">
+` : ""}
+
+            <div>
+              <div class="date">${n.date}</div>
+              <div class="title">${n.title}</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    `;
+  });
 }
 
 
+// ✅ モーダル表示
 function openModal(i){
-  const news = JSON.parse(localStorage.getItem("news")) || [];
 
-  // ✅ 承認済みだけ
-  const approvedNews = news.filter(n => n.approved === true);
-
+  const approvedNews = newsData.filter(n => n.approved === true);
   const n = approvedNews[i];
 
   const box = document.getElementById("modalContent");
 
   box.innerHTML = `
-    <h3>${n.title}</h3>
-    <p style="color:#aaa;">${n.date}</p>
+  <h3>${n.title}</h3>
+  <p style="color:#aaa;">${n.date}</p>
 
-    ${n.img ? `<img src="${n.img}" style="width:100%;margin:10px 0;">` : ""}
+  ${n.img ? `<img src="${n.img}" style="width:100%;margin:10px 0;">` : ""}
 
-    <p>${n.content || ""}</p>
+  <p>${n.content || ""}</p>
 
-    <br>
+  <br>
 
-    <button onclick="closeModal()" style="
-      width:100%;
-      background:#666;
-      color:white;
-      padding:10px;
-      border:none;
-    ">
-      閉じる
-    </button>
-  `;
+  <button onclick="closeModal()" style="
+    width:100%;
+    background:#666;
+    color:white;
+    padding:10px;
+    border:none;
+  ">
+    閉じる
+  </button>
+`;
 
   document.getElementById("modal").style.display = "flex";
 }
 
+
+// ✅ モーダル閉じる
 function closeModal(){
   document.getElementById("modal").style.display = "none";
 }
@@ -384,6 +395,10 @@ window.onclick = function(e){
     modal.style.display = "none";
   }
 }
+
+
+// ✅ 初期表示
+loadNews();
 
 </script>
 

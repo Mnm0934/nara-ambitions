@@ -159,15 +159,21 @@ max-width:600px;
 /* ===== 縦並びナビ ===== */
 .nav{
   display:flex;
-  gap:20px;
+  flex-wrap:wrap; /* ←これ追加すると神安定🔥 */
+  gap:40px;
+  justify-content:center;
+
   margin-top:10px;
   background:rgba(0,0,0,0.3);
   backdrop-filter: blur(10px);
-  padding-right:20px;
-  padding-left:20px;
-  flex-wrap:nowrap;
-  overflow-x:auto;
-  scrollbar-width:none;
+
+  padding:10px 20px;
+
+  max-width:1200px;
+  margin-left:auto;
+  margin-right:auto;
+
+  box-sizing:border-box;
 }
 
 .nav::-webkit-scrollbar{
@@ -334,7 +340,7 @@ background:#000;
 
 .sns a{
 display:inline-block;
-margin:10px;
+margin:0;
 padding:15px 30px;
 border:1px solid white;
 color:white;
@@ -386,23 +392,42 @@ transform:translateX(-5px);
 }
 
 
-@media (max-width:768px){
+@media (max-width:1024px){
 
 .nav{
+  display:flex;
+  flex-direction:column;
+
+  gap:0;
+  justify-content:flex-start;
+  align-items:stretch;
+
+  width:100%;
+  max-width:none;      /* ←追加 */
+  margin:0;            /* ←追加 */
+  padding:0;           /* ←追加 */
+
   max-height:0;
   overflow:hidden;
-  flex-direction:column;
-  width:100%;
-  text-align:center;
+
   background:rgba(0,0,0,0.3);
-  backdrop-filter: blur(10px);
   transition:0.3s;
 }
 
 .nav.active{
-  max-height:500px;
+  max-height:1000px;
 }
 
+.nav a{
+  width:100%;
+  padding:15px;
+  border-top:1px solid #333;
+  text-align:center;
+}
+
+}
+
+/* ハンバーガー */
 .menu-btn{
   display:flex;
   position:absolute;
@@ -412,7 +437,6 @@ transform:translateX(-5px);
 
 .title{
   height:80px;
-  font-size:13px;
 }
 
 .title img{
@@ -420,13 +444,14 @@ transform:translateX(-5px);
 }
 
 }
+
 .slider{
 margin-top:120px;
 }
 
 .mainSwiper{
 width:100%;
-height:clamp(800px, 100vh, 400px);
+ height:clamp(300px, 60vh, 600px);
 position:relative;
 overflow:hidden;
 }
@@ -454,7 +479,7 @@ transform:scale(1.1);
 
 .slide-text{
 position:absolute;
-bottom:10%;
+bottom:20%;
 left:5%;
 z-index:3;
 font-size:clamp(20px, 5vw, 50px);
@@ -856,6 +881,9 @@ footer{
   overflow:hidden;
   transition:0.3s;
   border:2px solid #fff;
+  width:clamp(220px, 80vw, 320px);
+  text-align:center;
+  box-sizing:border-box;
 }
 
 /* ホバー共通 */
@@ -1118,7 +1146,7 @@ footer{
 
 .voice-card{
   color:#fff;
-  padding:40px 50px;
+    padding:clamp(20px, 5vw, 50px);
   border-radius:12px;
   border-left:4px solid #d6002a;
   box-shadow:0 10px 25px rgba(0,0,0,0.6);
@@ -1202,7 +1230,7 @@ p{
 /* ⚪ 白文字（本文） */
 .recruit-box p,
 .voice-card p {
-  font-size:26px;
+  font-size:clamp(14px, 3vw, 20px);
 }
 
 /* ✅ リスト */
@@ -1325,7 +1353,8 @@ header.small .title img{
   color:#ccc;
 }
 
-@media (max-width:768px){
+@media (max-width:1024px)
+{
 
   .recruit-buttons{
     display:flex;
@@ -1353,12 +1382,11 @@ header.small .title img{
 
 }
 
-@media (max-width:768px){
+@media (max-width:1024px){
   .mainSwiper{
     height:clamp(300px, 60vh, 500px);
   }
 }
-
 
 .login-btn{
   display:block;
@@ -1400,18 +1428,83 @@ header.small .title img{
 }
 
 .slide-text h2{
-  font-size:clamp(50px, 8vw, 120px);
-  letter-spacing:10px;
+  font-size:clamp(30px, 8vw, 90px);
+  letter-spacing:clamp(3px, 1vw, 10px);
 }
 
 .slide-text p{
-  font-size:clamp(30px, 2vw, 22px);
+  font-size:clamp(14px, 2vw, 22px);
+  margin-top:10px;
+  letter-spacing:clamp(1px, 0.5vw, 2px);
 }
+
+@media (max-width:768px){
+
+.mainSwiper{
+  height:300px;
+}
+
+.slide-text{
+  bottom:15%;
+  left:5%;
+}
+
+.slide-text h2{
+  font-size:28px;
+  letter-spacing:3px;
+}
+
+.slide-text p{
+  font-size:14px;
+}
+
+}
+
+@media (max-width:768px){
+
+.voice-card p{
+  font-size:14px;
+  line-height:1.7;
+}
+
+}
+
+@media (max-width:768px){
+
+.sns-buttons{
+  flex-direction:column;
+  align-items:center;
+  gap:15px;
+}
+
+}
+
 
 </style>
 </head>
 
 <body>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com"
+});
+
+const db = getFirestore(app);
+
+// グローバル化
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+</script>
 
 <script>
 // ✅ indexに来たら強制ログアウト
@@ -2058,25 +2151,27 @@ menuBtn.addEventListener("click", () => {
 });
 
 
-
-window.addEventListener("resize", () => {
-  if(window.innerWidth > 768){
-    nav.classList.remove("active");
-    menuBtn.classList.remove("active");
-  }
-});
-
 /* ===== 日付フォーマット追加🔥 ===== */
 function formatDate(date){
   const d = new Date(date);
   return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
 }
 
-function renderNews(){
-const news = JSON.parse(localStorage.getItem("news")) || [];
+async function renderNews(){
 
-// ✅ これ追加！！！
-const approvedNews = news.filter(n => n.approved === true);
+  const snap = await getDocs(collection(db, "news"));
+
+  let news = [];
+
+  snap.forEach(docSnap=>{
+    news.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  // ✅ 承認済みだけ
+  const approvedNews = news.filter(n => n.approved === true);
 
 // ✅ 日付で新しい順
 approvedNews.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -2101,7 +2196,7 @@ approvedNews.forEach((n, i) => {
   <span class="tag ${n.tag}">${n.tag}</span>
 </div>
 
-<a href="news.html?id=${i}">
+<a href="news.html?id=${n.id}">
   <img src="${n.img}">
 
   <div class="title-box">
@@ -2118,18 +2213,19 @@ approvedNews.forEach((n, i) => {
 }
 
 // ✅ 最後にこれ呼ぶ
-renderNews();
+(async () => {
+  await renderNews();
 
-// ✅ その直後に追加🔥
-const newsSwiper = new Swiper(".newsSwiper",{
-  slidesPerView:"auto",
-  spaceBetween:20,
-  loop:true,
-  navigation:{
-    nextEl:".news-next",
-    prevEl:".news-prev",
-  },
-});
+  new Swiper(".newsSwiper",{
+    slidesPerView:"auto",
+    spaceBetween:20,
+    loop:true,
+    navigation:{
+      nextEl:".news-next",
+      prevEl:".news-prev",
+    },
+  });
+})();
 
 </script>
 

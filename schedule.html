@@ -7,12 +7,12 @@
 <title>スケジュール | NARA Ambitions Club</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
 <style>
 
 body{
   padding-top:150px;
-  font-family:'Oswald', sans-serif;
+  font-family:'Noto Sans JP', 'Oswald', sans-serif;
   background:#02142c;
   color:white;
 }
@@ -226,18 +226,19 @@ header{
   z-index:999;
 }
 
-
 .nav{
   display:flex;
-  gap:20px;
+  flex-wrap:wrap;
+  gap:40px;
+  justify-content:center;
   margin-top:10px;
   background:rgba(0,0,0,0.3);
   backdrop-filter: blur(10px);
-  padding-right:20px;
-  padding-left:20px; 
-  flex-wrap:nowrap;
-  overflow-x:auto;
-  scrollbar-width:none;
+  padding:10px 20px;
+  max-width:1200px;
+  margin-left:auto;
+  margin-right:auto;
+  box-sizing:border-box;
 }
 
 .nav::-webkit-scrollbar{
@@ -714,9 +715,29 @@ header.small .title img{
 
 <body>
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+</script>
+
 <header>
   <div class="title">
-    <img src="title.gif" alt="NARA AMBITIONS CLUB">
+    <img src="title.gif">
   </div>
 
   <div class="menu-btn">
@@ -725,15 +746,14 @@ header.small .title img{
     <span></span>
   </div>
 
- 
   <nav class="nav">
     <a href="index.html">HOME</a>
     <a href="index.html#news-feature">NEWS</a>
     <a href="member.html">選手・スタッフ</a>
-    <a href="schedule.html" class="active">スケジュール</a>
+<a href="schedule.html" class="active">スケジュール</a>
     <a href="index.html#sns">SNS</a>
-    <a href="index.html#member">部員専用</a>
-  </nav>
+    <a href="member-only.html">部員専用</a>
+   </nav>
 </header>
 
 <div class="overlay"></div>
@@ -799,31 +819,50 @@ header.small .title img{
 
 let currentFilter = "all";
 
-// ✅ 予定データ取得（これ超重要）
-let events = JSON.parse(localStorage.getItem("events")) || [];
+let events = [];
 
-const nextBox = document.getElementById("next-match");
+async function loadEvents(){
 
-/* ===== NEXT MATCH ===== */
-const today = new Date();
-today.setHours(0,0,0,0);
+  const snap = await getDocs(collection(db, "events"));
 
-let next = events
-  .filter(e => e.public) // ✅ 公開だけ
-  .sort((a,b) => new Date(a.date) - new Date(b.date))
-  .find(e => new Date(e.date) >= today);
+  events = [];
 
-if(next){
-  nextBox.innerHTML = `
-  <p class="date">${next.date}</p>
-  <p class="teams">
-    奈良アンビションズ <span class="vs">vs</span> ${next.opponent || ""}
-  </p>
-  <p class="place">${next.place || ""}</p>
-  <p class="time">${next.time || ""}</p>
-`;
+  snap.forEach(docSnap => {
+    events.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
 
+  renderCalendar();
+  renderSchedule();
+  renderNext();
 }
+
+function renderNext(){
+
+  const nextBox = document.getElementById("next-match");
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  let next = events
+    .filter(e => e.public)
+    .sort((a,b) => new Date(a.date) - new Date(b.date))
+    .find(e => new Date(e.date) >= today);
+
+  if(next){
+    nextBox.innerHTML = `
+      <p class="date">${next.date}</p>
+      <p class="teams">
+        奈良アンビションズ <span class="vs">vs</span> ${next.opponent || ""}
+      </p>
+      <p class="place">${next.place || ""}</p>
+      <p class="time">${next.time || ""}</p>
+    `;
+  }
+}
+
 
 /* ===== カレンダー用日付 ===== */
 
@@ -985,9 +1024,7 @@ function filterMatch(e, type){
   renderSchedule();
 }
 
-/* ✅ これを追加🔥 */
-renderCalendar();
-renderSchedule();
+loadEvents();
 
 </script>
 

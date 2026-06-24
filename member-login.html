@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ログイン</title>
+
+<style>
+body{
+  background:#02142c;
+  color:white;
+  text-align:center;
+  padding-top:100px;
+}
+
+input{
+  padding:10px;
+  margin:10px;
+  width:200px;
+}
+
+button{
+  padding:10px 20px;
+  background:#d6002a;
+  color:white;
+  border:none;
+}
+</style>
+</head>
+
+<body>
+
+<h2>部員ログイン</h2>
+
+<input type="email" id="email" placeholder="メールアドレス"><br>
+<input type="password" id="password" placeholder="パスワード"><br>
+
+<button onclick="login()">ログイン</button>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.login = function(){
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      alert("ログイン成功！");
+      location.href = "member.html"; // ←部員ページ
+    })
+    .catch(() => {
+      alert("ログイン失敗");
+    });
+
+}
+
+</script>
+
+</body>
+</html>

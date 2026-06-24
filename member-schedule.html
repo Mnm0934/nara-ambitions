@@ -220,6 +220,26 @@ body{
 
 <body>
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+</script>
+
 <h2>📅 部員用スケジュール</h2>
 
 <button onclick="goBack()" style="
@@ -293,8 +313,8 @@ body{
 <script>
 
 // ✅ 予定データ取得（これが超重要）
-let events = JSON.parse(localStorage.getItem("events")) || [];
-let attendance = JSON.parse(localStorage.getItem("attendance")) || [];
+let events = [];
+let attendance = [];
 
 // ✅ 今日
 const today = new Date();
@@ -348,7 +368,7 @@ let noAnswer = membersCount - dayData.length;
     if(event){
       if(event.type === "試合"){
         className += " match";
-      }else if(event.event === "練習"){
+      }else if(event.type === "練習"){
         className += " practice";
       }else{
         className += " party";
@@ -403,7 +423,7 @@ ${event ? `
 }
 
 // 初期表示
-renderCalendar();
+loadData();
 
 
 function changeMonth(n){
@@ -474,6 +494,33 @@ function handleClick(date){
   `;
 
   modal.style.display = "flex";
+}
+
+async function loadData(){
+
+  // ✅ events取得
+  const eventSnap = await getDocs(collection(db, "events"));
+  events = [];
+
+  eventSnap.forEach(docSnap => {
+    events.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  // ✅ attendance取得
+  const attSnap = await getDocs(collection(db, "attendance"));
+  attendance = [];
+
+  attSnap.forEach(docSnap => {
+    attendance.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  renderCalendar();
 }
 
 function editEvent(date){

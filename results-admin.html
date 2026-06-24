@@ -103,6 +103,29 @@ tr:nth-child(even){
 </head>
 
 <body>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  deleteDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
+</script>
 
   <button onclick="location.href='member-only.html'" style="
     background:#666;
@@ -180,6 +203,23 @@ function sortArrow(key, currentKey, order){
   return order === "desc" ? "▼" : "▲";
 }
 
+let resultsData = [];
+
+async function loadResults(){
+
+  const snap = await getDocs(collection(db, "results"));
+
+  resultsData = [];
+
+  snap.forEach(docSnap => {
+    resultsData.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  render(); // ←これで表示
+}
 
 let mode = "all";
 
@@ -210,16 +250,10 @@ function getPlayers(){
     }));
 }
 
-
-
-render();
-
-
 // ✅ ================= 打者 =================
 function render(){
 
-let rawData = JSON.parse(localStorage.getItem("results")) || [];
-
+let rawData = resultsData
 let data = [...rawData];
 
 // ✅ ★これ追加（日付でソート）
@@ -453,7 +487,7 @@ function changeMode(newMode){
 // ✅ ================= 投手 =================
 function renderPitcher(){
 
-  let rawData = JSON.parse(localStorage.getItem("results")) || [];
+  let rawData = resultsData
 
 let data = [...rawData];
 
@@ -615,63 +649,45 @@ list.sort((a,b)=>{
   makeRanking(data);
 }
 
-function deleteBrokenData(){
+async function deleteBrokenData(){
 
-  if(!confirm("日付なしデータを削除しますか？")){
-    return;
+  if(!confirm("日付なしデータ削除する？")) return;
+
+  const snap = await getDocs(collection(db, "results"));
+
+  for (const docSnap of snap.docs){
+
+    const d = docSnap.data();
+
+    if(!d.date || !d.game || !d.opponent){
+      await deleteDoc(doc(db, "results", docSnap.id));
+    }
   }
 
-  let data = JSON.parse(localStorage.getItem("results")) || [];
-
-  data.forEach(p=>{
-    if(p.games){
-      p.games = p.games.filter(g=>{
-        return g.date && g.game && g.opponent;
-      });
-    }
-  });
-
-  localStorage.setItem("results", JSON.stringify(data));
-
-  alert("不完全データを削除しました！");
+  alert("削除完了");
+  loadResults();
 }
 
 function editGame(label){
 
   const parts = label.split(" vs ");
   const left = parts[0].split(" ");
+
   const date = left[0];
   const game = left.slice(1).join(" ");
   const opponent = parts[1];
 
-  let data = JSON.parse(localStorage.getItem("results")) || [];
+  const match = resultsData.find(g =>
+    g.date === date &&
+    g.game === game &&
+    g.opponent === opponent
+  );
 
-  // ✅ 該当試合のデータを抽出
-  const editPlayers = [];
-
-  data.forEach(p=>{
-    if(p.games){
-      p.games.forEach(g=>{
-        if(g.date===date && g.game===game && g.opponent===opponent){
-          editPlayers.push({
-            name: p.name,
-            type: p.type,
-            ...g
-          });
-        }
-      });
-    }
-  });
-
-  localStorage.setItem("editGame", JSON.stringify({
-    date,
-    game,
-    opponent,
-    players: editPlayers
-  }));
+  localStorage.setItem("editGame", JSON.stringify(match));
 
   window.location.href = "game_input.html";
 }
+
 function makeRanking(data){
 
   const box = document.getElementById("ranking");
@@ -774,7 +790,7 @@ function makeRanking(data){
 
   box.innerHTML = html;
 }
-
+loadResults();
 </script>
 
 </body>

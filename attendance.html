@@ -100,25 +100,43 @@ button{
 <div class="list" id="list"></div>
 
 
-<script>
-let data = JSON.parse(localStorage.getItem("attendance")) || [];
-let events = JSON.parse(localStorage.getItem("events")) || [];
+<script type="module">
 
-// ✅ ここに追加
-let members = JSON.parse(localStorage.getItem("members")) || [];
+let data = [];
+let events = [];
+let members = [];
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc   // ←追加
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ✅ グローバル化
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
 
 // ✅ 出欠登録（ここが重要）
-function add(status){
-const raw = document.getElementById("name").value;
-const name = raw.split(" ")[0];
+async function add(status){
 
-// ✅ ここ追加🔥
-const member = members.find(m => `#${m.number}` === name);
-
-if(member && member.active === false){
-  alert("このメンバーは休部中です");
-  return;
-}
+  const raw = document.getElementById("name").value;
+  const name = raw.split(" ")[0];
   const date = document.getElementById("date").value;
   const comment = document.getElementById("comment").value;
 
@@ -133,26 +151,19 @@ if(member && member.active === false){
     return;
   }
 
-  // 上書き
-  data = data.filter(d => !(d.name === name && d.date === date));
-
-  data.push({
+  await addDoc(collection(db, "attendance"), {
     name,
     status,
     date,
     comment
   });
 
-  localStorage.setItem("attendance", JSON.stringify(data));
-
   alert("保存しました");
 
-// 🔥 これ追加
-document.getElementById("date").value = "";
+  loadAll();
 
-render();
-
-document.getElementById("comment").value = "";
+  document.getElementById("date").value = "";
+  document.getElementById("comment").value = "";
 }
 
 function loadMembers(){
@@ -224,7 +235,7 @@ const myData = data
     📅 ${d.date} → ${d.status}
   </div>
 
-  <button onclick="deleteRecord('${d.date}')" style="
+  <button onclick="deleteRecord('${d.id}')" style="
     background:#ff5252;
     color:white;
     font-size:12px;
@@ -404,24 +415,47 @@ if(selectedDate){
 
 loadMembers();
 
-function deleteRecord(date){
+async function loadAll(){
 
-  const raw = document.getElementById("name").value;
-  const name = raw.split(" ")[0];
+  // 出欠
+  data = [];
+  const attSnap = await getDocs(collection(db, "attendance"));
+  attSnap.forEach(d => {
+    data.push({
+      id: d.id,
+      ...d.data()
+    });
+  });
 
-  if(!confirm(date + "のデータを削除しますか？")){
-    return;
-  }
+  // 予定
+  events = [];
+  const evSnap = await getDocs(collection(db, "events"));
+  evSnap.forEach(d => {
+    events.push(d.data());
+  });
 
-  data = data.filter(d => !(d.name === name && d.date === date));
+  // メンバー
+  members = [];
+  const memSnap = await getDocs(collection(db, "members"));
+  memSnap.forEach(d => {
+    members.push(d.data());
+  });
 
-  localStorage.setItem("attendance", JSON.stringify(data));
+  loadMembers();
+  render();
+}
+async function deleteRecord(id){
+
+  if(!confirm("削除しますか？")) return;
+
+  await deleteDoc(doc(db, "attendance", id));
 
   alert("削除しました");
 
-  render();
+  loadAll();
 }
 
+loadAll();
 
 </script>
 

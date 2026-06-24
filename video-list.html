@@ -208,6 +208,25 @@ iframe{
 </head>
 
 <body>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.collection = collection;
+window.getDocs = getDocs;
+</script>
 
 <div class="container">
 <h1>試合動画一覧</h1>
@@ -241,38 +260,54 @@ iframe{
 </div>
 
 <script>
+let allVideos = [];
 
-let allVideos = JSON.parse(localStorage.getItem("videos")) || [];
+async function loadVideos(){
+
+  const snap = await getDocs(collection(db, "videos"));
+
+  allVideos = [];
+
+  snap.forEach(doc => {
+    allVideos.push({
+      docId: doc.id,   // ←超重要🔥
+      ...doc.data()
+    });
+  });
+
+  setupFilters();
+render(allVideos);
+}
+function setupFilters(){
+
+  const yearFilter = document.getElementById("yearFilter");
+  const monthFilter = document.getElementById("monthFilter");
+
+  yearFilter.innerHTML = `<option value="">全年度</option>`;
+  monthFilter.innerHTML = `<option value="">全月</option>`;
+
+  const years = [...new Set(allVideos.map(v => v.date?.slice(0,4)).filter(Boolean))];
+  years.sort((a,b)=>b-a);
+
+  years.forEach(y=>{
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y + "年";
+    yearFilter.appendChild(opt);
+  });
+
+  const months = [...new Set(allVideos.map(v => v.date?.slice(5,7)).filter(Boolean))];
+  months.sort((a,b)=>b-a);
+
+  months.forEach(m=>{
+    const opt = document.createElement("option");
+    opt.value = m;
+    opt.textContent = Number(m) + "月";
+    monthFilter.appendChild(opt);
+  });
+}
 
 const list = document.getElementById("videoList");
-
-// ✅ 年度リスト作成
-const yearFilter = document.getElementById("yearFilter");
-
-const years = [...new Set(allVideos.map(v => v.date?.slice(0,4)).filter(Boolean))];
-years.sort((a,b)=>b-a);
-
-years.forEach(y=>{
-  const opt = document.createElement("option");
-  opt.value = y;
-  opt.textContent = y + "年";
-  yearFilter.appendChild(opt);
-});
-
-const monthFilter = document.getElementById("monthFilter");
-
-const months = [...new Set(
-  allVideos.map(v => v.date?.slice(5,7)).filter(Boolean)
-)];
-
-months.sort((a,b)=>b-a);
-
-months.forEach(m=>{
-  const opt = document.createElement("option");
-  opt.value = m;
-  opt.textContent = Number(m) + "月";
-  monthFilter.appendChild(opt);
-});
 
 
 // ✅ NEW判定を外に出す🔥
@@ -328,11 +363,12 @@ videos.sort((a, b) => new Date(b.date) - new Date(a.date));
         ${isNew(v.date) ? '<span class="new">NEW</span>' : ''}
       </h3>
 
-      <div class="thumb-wrap" onclick="playVideo('${v.id}', this.querySelector('img'))">
+      <div class="thumb-wrap"
+ onclick="playVideo('${v.id}', this.querySelector('img'), '${v.docId}')">
         <img src="https://img.youtube.com/vi/${v.id}/0.jpg" class="thumb">
       </div>
 
-      <button onclick="editVideo('${v.id}')">編集</button>
+      <button onclick="editVideo('${v.docId}')">編集</button>
     `;
 
     grid.appendChild(div);
@@ -379,11 +415,11 @@ document.getElementById("yearFilter").addEventListener("change", ()=>applyFilter
 document.getElementById("monthFilter").addEventListener("change", ()=>applyFilter());
 
 // ✅ 初期表示
-render(allVideos);
+loadVideos();
 
-function editVideo(id){
+function editVideo(docId){
 
-  const video = allVideos.find(v => v.id === id);
+  const video = allVideos.find(v => v.docId === docId);
 
   localStorage.setItem("editVideo", JSON.stringify(video));
 
@@ -395,15 +431,16 @@ function goRegister(){
   location.href = "video-form.html";
 }
 
-function playVideo(id, el){
+function playVideo(id, el, docId){
 
   const parent = el.parentElement;
 
   parent.innerHTML = `
     <iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>
-    <button onclick="editVideo('${id}')">編集</button>
+    <button onclick="editVideo('${docId}')">編集</button>
   `;
 }
+
 
 function goMember(){
   location.href = "member-only.html";

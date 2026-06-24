@@ -66,6 +66,34 @@ button{
 </head>
 
 <body>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
+window.updateDoc = updateDoc;
+</script>
+
 
 <h2>NEWS登録</h2>
 
@@ -109,18 +137,17 @@ button{
 
 <script>
 
+let news = [];
+
 function updatePendingCount(){
-  const news = JSON.parse(localStorage.getItem("news")) || [];
 
   const count = news.filter(n => n.approved === false).length;
 
-  const text = count > 0 
-    ? `⚠ 承認待ち：${count}件あります`
-    : `✅ 承認待ちはありません`;
-
-  document.getElementById("pendingCount").innerText = text;
+  document.getElementById("pendingCount").innerText =
+    count > 0
+      ? `⚠ 承認待ち：${count}件`
+      : `✅ 承認待ちなし`;
 }
-
 
 let imgData = "";
 let editIndex = null;
@@ -154,85 +181,89 @@ function readFile(file){
 
 
 // 保存（新規 or 編集）
-function saveNews(){
-  let news = JSON.parse(localStorage.getItem("news")) || [];
+async function saveNews(){
 
   const data = {
-  title: document.getElementById("title").value,
-  date: document.getElementById("date").value,
-  img: imgData,
-  link: document.getElementById("link").value,
-  tag: document.getElementById("tag").value,
-  content: document.getElementById("content").value,
-  approved: editIndex !== null ? news[editIndex].approved : false
-};
+    title: document.getElementById("title").value,
+    date: document.getElementById("date").value,
+    img: imgData,
+    link: document.getElementById("link").value,
+    tag: document.getElementById("tag").value,
+    content: document.getElementById("content").value,
+    approved: false
+  };
 
-  if(editIndex !== null){
-    news[editIndex] = data;
-    editIndex = null;
-  }else{
-    news.unshift(data);
-  }
+  await addDoc(collection(db, "news"), data);
 
-localStorage.setItem("news", JSON.stringify(news));
+  clearForm();
+loadNews(); // ←これだけでOK
 
-clearForm();
-renderList();
-updatePendingCount(); // ←追加
-
-// ✅ 追加
-document.getElementById("saveBtn").innerText = "💾 保存";
-
-alert("保存しました！");
-window.scrollTo(0,0);
+  alert("保存しました！");
 }
+
+
+async function loadNews(){
+
+  const snap = await getDocs(collection(db, "news"));
+
+  news = [];
+
+  snap.forEach(docSnap => {
+    news.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  renderList();
+  updatePendingCount(); // ←ここに移動🔥
+}
+
 
 // 一覧表示
 function renderList(){
-  const news = JSON.parse(localStorage.getItem("news")) || [];
-  const role = localStorage.getItem("role"); // ←追加
+
+  const role = localStorage.getItem("role");
   const box = document.getElementById("list");
 
   box.innerHTML = "";
 
   news.forEach((n, i) => {
     box.innerHTML += `
-  <div style="border:1px solid #fff; margin:10px; padding:10px;">
-    ${n.img ? `<img src="${n.img}" width="100" style="object-fit:cover;"><br>` : ""}
-    <strong>${n.title}</strong><br>
-    ${n.date}<br>
-    
-    <button onclick="editNews(${i})">編集</button>
-<button onclick="deleteNews(${i})">削除</button>
-<button onclick="preview(${i})">プレビュー</button>
+      <div style="border:1px solid #fff; margin:10px; padding:10px;">
+        ${n.img ? `<img src="${n.img}" width="100">` : ""}
+        <br>
+        <strong>${n.title}</strong><br>
+        ${n.date}<br>
 
-${n.approved
-  ? `<span style="color:#00e676;">✅ 承認済</span>`
-  : (role === "admin"
-      ? `<button onclick="approveNews(${i})">承認</button>`
-      : `<span style="color:#ff9800;">⏳ 承認待ち</span>`
-    )
-}
-  </div>
-`;
+        <button onclick="deleteNews(${i})">削除</button>
+
+        ${
+          n.approved
+            ? `<span style="color:#00e676;">✅ 承認済</span>`
+            : (role === "admin"
+              ? `<button onclick="approveNews(${i})">承認</button>`
+              : `<span style="color:#ff9800;">⏳ 承認待ち</span>`
+            )
+        }
+      </div>
+    `;
   });
 }
 
 // 削除
-function deleteNews(i){
+async function deleteNews(i){
+
   if(!confirm("削除する？")) return;
 
-  let news = JSON.parse(localStorage.getItem("news")) || [];
-  news.splice(i,1);
-  localStorage.setItem("news", JSON.stringify(news));
+  await deleteDoc(doc(db, "news", news[i].id));
 
-  renderList();
-updatePendingCount(); // ←追加
+  loadNews();
 }
 
 // 編集
 function editNews(i){
-  const news = JSON.parse(localStorage.getItem("news")) || [];
+
   const n = news[i];
 
   document.getElementById("title").value = n.title;
@@ -247,14 +278,12 @@ function editNews(i){
   preview.style.display = imgData ? "block" : "none";
 
   editIndex = i;
-
-  // ✅ これ追加
   document.getElementById("saveBtn").innerText = "✏️ 更新する";
 }
 
 // プレビュー
 function preview(i){
-  const news = JSON.parse(localStorage.getItem("news")) || [];
+
   const n = news[i];
 
   alert(
@@ -278,31 +307,27 @@ function clearForm(){
   preview.style.display = "none";
 }
 
-function approveNews(i){
+async function approveNews(i){
 
   const role = localStorage.getItem("role");
 
-  // ✅ ここ追加（超重要）
   if(role !== "admin"){
     alert("権限がありません");
     return;
   }
 
-  const news = JSON.parse(localStorage.getItem("news")) || [];
+  await updateDoc(doc(db, "news", news[i].id), {
+    approved: true
+  });
 
-  news[i].approved = true;
-
-  localStorage.setItem("news", JSON.stringify(news));
-
-  renderList();
+  loadNews();
   updatePendingCount();
 
   alert("承認しました");
 }
 
 // ✅ これを最後に追加
-renderList();
-updatePendingCount();
+loadNews();
 
 </script>
 

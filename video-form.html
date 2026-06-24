@@ -31,6 +31,35 @@ button{
 </head>
 
 <body>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com"
+});
+
+const db = getFirestore(app);
+
+// 外から使えるように
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
+window.updateDoc = updateDoc;
+</script>
+
 <script>
 const ADMIN_PASSWORD = "19980725";
 
@@ -84,7 +113,7 @@ checkAuth();
 </div>
 
 <script>
-function saveVideo(){
+async function saveVideo(){
 
   const date = document.getElementById("date").value;
   const title = document.getElementById("title").value;
@@ -98,46 +127,38 @@ function saveVideo(){
 
   const videoId = url.split("v=")[1];
 
-  let videos = JSON.parse(localStorage.getItem("videos")) || [];
   const edit = JSON.parse(localStorage.getItem("editVideo"));
 
   if(edit){
 
-    videos = videos.map(v => v.id === edit.id ? {
-      date: date,
-      title: title,
+    // ✅ 更新（Firestore）
+    await updateDoc(doc(db, "videos", edit.docId), {
+      date,
+      title,
       id: videoId,
-      category: category
-    } : v);
-
-    localStorage.removeItem("editVideo");
-
-  }else{
-
-    videos.unshift({
-      date: date,
-      title: title,
-      id: videoId,
-      category: category
+      category
     });
 
-  }
-
-  localStorage.setItem("videos", JSON.stringify(videos));
-
-  if(edit){
+    localStorage.removeItem("editVideo");
 
     alert("更新しました");
     location.href = "video-list.html";
 
   }else{
 
+    // ✅ 新規登録（Firestore）
+    await addDoc(collection(db, "videos"), {
+      date,
+      title,
+      id: videoId,
+      category
+    });
+
     alert("登録しました");
 
     document.getElementById("date").value = "";
     document.getElementById("title").value = "";
     document.getElementById("url").value = "";
-
   }
 }
 
@@ -174,7 +195,7 @@ function goMember(){
   location.href = "member-only.html";
 }
 
-function deleteVideo(){
+async function deleteVideo(){
 
   const edit = JSON.parse(localStorage.getItem("editVideo"));
 
@@ -185,11 +206,7 @@ function deleteVideo(){
 
   if(!confirm("削除しますか？")) return;
 
-  let videos = JSON.parse(localStorage.getItem("videos")) || [];
-
-  videos = videos.filter(v => v.id !== edit.id);
-
-  localStorage.setItem("videos", JSON.stringify(videos));
+  await deleteDoc(doc(db, "videos", edit.docId));
 
   localStorage.removeItem("editVideo");
 
@@ -201,4 +218,3 @@ function deleteVideo(){
 
 </body>
 </html>
-`

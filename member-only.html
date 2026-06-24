@@ -67,7 +67,6 @@ button{
 
 <body>
 
-<!-- 🔒 ログインチェック -->
 <script>
 
 const USERS = {
@@ -75,74 +74,42 @@ const USERS = {
   admin: "0725"
 };
 
-// ✅ ログインチェック
-const login = localStorage.getItem("login");
-const loginTime = localStorage.getItem("loginTime");
+// ✅ ID入力
+const inputId = prompt("🔐 IDを入力してください");
 
-// ✅ 6時間制限
-const limit = 1000 * 60 * 60 * 1;
+if(inputId === null || inputId.trim() === ""){
+  alert("キャンセルされました");
+  location.href = "index.html";
+}
 
-if(
-  login !== "ok" ||
-  !loginTime ||
-  Date.now() - loginTime > limit
-){
+// ✅ パスワード入力
+const inputPass = prompt("🔒 パスワードを入力してください");
 
-  const inputId = prompt(
-    "🔐 NARA Ambitions Club\n\nIDを入力してください"
-  );
+if(inputPass === null || inputPass.trim() === ""){
+  alert("キャンセルされました");
+  location.href = "index.html";
+}
 
-  if(inputId === null || inputId.trim() === ""){
-    alert("キャンセルされました");
-    location.href = "member-login.html";
-  }
-
-  const inputPass = prompt(
-    "🔒 パスワードを入力してください"
-  );
-
-  if(inputPass === null || inputPass.trim() === ""){
-    alert("キャンセルされました");
-    location.href = "member-login.html";
-  }
-
-// 入力を整える
+// ✅ 判定
 const id = inputId.trim();
 const pass = inputPass.trim();
 
 if(USERS[id] && USERS[id] === pass){
 
-  localStorage.setItem("login","ok");
-localStorage.setItem("loginTime", Date.now());
-
+  // ✅ 管理者判定
   if(id === "admin"){
-    localStorage.setItem("role","admin");
+    window.isAdmin = true;
   }else{
-    localStorage.setItem("role","user");
+    window.isAdmin = false;
   }
 
 }else{
   alert("IDまたはパスワードが違います");
-  location.href = "member-login.html";
-}
-
-
-}
-
-// ✅ これはログイン処理と分ける（超重要）
-window.onload = function(){
-
-  const role = localStorage.getItem("role");
-
-  if(role !== "admin"){
-    document.querySelectorAll(".admin-only").forEach(el=>{
-      el.style.display = "none";
-    });
-  }
-
+  location.href = "index.html";
 }
 
 </script>
+
 
 <div class="container">
 
@@ -192,12 +159,21 @@ window.onload = function(){
 
 <script>
 function logout(){
-  localStorage.removeItem("login");
-localStorage.removeItem("role");
-localStorage.removeItem("loginTime");
+  alert("ログアウトしました");
   location.href = "index.html";
 }
+</script>
 
+<script>
+window.onload = function(){
+
+  if(!window.isAdmin){
+    document.querySelectorAll(".admin-only").forEach(el=>{
+      el.style.display = "none";
+    });
+  }
+
+}
 </script>
 
 </body>

@@ -83,6 +83,33 @@ button{
 
 <body>
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  getDoc   // ←これ追加🔥
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+});
+
+const db = getFirestore(app);
+
+// グローバル
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.updateDoc = updateDoc;
+window.doc = doc;
+window.getDoc = getDoc;   // ←🔥これだけ追加
+</script>
+
 <script>
 const ADMIN_PASSWORD = "19980725";
 
@@ -361,7 +388,7 @@ const number = document.getElementById("p_num_"+i).value;
 };
 }
   
-function save(){
+async function save(){
 
   const data = collectData();
 
@@ -370,31 +397,26 @@ function save(){
     return;
   }
 
-  let results = JSON.parse(localStorage.getItem("results")) || [];
+  // ✅ URLからid取得（編集判定）
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
 
-  const edit = JSON.parse(localStorage.getItem("editGame"));
+  if(id){
+    // ✅ 更新
+    const ref = doc(db, "results", id);
+    await updateDoc(ref, data);
 
-if(edit){
-  const index = results.findIndex(g => String(g.id) === String(edit.id));
+    alert("更新しました");
 
-  if(index !== -1){
-    data.id = edit.id;
-    results[index] = data;
+  }else{
+    // ✅ 新規
+    await addDoc(collection(db, "results"), data);
+
+    alert("保存しました");
   }
 
-  localStorage.removeItem("editGame");
-
-} else {
-  results.push(data);
-}
-
-  localStorage.setItem("results", JSON.stringify(results));
-
-  alert("保存完了！");
-
-  document.querySelectorAll("input").forEach(input=>{
-    input.value = "";
-  });
+  // 初期化
+  document.querySelectorAll("input").forEach(i => i.value="");
 }
 
 function tempSave(){
@@ -429,8 +451,7 @@ function autoFillPitcher(i){
 
   if(player){
     
-document.getElementById("p_name_"+i).value =
-  document.getElementById("p_name_"+i).value = player.name;
+document.getElementById("p_name_"+i).value = player.name;
 
   } else {
     document.getElementById("p_name_"+i).value = "";
@@ -465,23 +486,24 @@ function logout(){
   location.href = "index.html";
 }
 
-window.onload = function(){
+async function loadEdit(){
 
-  const edit = JSON.parse(localStorage.getItem("editGame"));
-  const results = JSON.parse(localStorage.getItem("results")) || [];
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
 
-  if(!edit) return;
+  if(!id) return;
 
-  const gameData = results.find(g => String(g.id) === String(edit.id));
+  const snap = await getDoc(doc(db, "results", id));
 
-  if(!gameData) return;
+  if(!snap.exists()) return;
+
+  const gameData = snap.data();
 
   // ✅ 基本情報
   document.getElementById("date").value = gameData.date;
-document.getElementById("game").value = gameData.game;
-document.getElementById("opponent").value = gameData.opponent;
-document.getElementById("batFirst").value = gameData.batFirst || "home";
-
+  document.getElementById("game").value = gameData.game;
+  document.getElementById("opponent").value = gameData.opponent;
+  document.getElementById("batFirst").value = gameData.batFirst || "home";
 
   // ✅ イニング
   gameData.myInnings.forEach((v,i)=>{
@@ -493,12 +515,13 @@ document.getElementById("batFirst").value = gameData.batFirst || "home";
   });
 
   // ✅ 打者
-(gameData.batters || []).forEach(p=>{
-  addBatter();
-  const i = batterCount;
+  (gameData.batters || []).forEach(p=>{
+    addBatter();
+    const i = batterCount;
 
-  document.getElementById("num_"+i).value = p.number;   // ←★これ追加
-  document.getElementById("name_"+i).value = p.name;
+    document.getElementById("num_"+i).value = p.number;
+    document.getElementById("name_"+i).value = p.name;
+
     document.getElementById("pa_"+i).value = p.pa;
     document.getElementById("ab_"+i).value = p.ab;
     document.getElementById("hit_"+i).value = p.hit;
@@ -507,6 +530,7 @@ document.getElementById("batFirst").value = gameData.batFirst || "home";
     document.getElementById("sf_"+i).value = p.sf;
     document.getElementById("so_"+i).value = p.so;
     document.getElementById("lob_"+i).value = p.lob;
+
     document.getElementById("run_"+i).value = p.run;
     document.getElementById("rbi_"+i).value = p.rbi;
 
@@ -523,12 +547,13 @@ document.getElementById("batFirst").value = gameData.batFirst || "home";
   });
 
   // ✅ 投手
-(gameData.pitchers || []).forEach(p=>{
-  addPitcher();
-  const i = pitcherCount;
+  (gameData.pitchers || []).forEach(p=>{
+    addPitcher();
+    const i = pitcherCount;
 
-  document.getElementById("p_num_"+i).value = p.number;   // ←★これ追加
-  document.getElementById("p_name_"+i).value = p.name;
+    document.getElementById("p_num_"+i).value = p.number;
+    document.getElementById("p_name_"+i).value = p.name;
+
     document.getElementById("p_inning_"+i).value = p.inning;
     document.getElementById("p_bf_"+i).value = p.bf;
     document.getElementById("p_ab_"+i).value = p.ab;
@@ -550,7 +575,9 @@ document.getElementById("batFirst").value = gameData.batFirst || "home";
   });
 
   alert("編集モードです");
-};
+}
+
+loadEdit();
 
 </script>
 
