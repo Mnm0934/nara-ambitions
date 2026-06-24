@@ -316,9 +316,8 @@ function render(){
     } else {
       html += `
         <div class="member">
-          <div class="title">
-  ${m.number ? "#" + m.number : ""} ${m.name}（${m.role}） ${m.active === false ? "【休部】" : ""}
-
+<div class="title">
+  ${m.number !== null ? "#" + m.number : ""} ${m.name}（${m.role}） ${m.active === false ? "【休部】" : ""}
 </div>
 
           <div class="actions">
