@@ -73,6 +73,7 @@ body{
 </head>
 
 <body>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -85,7 +86,10 @@ import {
   updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+
+
 const app = initializeApp({
+
   apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
   authDomain: "nara-ambitions.firebaseapp.com",
   projectId: "nara-ambitions",
@@ -103,6 +107,34 @@ window.addDoc = addDoc;
 window.deleteDoc = deleteDoc;
 window.doc = doc;
 window.updateDoc = updateDoc;
+
+window.addMember = async function(){
+
+  const number = document.getElementById("number").value;
+  const name = document.getElementById("name").value;
+  const role = document.getElementById("role").value;
+
+  if(!name){
+    alert("名前を入力して");
+    return;
+  }
+
+  await addDoc(collection(db, "members"), {
+    number: number ? Number(number) : null,
+    name,
+    role,
+    active: true
+  });
+
+  loadMembers();   // ✅ 一覧更新
+
+  document.getElementById("number").value = "";
+  document.getElementById("name").value = "";
+
+  alert("登録成功！");
+};
+
+
 </script>
 
 
@@ -161,32 +193,6 @@ if(!isLoggedIn){
 // ✅ データ
 let members = [];
 let editIndex = -1;
-
-
-// ✅ 登録
-async function addMember(){
-
-  const number = document.getElementById("number").value;
-  const name = document.getElementById("name").value;
-  const role = document.getElementById("role").value;
-
-  if(!name){
-    alert("名前を入力して");
-    return;
-  }
-
-  await addDoc(collection(db, "members"), {
-    number: number ? Number(number) : null,
-    name,
-    role,
-    active: true
-  });
-
-  loadMembers();
-
-  document.getElementById("number").value = "";
-  document.getElementById("name").value = "";
-}
 
 // ✅ 保存
 async function loadMembers(){
@@ -336,9 +342,17 @@ function render(){
 
   document.getElementById("list").innerHTML = html;
 }
-
-// 初期表示
 loadMembers();
+
+/* ✅ これを追加 */
+window.addMember = addMember;
+window.resetAll = resetAll;
+window.logout = logout;
+window.startEdit = startEdit;
+window.saveEdit = saveEdit;
+window.cancelEdit = cancelEdit;
+window.deleteMember = deleteMember;
+window.toggleActive = toggleActive;
 
 </script>
 
