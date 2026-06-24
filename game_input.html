@@ -181,7 +181,22 @@ checkAuth();
 
 <script>
 
-let memberList = JSON.parse(localStorage.getItem("members")) || [];
+let members = [];
+async function loadMembers() {
+  const snapshot = await getDocs(collection(db, "members"));
+  members = [];
+
+  snapshot.forEach(docSnap => {
+    members.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  console.log("選手一覧読み込み完了:", members);
+}
+
+
 
 let batterCount = 0;
 
@@ -437,10 +452,9 @@ function autoFill(i){
   const num = document.getElementById("num_"+i).value;
   const nameInput = document.getElementById("name_"+i);
 
-  const player = memberList.find(p => String(p.number) === String(num));
+  const player = members.find(p => String(p.number) === String(num));
 
   if(player){
-    // ✅ ここを変更する
     nameInput.value = player.name;
   } else {
     nameInput.value = "";
@@ -448,18 +462,18 @@ function autoFill(i){
 }
 
 
-function autoFillPitcher(i){
 
+function autoFillPitcher(i){
   const num = document.getElementById("p_num_"+i).value;
-  const player = memberList.find(p => String(p.number) === String(num));
+  const player = members.find(p => String(p.number) === String(num));
 
   if(player){
-    
-document.getElementById("p_name_"+i).value = player.name;
-
+    document.getElementById("p_name_"+i).value = player.name;
   } else {
     document.getElementById("p_name_"+i).value = "";
   }
+}
+
 }
 
 function calcTB(i){
@@ -582,6 +596,8 @@ async function loadEdit(){
 }
 
 loadEdit();
+loadMembers();
+
 
 </script>
 
