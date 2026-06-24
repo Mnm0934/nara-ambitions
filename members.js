@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>選手登録</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  background:#02142c;
+  color:white;
+  text-align:center;
+  padding:15px;
+  font-family:sans-serif;
+}
+
+.box{
+  background:#0a1f3f;
+  padding:15px;
+  border-radius:10px;
+  max-width:400px;
+  margin:auto;
+}
+
+.box input,
+.box select{
+  width:95%;
+  padding:12px;
+  margin:6px 0;
+  font-size:16px;
+}
+
+.box button{
+  width:100%;
+  padding:12px;
+  margin:5px 0;
+  font-size:16px;
+  border:none;
+  border-radius:6px;
+}
+
+.back-btn{
+  background:#eee;
+  color:#000;
+}
+
+.list{
+  margin-top:20px;
+}
+
+.member{
+  background:#102a52;
+  border-radius:10px;
+  padding:12px;
+  margin:10px auto;
+  max-width:400px;
+  text-align:left;
+}
+
+.title{
+  font-size:18px;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+}
+
+.actions button{
+  flex:1;
+}
+</style>
+</head>
+
+<body>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+
+const app = initializeApp({
+
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+window.addDoc = addDoc;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
+window.updateDoc = updateDoc;
+
+window.addMember = async function(){
+
+  const number = document.getElementById("number").value;
+  const name = document.getElementById("name").value;
+  const role = document.getElementById("role").value;
+
+  if(!name){
+    alert("名前を入力して");
+    return;
+  }
+
+  await addDoc(collection(db, "members"), {
+    number: number ? Number(number) : null,
+    name,
+    role,
+    active: true
+  });
+
+  loadMembers();   // ✅ 一覧更新
+
+  document.getElementById("number").value = "";
+  document.getElementById("name").value = "";
+
+  alert("登録成功！");
+};
+
+
+</script>
+
+
+<h2>👤 選手登録（管理者）</h2>
+
+<div class="box">
+
+  <!-- 入力 -->
+<input type="number" id="number" placeholder="背番号">
+<input type="text" id="name" placeholder="名前">
+<select id="role">
+  <option value="選手">選手</option>
+  <option value="マネージャー">マネージャー</option>
+  <option value="スタッフ">スタッフ</option>
+</select>
+
+
+  <!-- 登録 -->
+  <button onclick="addMember()" style="background:#00c853;color:white;">
+    登録
+  </button>
+
+  <!-- 全削除 -->
+  <button onclick="resetAll()" style="background:#ff5252;color:white;">
+    メンバー全削除（注意）
+  </button>
+
+  <!-- ✅ ログアウト -->
+  <button onclick="logout()" style="background:#ff9800;color:black;">
+    ログアウト
+  </button>
+
+</div> <!-- ✅ ←これ超重要（閉じる） -->
+
+<div class="list" id="list"></div>
+
+<script>
+
+// ✅ パスワード
+const adminPass = "19980725";
+
+// ✅ ログイン状態
+let isLoggedIn = localStorage.getItem("adminLogin");
+
+if(!isLoggedIn){
+  const input = prompt("管理者パスワード");
+
+  if(input === adminPass){
+    localStorage.setItem("adminLogin","true");
+  }else{
+    alert("権限なし");
+    window.location.href = "member-only.html";
+  }
+}
+
+// ✅ データ
+let members = [];
+let editIndex = -1;
+
+// ✅ 保存
+async function loadMembers(){
+
+  const snap = await getDocs(collection(db, "members"));
+
+  members = [];
+
+  snap.forEach(docSnap => {
+    members.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  render();
+}
+
+
+// ✅ 編集
+function startEdit(i){
+  editIndex = i;
+  render();
+}
+
+async function saveEdit(i){
+
+  const newNumber = document.getElementById("editNumber").value;
+  const newName = document.getElementById("editName").value;
+
+  if(!newName){
+    alert("入力して");
+    return;
+  }
+
+  await updateDoc(doc(db, "members", members[i].id), {
+    number: newNumber ? Number(newNumber) : null,
+    name: newName
+  });
+
+  editIndex = -1;
+  loadMembers();
+}
+
+
+function cancelEdit(){
+  editIndex = -1;
+  render();
+}
+
+
+// ✅ 削除
+async function deleteMember(i){
+
+  if(confirm("削除する？")){
+    await deleteDoc(doc(db, "members", members[i].id));
+    loadMembers();
+  }
+
+}
+
+async function toggleActive(i){
+
+  await updateDoc(doc(db, "members", members[i].id), {
+    active: !members[i].active
+  });
+
+  loadMembers();
+}
+
+
+// ✅ 全削除
+async function resetAll(){
+
+  if(confirm("全削除する？")){
+
+    for(const m of members){
+      await deleteDoc(doc(db, "members", m.id));
+    }
+
+    loadMembers();
+  }
+}
+
+
+// ✅ ログアウト
+function logout(){
+  if(confirm("ログアウトしますか？")){
+    localStorage.removeItem("adminLogin");
+    window.location.href = "member-only.html";
+  }
+}
+
+
+// ✅ 表示
+function render(){
+
+  members.sort((a,b)=>{
+  if(a.number === null) return 1;
+  if(b.number === null) return -1;
+  return a.number - b.number;
+});
+
+
+  let html = "";
+
+  members.forEach((m,i)=>{
+
+    if(i === editIndex){
+      html += `
+        <div class="member">
+          <input id="editNumber" type="number" value="${m.number}">
+          <input id="editName" type="text" value="${m.name}">
+
+          <div class="actions">
+            <button onclick="saveEdit(${i})" style="background:#00c853;color:white;">保存</button>
+            <button onclick="cancelEdit()" style="background:#999;">キャンセル</button>
+          </div>
+        </div>
+      `;
+    } else {
+      html += `
+        <div class="member">
+<div class="title">
+  ${m.number !== null ? "#" + m.number : ""} ${m.name}（${m.role}） ${m.active === false ? "【休部】" : ""}
+</div>
+
+          <div class="actions">
+  <button onclick="toggleActive(${i})" style="background:#ffd600;color:black;">
+    ${m.active === false ? "復帰" : "休部"}
+  </button>
+
+  <button onclick="startEdit(${i})" style="background:#2196f3;color:white;">編集</button>
+  <button onclick="deleteMember(${i})" style="background:#ff5252;color:white;">削除</button>
+</div>
+
+        </div>
+      `;
+    }
+
+  });
+
+  if(members.length === 0){
+    html = "<p>まだ登録されていません</p>";
+  }
+
+  document.getElementById("list").innerHTML = html;
+}
+loadMembers();
+
+/* ✅ これを追加 */
+window.addMember = addMember;
+window.resetAll = resetAll;
+window.logout = logout;
+window.startEdit = startEdit;
+window.saveEdit = saveEdit;
+window.cancelEdit = cancelEdit;
+window.deleteMember = deleteMember;
+window.toggleActive = toggleActive;
+
+</script>
+
+</body>
+</html>

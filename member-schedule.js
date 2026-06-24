@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>部員用スケジュール</title>
+
+<style>
+body{
+  background:#02142c;
+  color:white;
+  text-align:center;
+  padding:20px;
+}
+
+/* カレンダー */
+#calendar{
+  display:grid;
+  grid-template-columns: repeat(7,1fr);
+  gap:10px;
+  width:100%;
+  max-width:900px; /* ←広げる */
+  margin:20px auto;
+}
+
+.day{
+  background:#112b55;
+  padding:15px;
+  border-radius:8px;
+  cursor:pointer;
+  text-align:center;
+
+  aspect-ratio:1/1;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+
+  font-size:18px; /* ←日付大きく */
+}
+
+.week:nth-child(7),
+.week:nth-child(1){
+  color:#ff9800;
+}
+
+.day:hover{
+  background:#1b3c75;
+}
+
+.event-day{
+  background:#d6002a;
+}
+
+.today{
+  border:2px solid white;
+}
+
+/* 詳細 */
+#detail{
+  margin-top:20px;
+  background:#0a1f3f;
+  padding:15px;
+  border-radius:10px;
+  max-width:400px;
+  margin-left:auto;
+  margin-right:auto;
+}
+/* ✅ 種類別カラー */
+.match{
+  background:#d6002a !important; /* 赤 */
+}
+
+.practice{
+  background:#2196f3 !important; /* 青 */
+}
+
+.party{
+  background:#ffd600 !important; /* 黄色 */
+  color:#000;
+}
+
+.count {
+  margin-top:6px;
+  font-size:13px;   /* ←大きく */
+  line-height:1.4;
+}
+
+
+.count span{
+  display:inline-block;
+  margin-right:5px;
+}
+
+.empty{
+  background:transparent;
+  cursor:default;
+}
+
+.present{ color:#00ff88; }
+.absent{ color:#ff3b3b; }
+.undecided{ color:#ffd600; }
+.noanswer{ color:#aaa; }
+
+
+@media (max-width: 600px){
+
+  body{
+    padding:10px;
+  }
+
+  /* カレンダー幅いっぱい */
+  #calendar{
+    max-width:100%;
+    gap:6px;
+  }
+
+  /* マス小さく */
+  .day{
+    height:auto;
+    aspect-ratio:1/1;
+    font-size:14px;
+    padding:5px;
+  }
+
+  /* 出欠さらに小さく */
+  .count{
+    font-size:10px;
+  }
+
+  /* ボタン位置調整 */
+  button{
+    font-size:12px;
+    padding:6px 10px;
+  }
+
+  /* ＋ボタン */
+  button[onclick="goToEvent()"]{
+    padding:10px 12px;
+    font-size:14px;
+    bottom:15px;
+    right:15px;
+  }
+
+  /* 出欠一覧ボタン */
+  button[onclick*="attendance-list"]{
+    bottom:90px;
+    right:15px;
+    padding:14px 8px;
+    font-size:16px;
+  }
+
+  /* 戻るボタン */
+  button[onclick="goBack()"]{
+    top:10px;
+    left:10px;
+    padding:6px 10px;
+    font-size:14px;
+  }
+
+  /* 詳細ボックス */
+  #detail{
+    font-size:13px;
+    padding:10px;
+  }
+
+.week{
+  font-weight:bold;
+  background:#0a1f3f;
+  border-radius:8px;
+
+  aspect-ratio:1/1;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:16px; /* ←ここも大きく */
+}
+
+.week:nth-child(7),
+.week:nth-child(1){
+  color:#ff9800;
+}
+
+}
+
+.week{
+  font-weight:bold;
+  background:#0a1f3f;
+  padding:5px 0;
+  border-radius:5px;
+}
+
+.modal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
+
+  display:none;
+  justify-content:center;
+  align-items:center;
+
+  z-index:999;
+}
+
+.modal-content{
+  background:#0a1f3f;
+  padding:20px;
+  border-radius:10px;
+  width:90%;
+  max-width:400px;
+}
+
+</style>
+</head>
+
+<body>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+</script>
+
+<h2>📅 部員用スケジュール</h2>
+
+<button onclick="goBack()" style="
+  position:fixed;
+  top:20px;
+  left:20px;
+  padding:10px 18px;
+  background:#ff9800;
+  color:black;
+  border:none;
+  border-radius:50px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 5px 10px rgba(0,0,0,0.4);
+  z-index:1000;
+">
+  👤 部員ページ
+</button>
+
+
+<button onclick="goToEvent()" style="
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  padding:15px 20px;
+  background:#d6002a;
+  color:white;
+  border:none;
+  border-radius:50px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 5px 15px rgba(0,0,0,0.5);
+">
+  ＋予定登録(管理者限定)
+</button>
+
+<button onclick="location.href='attendance-list.html'" style="
+  position:fixed;
+  bottom:100px;           /* 少し上に */
+  right:20px;
+  padding:18px 24px;      /* ←ここでデカく🔥 */
+  font-size:18px;         /* ←文字大きく🔥 */
+  background:#2196f3;
+  color:white;
+  border:none;
+  border-radius:40px;     /* 丸さUP */
+  font-weight:bold;
+  box-shadow:0 8px 20px rgba(0,0,0,0.6); /* 影強め */
+  cursor:pointer;
+">
+  出欠一覧
+</button>
+
+
+
+
+
+<div>
+  <button onclick="changeMonth(-1)">◀</button>
+  <span id="title"></span>
+  <button onclick="changeMonth(1)">▶</button>
+</div>
+
+
+<!-- カレンダー -->
+<div id="calendar"></div>
+
+<!-- 詳細表示 -->
+<script>
+
+// ✅ 予定データ取得（これが超重要）
+let events = [];
+let attendance = [];
+
+// ✅ 今日
+const today = new Date();
+
+// ✅ 表示する月
+let currentYear = today.getFullYear();
+let currentMonth = today.getMonth();
+
+function renderCalendar(){
+
+  const cal = document.getElementById("calendar");
+
+  document.getElementById("title").innerText =
+    currentYear + "年 " + (currentMonth + 1) + "月";
+
+  cal.innerHTML = "";
+// ✅ 曜日ヘッダー
+const weeks = ["日","月","火","水","木","金","土"];
+
+weeks.forEach(w => {
+  cal.innerHTML += `<div class="week">${w}</div>`;
+});
+
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const lastDate = new Date(currentYear, currentMonth+1, 0).getDate();
+
+  // 空白
+  for(let i=0; i<firstDay; i++){
+    cal.innerHTML += "<div class='day empty'></div>";
+  }
+
+  for(let d=1; d<=lastDate; d++){
+
+    const fullDate = `${currentYear}-${String(currentMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+
+    let className = "day";
+
+    const event = events.find(e => e.date === fullDate);
+
+// ✅ 出欠集計
+const membersCount = 33; // メンバー数（あなたの人数）
+
+const dayData = attendance.filter(a => a.date === fullDate);
+
+let present = dayData.filter(a => a.status === "出席").length;
+let absent = dayData.filter(a => a.status === "欠席").length;
+let undecided = dayData.filter(a => a.status === "未定").length;
+let noAnswer = membersCount - dayData.length;
+
+
+    if(event){
+      if(event.type === "試合"){
+        className += " match";
+      }else if(event.type === "練習"){
+        className += " practice";
+      }else{
+        className += " party";
+      }
+    }
+
+    if(
+      today.getFullYear() === currentYear &&
+      today.getMonth() === currentMonth &&
+      today.getDate() === d
+    ){
+      className += " today";
+    }
+
+    cal.innerHTML += `
+      <div id="day-${fullDate}" class="${className}" onclick="handleClick('${fullDate}')">
+        ${d}
+${event ? "<br>📌" : ""}
+${event ? `
+<div class="count">
+  <span class="present">●${present}</span>
+  <span class="absent">×${absent}</span><br>
+  <span class="undecided">△${undecided}</span>
+  <span class="noanswer">－${noAnswer}</span>
+</div>
+` : ""}
+      </div>
+    `;
+  }
+
+  // ✅ 保存後スクロール
+  const savedDate = localStorage.getItem("savedDate");
+
+  if(savedDate){
+    setTimeout(() => {
+      const el = document.getElementById("day-" + savedDate);
+
+      if(el){
+        el.scrollIntoView({behavior:"smooth", block:"center"});
+
+        // 光らせる✨
+        el.style.boxShadow = "0 0 15px yellow";
+        setTimeout(()=>{ 
+          el.style.boxShadow = ""; 
+        }, 2000);
+      }
+
+    }, 300);
+
+    localStorage.removeItem("savedDate");
+  }
+}
+
+// 初期表示
+loadData();
+
+
+function changeMonth(n){
+  currentMonth += n;
+
+  if(currentMonth < 0){
+    currentMonth = 11;
+    currentYear--;
+  }
+
+  if(currentMonth > 11){
+    currentMonth = 0;
+    currentYear++;
+  }
+
+  renderCalendar();
+}
+
+function goToEvent(){
+  location.href = "event.html";
+}
+
+function goBack(){
+  location.href = "member-only.html";
+}
+
+
+// ✅ ここから単体で置く🔥
+function handleClick(date){
+
+  const event = events.find(e => e.date === date);
+
+  if(!event){
+    location.href = "event.html?date=" + date;
+    return;
+  }
+
+  const modal = document.getElementById("modal");
+  const content = document.getElementById("modalContent");
+
+  content.innerHTML = `
+    <h3>${date}</h3>
+    <p>種類：${event.type}</p>
+    <p>時間：${event.time || "-"}</p>
+    <p>場所：${event.place || "-"}</p>
+    <p>詳細：${event.note || "-"}</p>
+
+    <br>
+
+    <button onclick="editEvent('${date}')" style="background:#ff9800;color:white;padding:8px 12px;">
+      ✏️ 編集
+    </button>
+
+    <button onclick="goToAttendance('${date}')" style="background:#4caf50;color:white;padding:8px 12px;margin-left:10px;">
+      ✅ 出欠一覧
+    </button>
+
+<button onclick="goToInput('${date}')"
+  style="background:#2196f3;color:white;padding:8px 12px;margin-left:10px;">
+  📝 出欠入力
+</button>
+
+    <br><br>
+
+    <button onclick="closeModal()" style="background:#666;color:white;padding:8px 12px;">
+      閉じる
+    </button>
+  `;
+
+  modal.style.display = "flex";
+}
+
+async function loadData(){
+
+  // ✅ events取得
+  const eventSnap = await getDocs(collection(db, "events"));
+  events = [];
+
+  eventSnap.forEach(docSnap => {
+    events.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  // ✅ attendance取得
+  const attSnap = await getDocs(collection(db, "attendance"));
+  attendance = [];
+
+  attSnap.forEach(docSnap => {
+    attendance.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  renderCalendar();
+}
+
+function editEvent(date){
+  location.href = "event.html?edit=" + date;
+}
+
+function goToAttendance(date){
+  location.href = "attendance-list.html?date=" + date;
+}
+
+
+function closeModal(){
+  document.getElementById("modal").style.display = "none";
+}
+
+window.onclick = function(e){
+  const modal = document.getElementById("modal");
+  if(e.target === modal){
+    modal.style.display = "none";
+  }
+}
+
+function goToInput(date){
+  location.href = "attendance.html?date=" + date;
+}
+
+</script>
+
+<div id="modal" class="modal">
+  <div class="modal-content" id="modalContent"></div>
+</div>
+
+</body>
+</html>

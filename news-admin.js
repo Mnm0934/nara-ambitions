@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>NEWS登録</title>
+
+<style>
+body{
+  background:#02142c;
+  color:white;
+  text-align:center;
+  font-family:'Noto Sans JP',sans-serif;
+}
+
+/* 入力フォーム全体 */
+input, textarea, select{
+  width:80%;
+  max-width:400px;
+  margin:10px;
+  padding:12px;
+  font-size:18px;
+  border-radius:5px;
+  border:none;
+}
+
+/* ドロップエリア */
+.drop{
+  border:2px dashed #ccc;
+  padding:20px;
+  margin:20px auto;
+  width:80%;
+  max-width:400px;
+  cursor:pointer;
+}
+
+/* ボタン */
+button{
+  padding:12px 30px;
+  font-size:18px;
+  background:#d6002a;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+
+.back-btn{
+  margin-top:20px;
+  background:#444;
+}
+
+@media (max-width:600px){
+  input, textarea, select{
+    width:90%;
+    font-size:16px;
+  }
+
+  button{
+    width:80%;
+    max-width:300px;
+    font-size:16px;
+  }
+}
+
+</style>
+
+</head>
+
+<body>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
+window.updateDoc = updateDoc;
+</script>
+
+
+<h2>NEWS登録</h2>
+
+<h3 id="pendingCount" style="color:#ffeb3b;"></h3>
+
+<input id="title" placeholder="タイトル"><br>
+<input id="date" type="date"><br>
+
+<div class="drop" onclick="file.click()" 
+     ondragover="event.preventDefault()" 
+     ondrop="dropFile(event)">
+  ここに画像をドラッグ or タップで選択
+</div>
+<img id="preview" style="width:200px; margin-top:10px; display:none;">
+<input type="file" id="file" accept="image/*" style="display:none" onchange="selectFile(this)">
+
+<br>
+
+<input id="link" placeholder="リンクURL"><br>
+
+<select id="tag">
+  <option value="result">試合結果</option>
+  <option value="info">お知らせ</option>
+  <option value="event">イベント</option>
+</select><br>
+
+<textarea id="content" placeholder="詳細文章"></textarea><br>
+
+<button id="saveBtn" onclick="saveNews()">💾 保存</button>
+
+<br><br>
+
+<button onclick="location.href='member-only.html'">
+部員専用ページに戻る</button>
+
+<hr>
+
+<h2>NEWS一覧</h2>
+<div id="list"></div>
+
+
+<script>
+
+let news = [];
+
+function updatePendingCount(){
+
+  const count = news.filter(n => n.approved === false).length;
+
+  document.getElementById("pendingCount").innerText =
+    count > 0
+      ? `⚠ 承認待ち：${count}件`
+      : `✅ 承認待ちなし`;
+}
+
+let imgData = "";
+let editIndex = null;
+
+// 画像選択
+function selectFile(input){
+  const file = input.files[0];
+  readFile(file);
+}
+
+// ドロップ
+function dropFile(e){
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  readFile(file);
+}
+
+// 読み込み
+function readFile(file){
+  const reader = new FileReader();
+  reader.onload = function(e){
+    imgData = e.target.result;
+
+    // ✅ ここが追加ポイント
+    const preview = document.getElementById("preview");
+    preview.src = imgData;
+    preview.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+}
+
+
+// 保存（新規 or 編集）
+async function saveNews(){
+
+  const data = {
+    title: document.getElementById("title").value,
+    date: document.getElementById("date").value,
+    img: imgData,
+    link: document.getElementById("link").value,
+    tag: document.getElementById("tag").value,
+    content: document.getElementById("content").value,
+    approved: false
+  };
+
+  await addDoc(collection(db, "news"), data);
+
+  clearForm();
+loadNews(); // ←これだけでOK
+
+  alert("保存しました！");
+}
+
+
+async function loadNews(){
+
+  const snap = await getDocs(collection(db, "news"));
+
+  news = [];
+
+  snap.forEach(docSnap => {
+    news.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  renderList();
+  updatePendingCount(); // ←ここに移動🔥
+}
+
+
+// 一覧表示
+function renderList(){
+
+  const role = localStorage.getItem("role");
+  const box = document.getElementById("list");
+
+  box.innerHTML = "";
+
+  news.forEach((n, i) => {
+    box.innerHTML += `
+      <div style="border:1px solid #fff; margin:10px; padding:10px;">
+        ${n.img ? `<img src="${n.img}" width="100">` : ""}
+        <br>
+        <strong>${n.title}</strong><br>
+        ${n.date}<br>
+
+        <button onclick="deleteNews(${i})">削除</button>
+
+        ${
+          n.approved
+            ? `<span style="color:#00e676;">✅ 承認済</span>`
+            : (role === "admin"
+              ? `<button onclick="approveNews(${i})">承認</button>`
+              : `<span style="color:#ff9800;">⏳ 承認待ち</span>`
+            )
+        }
+      </div>
+    `;
+  });
+}
+
+// 削除
+async function deleteNews(i){
+
+  if(!confirm("削除する？")) return;
+
+  await deleteDoc(doc(db, "news", news[i].id));
+
+  loadNews();
+}
+
+// 編集
+function editNews(i){
+
+  const n = news[i];
+
+  document.getElementById("title").value = n.title;
+  document.getElementById("date").value = n.date;
+  document.getElementById("link").value = n.link;
+  document.getElementById("tag").value = n.tag;
+  document.getElementById("content").value = n.content;
+  imgData = n.img;
+
+  const preview = document.getElementById("preview");
+  preview.src = imgData;
+  preview.style.display = imgData ? "block" : "none";
+
+  editIndex = i;
+  document.getElementById("saveBtn").innerText = "✏️ 更新する";
+}
+
+// プレビュー
+function preview(i){
+
+  const n = news[i];
+
+  alert(
+    "タイトル：" + n.title + "\n\n" +
+    "日付：" + n.date + "\n\n" +
+    "本文：" + n.content
+  );
+}
+
+// フォームクリア
+function clearForm(){
+  document.getElementById("title").value = "";
+  document.getElementById("date").value = "";
+  document.getElementById("link").value = "";
+  document.getElementById("content").value = "";
+  document.getElementById("tag").value = "result"; // 初期値戻す
+  imgData = "";
+
+  const preview = document.getElementById("preview");
+  preview.src = "";
+  preview.style.display = "none";
+}
+
+async function approveNews(i){
+
+  const role = localStorage.getItem("role");
+
+  if(role !== "admin"){
+    alert("権限がありません");
+    return;
+  }
+
+  await updateDoc(doc(db, "news", news[i].id), {
+    approved: true
+  });
+
+  loadNews();
+  updatePendingCount();
+
+  alert("承認しました");
+}
+
+// ✅ これを最後に追加
+loadNews();
+
+</script>
+
+</body>
+</html>

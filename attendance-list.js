@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>出欠一覧</title>
+
+<style>
+body{
+  background:#02142c;
+  color:white;
+  text-align:center;
+  padding:20px;
+}
+
+/* テーブル */
+table{
+  table-layout:auto;  /* or fixedでもOK */
+  border-collapse:collapse;
+  margin:auto;
+  width:95%;
+  font-size:13px;
+}
+
+th, td{
+  border:1px solid #555;
+  padding:6px;
+}
+
+th{
+  background:#0a1f3f;
+  position:sticky;
+  top:0;
+}
+
+/* 名前列固定 */
+.name{
+  position:sticky;
+  left:0;
+  background:#0a1f3f;
+
+  width:180px;          /* ← 好きな幅に調整 */
+  white-space:nowrap;   /* ← 改行禁止🔥 */
+}
+
+/* マーク */
+.ok{ color:#00e676; font-weight:bold; }
+.ng{ color:#ff5252; font-weight:bold; }
+.mid{ color:#ffd600; font-weight:bold; }
+.none{ color:#aaa; }
+
+/* 集計 */
+.summary{
+  background:#111;
+  font-size:12px;
+}
+
+.rate{
+  font-weight:bold;
+}
+
+/* 上部 */
+.header{
+  margin-bottom:10px;
+}
+
+button{
+  margin:5px;
+  padding:8px 12px;
+  border:none;
+  border-radius:5px;
+}
+
+td{
+  background:#002b4d;
+}
+
+.ok{ background:#00c853; color:white; }
+.ng{ background:#d50000; color:white; }
+.mid{ background:#ffd600; color:black; }
+.none{ background:#333; color:#aaa; }
+
+th small{
+  color:#80d8ff;
+}
+
+#tabs button{
+  background:#0a1f3f;
+  color:white;
+  border-radius:20px;
+  padding:8px 15px;
+  cursor:pointer;
+}
+
+#tabs button:hover{
+  background:#ff9800;
+  color:black;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<h2>📊 出欠一覧</h2>
+<div id="title" style="margin:10px;font-size:18px;"></div>
+<div class="header">
+  <button onclick="location.href='member-only.html'" style="
+    background:#666;
+    color:white;
+    padding:10px 15px;
+    border-radius:20px;
+    cursor:pointer;">
+  ← 部員専用ページに戻る</button>
+
+ <button onclick="location.href='attendance.html'" style="
+    background:#00c853;
+    color:white;
+    padding:10px 15px;
+    border-radius:20px;">
+　出欠入力へ</button>
+ 
+</div>
+
+<div id="tabs"></div>
+<div id="table"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.collection = collection;
+window.getDocs = getDocs;
+
+function getMemberNames(){
+  return members.map(m => `#${m.number} ${m.name}`);
+}
+
+let data = [];
+let events = [];
+let members = [];
+let selectedDate = null;  // ✅ これ追加
+let currentMonth = null;  // ✅ これも追加
+let dates = [];
+let months = {};
+let monthKeys = [];
+
+function renderTitle(selectedMonth){
+
+  if(!selectedMonth){
+    document.getElementById("title").innerText = "予定なし";
+    return;
+  }
+
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0,10);
+
+  // 「2026-06」→「2026/06」
+  const monthText = selectedMonth.replace("-", "/");
+
+  document.getElementById("title").innerText =
+    `${monthText} 出欠一覧（${todayStr} 現在）`;
+}
+
+
+function init(){
+
+  dates = events.map(e => e.date).sort();
+
+  months = {};
+  events.forEach(e => {
+    const key = e.date.slice(0,7);
+
+    if(!months[key]) months[key] = [];
+
+    months[key].push(e.date);
+  });
+
+  monthKeys = Object.keys(months).sort();
+
+}
+
+
+function renderTabs(){
+
+  let html = "";
+
+  monthKeys.forEach((m, i) => {
+
+    html += `
+      <button onclick="changeMonth('${m}')">
+        ${m.replace("-", "年")}月
+      </button>
+    `;
+  });
+
+  document.getElementById("tabs").innerHTML = html;
+}
+
+function renderTable(selectedMonth){
+let summaryHtml = "";
+
+  const todayStr = new Date().toISOString().slice(0,10);
+
+  // 👇これを追加する
+  let targetDates = selectedMonth
+  ? months[selectedMonth]
+  : dates;
+
+
+targetDates = targetDates
+  .filter(d => d >= todayStr)
+  .sort((a,b)=> new Date(a) - new Date(b));
+
+
+  let html = "<table>";
+
+  html += "<tr>";
+  html += "<th class='name'>名前</th>";
+
+  
+targetDates.forEach(date => {
+
+// ✅ 未回答者を取得
+const notAnswered = members.filter(m => {
+
+  if(m.active === false) return false; // ✅ 休部除外
+
+  const id = `#${m.number}`;
+  return !data.some(d => d.name === id && d.date === date);
+});
+
+// ✅ 未回答まとめを作る（←ここが別！）
+if(notAnswered.length > 0){
+  summaryHtml += `
+    <div style="
+      background:#111;
+      padding:10px;
+      border-radius:5px;
+      margin-bottom:5px;
+      color:#ffcc00;
+      font-size:13px;
+      text-align:left;
+    ">
+      📅 ${date} 未回答：${notAnswered.map(m => m.name).join(", ")}
+    </div>
+  `;
+}
+
+
+    const ev = events.find(e => e.date === date);
+    const disp = date.slice(5).replace("-", "/");
+
+    let bgStyle = "";
+
+// ✅ 選択中は緑
+if(selectedDate === date){
+  bgStyle = "style='background:#00e676;color:black;'";
+}
+// ✅ 今日はオレンジ
+else if(date === todayStr){
+  bgStyle = "style='background:#ff9800;color:black;'";
+}
+
+    let label = `<div>${disp}</div>`;
+
+if(ev){
+  label += `<small>${ev.type}</small>`;
+}
+
+
+    html += `<th ${bgStyle} onclick="filterDate('${date}')" style="cursor:pointer;">
+  ${label}
+</th>`;
+  });
+
+
+  html += "<th>出席</th><th>欠席</th><th>未定</th><th>出席率</th>";
+  html += "</tr>";
+
+  // メンバーごと
+  members.forEach(m=>{
+
+  const id = `#${m.number}`;
+  const displayName = `#${m.number} ${m.name}`;
+
+  // ✅ フィルター（これ追加🔥）
+  if(selectedDate){
+    const rec = data.find(d => d.name === id && d.date === selectedDate);
+
+    // 出席者以外は表示しない
+    if(!rec || rec.status !== "出席"){
+      return;
+    }
+  }
+    let p=0,a=0,u=0;
+
+    html += "<tr>";
+    html += `<td class="name">${displayName}</td>`;
+
+targetDates.forEach(date => {
+      const rec = data.find(d => d.name === id && d.date === date);
+
+      let mark = "";
+const isActive = m.active !== false; // ←休部判定
+
+if(rec){
+  if(rec.status==="出席"){
+    mark = "<span class='ok'>○</span>"; p++;
+  }
+  else if(rec.status==="欠席"){
+    mark = "<span class='ng'>×</span>"; a++;
+  }
+  else{
+    mark = "<span class='mid'>未</span>"; u++;
+  }
+
+}else{
+
+  if(!isActive){
+    mark = "<span class='none'>休</span>"; // ✅ 休部
+  }else{
+    mark = "<span class='none'>未</span>"; // ✅ 在籍は未のまま
+  }
+
+}
+
+
+      html += `<td>${mark}</td>`;
+    });
+
+    const total = p+a+u;
+    const rate = total ? Math.round((p/total)*100) : 0;
+
+    html += `<td>${p}</td>`;
+    html += `<td>${a}</td>`;
+    html += `<td>${u}</td>`;
+    html += `<td class="rate">${rate}%</td>`;
+
+    html += "</tr>";
+  });
+
+  html += "</table>";
+
+  document.getElementById("table").innerHTML =
+  `<div style="margin-bottom:20px;">${summaryHtml}</div>` + html;
+}
+
+renderTabs();
+if(monthKeys.length > 0){
+  changeMonth(monthKeys[0]);
+}
+
+function changeMonth(month){
+  currentMonth = month; // ✅ 追加
+  renderTable(month);
+  renderTitle(month);
+}
+
+function filterDate(date){
+  if(selectedDate === date){
+    selectedDate = null; // ✅ もう一回押すと解除
+  } else {
+    selectedDate = date;
+  }
+
+  renderTable(currentMonth);
+}
+
+async function loadAll(){
+
+  // 出欠
+  data = [];
+  const attSnap = await getDocs(collection(db, "attendance"));
+  attSnap.forEach(d => {
+    data.push({ ...d.data() });
+  });
+
+  // イベント
+  events = [];
+  const evSnap = await getDocs(collection(db, "events"));
+  evSnap.forEach(d => {
+    events.push(d.data());
+  });
+
+  // メンバー
+  members = [];
+  const memSnap = await getDocs(collection(db, "members"));
+  memSnap.forEach(d => {
+    members.push(d.data());
+  });
+
+  init(); // ←重要
+}
+
+loadAll();
+
+</script>
+
+</body>
+</html>

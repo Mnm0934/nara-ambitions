@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>試合結果詳細</title>
+
+<style>
+body{
+  background:#e5d58a;
+  text-align:center;
+  font-family:sans-serif;
+}
+
+table{
+  border-collapse:collapse;
+  margin:10px auto;
+  font-size:13px;
+  table-layout:auto;  /* ← 追加 */
+}
+
+
+td,th{
+  border:1px solid #333;
+  padding:5px;
+}
+
+.header{
+  background:#99ccff;
+}
+
+.green{
+  background:#008000;
+  color:white;
+}
+
+.title{
+  font-size:20px;
+  font-weight:bold;
+  color:red;
+  margin:10px;
+}
+
+th, td{
+  border:1px solid #333;
+  padding:5px;
+  width:50px;      /* ← 追加 */
+  text-align:center;
+}
+
+td:first-child, th:first-child{
+  min-width:120px;   /* ← ここがポイント */
+  width:auto;
+  text-align:left;
+  white-space:nowrap;
+  padding-left:10px;
+}
+
+button{
+  margin:10px;
+  padding:10px 20px;
+  font-size:14px;
+  border:none;
+  border-radius:8px;
+  background:#00c3ff;
+  color:black;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<div class="title">試合結果詳細</div>
+
+<button onclick="goList()">試合一覧へ戻る</button>
+
+<div id="info"></div>
+
+<div id="score"></div>
+
+<h3>打撃成績</h3>
+<div id="bat"></div>
+
+<h3>投手成績</h3>
+<div id="pitch"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
+
+const db = getFirestore(app);
+
+// ✅ 試合取得
+
+const params = new URLSearchParams(location.search);
+const id = params.get("id");
+
+let match = null;
+
+async function loadGame(){
+
+  if(!id){
+    document.body.innerHTML = "IDなし";
+    return;
+  }
+
+  const ref = doc(db, "results", id);
+  const snap = await getDoc(ref);
+
+  if(!snap.exists()){
+    document.body.innerHTML = "データなし";
+    return;
+  }
+
+  match = snap.data();
+
+  renderAll();
+}
+
+function renderAll(){
+
+  // ✅ 基本情報
+  document.getElementById("info").innerHTML = `
+  <b>${match.date}</b><br>
+  ${match.game}<br>
+  vs ${match.opponent}
+  `;
+
+// ================= スコア =================
+
+let innings = match.myInnings || [];
+let opInnings = match.opInnings || [];
+
+let topName, topData, bottomName, bottomData;
+
+if(match.batFirst === "away"){
+  // 自チーム先攻
+  topName = "Ambitions";
+  topData = innings;
+
+  bottomName = match.opponent;
+  bottomData = opInnings;
+}else{
+  // 自チーム後攻
+  topName = match.opponent;
+  topData = opInnings;
+
+  bottomName = "Ambitions";
+  bottomData = innings;
+}
+
+let total = topData.reduce((a,b)=>a+(b||0),0);
+let opTotal = bottomData.reduce((a,b)=>a+(b||0),0);
+
+// ✅ イニング数決定
+let maxInning = 9;
+
+for(let i = 9; i < Math.max(topData.length, bottomData.length); i++){
+  if(topData[i] != null || bottomData[i] != null){
+    maxInning = i + 1;
+  }
+}
+
+let scoreHTML = "<table>";
+
+scoreHTML += "<tr class='header'><th>チーム</th>";
+for(let i=1;i<=maxInning;i++){
+  scoreHTML += `<th>${i}</th>`;
+}
+scoreHTML += "<th>計</th></tr>";
+
+// 上段
+scoreHTML += `<tr class='${topName === "Ambitions" ? "green" : ""}'><td>${topName}</td>`;
+for(let i=0;i<maxInning;i++){
+  const v = topData[i];
+
+  scoreHTML += `<td>${
+    v === null && 
+    i === maxInning-1 && 
+    total > opTotal && topName !== "Ambitions"
+      ? "×"
+      : (v ?? "-")
+  }</td>`;
+}
+
+scoreHTML += `<td>${total}</td></tr>`;
+
+// 下段
+scoreHTML += `<tr><td>${bottomName}</td>`;
+for(let i=0;i<maxInning;i++){
+  const v = bottomData[i];
+
+  scoreHTML += `<td>${
+    v === null && 
+    i === maxInning-1 && 
+    opTotal > total &&
+bottomName === "Ambitions"
+      ? "×"
+      : (v ?? "-")
+  }</td>`;
+}
+
+scoreHTML += `<td>${opTotal}</td></tr>`;
+
+scoreHTML += "</table>";
+
+document.getElementById("score").innerHTML = scoreHTML;
+
+
+// ================= 打撃 =================
+
+function calcAVG(p){
+  return p.ab ? (p.hit / p.ab).toFixed(3) : "-";
+}
+
+function calcOBP(p){
+  const ab = p.ab || 0;
+  const h = p.hit || 0;
+  const bb = p.bb || 0;
+  const sf = p.sf || 0;
+  return (ab + bb + sf) ? ((h + bb)/(ab + bb + sf)).toFixed(3) : "-";
+}
+
+function calcSLG(p){
+  return p.ab ? (p.tb / p.ab).toFixed(3) : "-";
+}
+
+function calcOPS(p){
+  const obp = parseFloat(calcOBP(p)) || 0;
+  const slg = parseFloat(calcSLG(p)) || 0;
+  return (obp + slg).toFixed(3);
+}
+
+function calcRISP(p){
+  return p.risp_ab ? (p.risp_hit / p.risp_ab).toFixed(3) : "-";
+}
+
+let batHTML = "<table>";
+
+batHTML += "<tr class='header'>";
+batHTML += `
+<th>名前</th>
+<th>打席</th>
+<th>打数</th>
+<th>安打</th>
+<th>四死球</th>
+<th>三振</th>
+<th>犠打</th>
+<th>犠飛</th>
+<th>残塁</th>
+<th>RISP打</th>
+<th>RISP安</th>
+<th>得点</th>
+<th>打点</th>
+<th>盗塁</th>
+<th>盗刺</th>
+<th>二塁打</th>
+<th>三塁打</th>
+<th>本塁打</th>
+<th>塁打</th>
+<th>打率</th>
+<th>出塁率</th>
+<th>長打率</th>
+<th>OPS</th>
+<th>RISP率</th>
+`;
+batHTML += "</tr>";
+
+(match.batters || []).forEach(p => {
+
+  batHTML += `
+  <tr>
+    <td>${p.name}</td>
+
+    <td>${p.pa||0}</td>
+    <td>${p.ab||0}</td>
+    <td>${p.hit||0}</td>
+    <td>${p.bb||0}</td>
+    <td>${p.so||0}</td>
+    <td>${p.sh||0}</td>
+    <td>${p.sf||0}</td>
+    <td>${p.lob||0}</td>
+    <td>${p.run||0}</td>
+    <td>${p.rbi||0}</td>
+    <td>${p.sb||0}</td>
+    <td>${p.cs||0}</td>
+
+    <td>${p.double||0}</td>
+    <td>${p.triple||0}</td>
+    <td>${p.hr||0}</td>
+    <td>${p.tb||0}</td>
+
+    <td>${calcAVG(p)}</td>
+    <td>${calcOBP(p)}</td>
+    <td>${calcSLG(p)}</td>
+    <td>${calcOPS(p)}</td>
+
+    <td>${p.risp_ab||0}</td>
+    <td>${p.risp_hit||0}</td>
+    <td>${calcRISP(p)}</td>
+  </tr>
+  `;
+});
+
+batHTML += "</table>";
+document.getElementById("bat").innerHTML = batHTML;
+
+// ================= 投手 =================
+
+function calcWHIP(p){
+  const ip = p.inning || 0;
+  return ip ? ((p.hit + p.bb)/ip).toFixed(2) : "-";
+}
+
+function calcKBB(p){
+  return p.bb ? (p.k / p.bb).toFixed(2) : "-";
+}
+
+let pitchHTML = "<table>";
+pitchHTML += "<tr class='header'>";
+pitchHTML += "<th>名前</th><th>回</th><th>打者</th><th>打数</th><th>球数</th>";
+pitchHTML += "<th>被安打</th><th>被本</th><th>被犠打</th><th>被犠飛</th>";
+pitchHTML += "<th>四球</th><th>死球</th><th>三振</th><th>暴投</th><th>ボーク</th>";
+pitchHTML += "<th>失点</th><th>自責</th><th>防御率</th><th>WHIP</th><th>K/BB</th>";
+
+(match.pitchers || []).forEach(p=>{
+
+  const era = p.inning ? (p.er / p.inning * 9).toFixed(2) : "-";
+
+  pitchHTML += `
+<tr>
+  <td>${p.name}</td>
+  <td>${p.inning||0}</td>
+  <td>${p.bf||0}</td>
+  <td>${p.ab||0}</td>
+  <td>${p.pitch||0}</td>
+
+  <td>${p.hit||0}</td>
+  <td>${p.hr||0}</td>
+  <td>${p.sh||0}</td>
+  <td>${p.sf||0}</td>
+
+  <td>${p.bb||0}</td>
+  <td>${p.hbp||0}</td>
+  <td>${p.k||0}</td>
+  <td>${p.wp||0}</td>
+  <td>${p.bk||0}</td>
+
+  <td>${p.runs||0}</td>
+  <td>${p.er||0}</td>
+  <td>${era}</td>
+  <td>${calcWHIP(p)}</td>
+  <td>${calcKBB(p)}</td>
+</tr>
+  `;
+});
+
+pitchHTML += "</table>";
+
+document.getElementById("pitch").innerHTML = pitchHTML; 
+
+}
+
+
+function goList(){
+  location.href = "game_list.html";
+}
+
+loadGame();
+</script>
+
+</body>
+</html>

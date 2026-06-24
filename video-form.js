@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>動画登録</title>
+
+<style>
+body{
+  background:#02142c;
+  color:white;
+  font-family:'Noto Sans JP';
+}
+
+.container{
+  max-width:600px;
+  margin:50px auto;
+}
+
+input,button{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+}
+
+button{
+  background:#d6002a;
+  color:white;
+  border:none;
+}
+</style>
+</head>
+
+<body>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
+
+const db = getFirestore(app);
+
+// 外から使えるように
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
+window.updateDoc = updateDoc;
+</script>
+
+<script>
+const ADMIN_PASSWORD = "19980725";
+
+function checkAuth(){
+
+  if(sessionStorage.getItem("adminAuth") === "true"){
+    return;
+  }
+
+  const input = prompt("管理者パスワードを入力してください");
+
+  if(input === null){
+    location.href = "index.html";
+    return;
+  }
+
+  if(input === ADMIN_PASSWORD){
+    sessionStorage.setItem("adminAuth", "true");
+  }else{
+    alert("パスワードが違います");
+    location.href = "member-only.html"; // ←戻り先は合わせる
+  }
+}
+
+checkAuth();
+</script>
+
+<div class="container">
+<h1>動画登録</h1>
+
+<input type="date" id="date">
+<input type="text" id="title" placeholder="試合名（例: vs ○○高校）">
+
+<select id="category">
+  <option value="公式戦">公式戦</option>
+  <option value="OP戦">OP戦</option>
+  <option value="その他">その他</option>
+</select>
+
+<input type="text" id="url" placeholder="YouTubeリンク">
+
+<button onclick="saveVideo()">登録</button>
+
+<button id="deleteBtn" onclick="deleteVideo()" style="background:#555;">
+  削除
+</button>
+
+<button onclick="goVideoList()">試合動画一覧へ戻る</button>
+<button onclick="goMember()">部員専用ページへ戻る</button>
+
+</div>
+
+<script>
+async function saveVideo(){
+
+  const date = document.getElementById("date").value;
+  const title = document.getElementById("title").value;
+  const url = document.getElementById("url").value;
+  const category = document.getElementById("category").value;
+
+  if(!date || !title || !url){
+    alert("入力してください");
+    return;
+  }
+
+  const videoId = url.split("v=")[1];
+
+  const edit = JSON.parse(localStorage.getItem("editVideo"));
+
+  if(edit){
+
+    // ✅ 更新（Firestore）
+    await updateDoc(doc(db, "videos", edit.docId), {
+      date,
+      title,
+      id: videoId,
+      category
+    });
+
+    localStorage.removeItem("editVideo");
+
+    alert("更新しました");
+    location.href = "video-list.html";
+
+  }else{
+
+    // ✅ 新規登録（Firestore）
+    await addDoc(collection(db, "videos"), {
+      date,
+      title,
+      id: videoId,
+      category
+    });
+
+    alert("登録しました");
+
+    document.getElementById("date").value = "";
+    document.getElementById("title").value = "";
+    document.getElementById("url").value = "";
+  }
+}
+
+window.onload = function(){
+
+  const edit = JSON.parse(localStorage.getItem("editVideo"));
+
+  const deleteBtn = document.getElementById("deleteBtn");
+
+  if(!edit){
+    // 新規時は削除ボタン消す
+    deleteBtn.style.display = "none";
+    return;
+  }
+
+  // 編集モード
+  document.getElementById("date").value = edit.date;
+  document.getElementById("title").value = edit.title;
+  document.getElementById("url").value = "https://www.youtube.com/watch?v=" + edit.id;
+  document.getElementById("category").value = edit.category;
+
+  document.querySelector("h1").textContent = "動画編集";
+
+};
+
+</script>
+
+<script>
+function goVideoList(){
+  location.href = "video-list.html";
+}
+
+function goMember(){
+  location.href = "member-only.html";
+}
+
+async function deleteVideo(){
+
+  const edit = JSON.parse(localStorage.getItem("editVideo"));
+
+  if(!edit){
+    alert("削除できません");
+    return;
+  }
+
+  if(!confirm("削除しますか？")) return;
+
+  await deleteDoc(doc(db, "videos", edit.docId));
+
+  localStorage.removeItem("editVideo");
+
+  alert("削除しました");
+  location.href = "video-list.html";
+}
+
+</script>
+
+</body>
+</html>

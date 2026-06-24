@@ -1,0 +1,2238 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>NARA Ambitions Club</title>
+
+<!-- FONT -->
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<!-- ✅ これを追加 -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
+
+<!-- SWIPER -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
+<style>
+
+/* ===== BASE ===== */
+body{
+  margin:0;
+  font-family:'Noto Sans JP', 'Oswald', sans-serif;
+  background:#02142c;   /* ←これだけにする🔥 */
+  color:white;
+  overflow-x:hidden;
+  padding-top:150px;
+}
+
+
+img{
+  max-width:100%;
+  height:auto;
+  display:block;
+}
+
+/* ===== HEADER ===== */
+header{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:12px 0;
+  background:#000;
+  border-bottom:2px solid #d6002a;
+  box-shadow:0 5px 20px rgba(0,0,0,0.8);
+  z-index:999;
+}
+
+.title{
+  position:relative;
+  width:100%;
+  height:120px;            /* ✅ 高さを固定（これが一番重要） */
+  display:flex;
+  justify-content:center;
+  align-items:center;      /* ✅ 中央揃え */
+  background:linear-gradient(
+    to bottom,
+    #02142c,
+    #062452,
+    #02142c
+  );
+  box-shadow:0 5px 20px rgba(0,0,0,0.6);
+  border-bottom:3px solid #d6002a;
+  overflow:hidden;
+}
+
+.title-box{
+  position:relative;
+  width:100%;
+}
+
+.title-box .title{
+  display:block;              /* ←追加🔥 */
+  display:inline-block;
+  font-size:10px;
+  font-weight:700;
+  color:white;
+  background:#d6002a;
+  box-shadow:0 5px 15px rgba(214,0,42,0.6);
+  margin:0;
+  padding:4px 8px;
+  padding-bottom:8px;
+  border-radius:4px;
+  line-height:1.0;
+}
+
+/* 日付（右下配置） */
+.title-box .date{
+  position:absolute;
+  right:6px;
+  bottom:4px;
+
+  font-size:13px;
+  color:#fff;
+
+  background:rgba(0,0,0,0.6);
+  padding:2px 5px;
+  border-radius:3px;
+
+  z-index:99;   /* ←強化🔥 */
+}
+
+.title::before{
+content:"";
+position:absolute;
+top:0;
+left:-100%;
+width:60%;
+height:100%;
+background:linear-gradient(
+120deg,
+transparent,
+rgba(255,255,255,0.6),
+transparent
+);
+animation: shine 3s infinite;
+}
+
+/* アニメーション */
+@keyframes shine{
+0% { left:-100%; }
+50% { left:120%; }
+100% { left:120%; }
+}
+
+.title img{
+  height:80px;       /* ✅ 固定 */
+  width:auto;        /* ✅ 縦優先にする */
+}
+
+.title::after{
+content:"";
+position:absolute;
+bottom:0;
+left:0;
+width:100%;
+height:80px;
+
+background:linear-gradient(
+to bottom,
+rgba(0,0,0,0),
+rgba(0,0,0,0.8)
+);
+}
+
+header.small{
+background:rgba(0,0,0,0.9);
+backdrop-filter: blur(10px);
+}
+
+header.small .title img{
+max-width:600px;
+}
+
+/* ===== 縦並びナビ ===== */
+.nav{
+  display:flex;
+  flex-wrap:wrap; /* ←これ追加すると神安定🔥 */
+  gap:40px;
+  justify-content:center;
+
+  margin-top:10px;
+  background:rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+
+  padding:10px 20px;
+
+  max-width:1200px;
+  margin-left:auto;
+  margin-right:auto;
+
+  box-sizing:border-box;
+}
+
+.nav::-webkit-scrollbar{
+  display:none;
+}
+
+.nav a{
+  color:white;
+  text-decoration:none;
+  font-size:22px;
+  font-weight:500;
+  letter-spacing:3px;
+  position:relative;
+  transition:0.3s;
+  display:inline-block;
+  padding:8px 15px;
+  border-radius:5px;
+  white-space:nowrap;
+  font-size:clamp(14px, 2vw, 22px);
+}
+
+.nav a::after{
+content:"";
+position:absolute;
+bottom:-5px;
+left:50%;
+width:0;
+height:2px;
+background:#d6002a;
+transition:0.3s;
+transform:translateX(-50%);
+}
+
+.nav a:hover{
+color:#d6002a;
+background:rgba(214,0,42,0.2);
+transform:translateY(-2px);
+}
+
+.nav a:hover::after{
+width:100%;
+}
+
+.nav a.active{
+color:#d6002a;
+background:rgba(214,0,42,0.2);
+}
+
+.nav a.active::after{
+width:100%;
+}
+
+/* ===== HERO ===== */
+.hero{
+  min-height:60vh;
+  background:url("main.jpeg") center/cover fixed;
+  display:flex;
+  align-items:flex-end;
+  padding:10%;
+  position:relative;
+}
+
+.hero::before{
+content:"";
+position:absolute;
+inset:0;
+background:rgba(0,0,0,0.6);
+}
+
+.overlay{
+position:relative;
+border-left:4px solid #d6002a;
+padding-left:30px;
+}
+
+/* ===== SECTION ===== */
+section{
+  padding:80px 5%;
+  background:transparent;
+  scroll-margin-top:120px;
+}
+
+.fade{
+opacity:0;
+transform:translateY(50px);
+transition:1s;
+}
+
+.fade.active{
+opacity:1;
+transform:translateY(0);
+}
+
+/* ===== NEWS ===== */
+.news-item{
+display:flex;
+justify-content:space-between;
+padding:15px 0;
+border-bottom:1px solid #ccc;
+background:#0a1f3f;
+margin-bottom:15px;
+border-radius:10px;
+}
+
+/* ===== RESULT ===== */
+
+/* ===== TEAM ===== */
+.team-list{
+display:flex;
+gap:20px;
+overflow-x:auto;
+flex-wrap:nowrap;
+padding-bottom:10px;
+}
+
+.player{
+min-width:200px;
+text-align:center;
+}
+
+.player img{
+width:100%;
+border-radius:0;
+}
+
+/* ===== FEATURE ===== */
+.feature{
+  color:white;
+}
+
+.feature-card{
+  position:relative;
+  width:100%;
+  max-width:none;
+  margin:0 auto;
+  border-radius:8px;
+  border:none;
+  backdrop-filter:blur(12px);
+  background:rgba(255,255,255,0.05);
+  box-shadow:none;
+  transition:0.3s;
+  overflow:hidden;  /* ← ここ超重要🔥 */
+}
+
+.feature-card img{
+filter: brightness(1.2);
+display:block;
+width:100%;
+height:240px;
+object-fit:contain;
+margin-top:0;
+background:#000;
+}
+
+/* ===== SNS ===== */
+.sns{
+  text-align:left;
+}
+
+.sns-buttons{
+  display:flex;
+  justify-content:center;
+}
+
+.sns a{
+display:inline-block;
+margin:0;
+padding:15px 30px;
+border:1px solid white;
+color:white;
+text-decoration:none;
+}
+
+.sns a:hover{
+background:#d6002a;
+}
+
+html{
+scroll-behavior:smooth;
+}
+
+.menu-btn{
+display:none;
+flex-direction:column;
+cursor:pointer;
+gap:5px;
+z-index:2000;
+}
+
+.menu-btn span{
+width:25px;
+height:3px;
+background:white;
+display:block;
+transition:0.3s;
+}
+
+.menu-btn.active span:nth-child(1){
+transform:rotate(45deg) translate(5px,5px);
+}
+
+.menu-btn.active span:nth-child(2){
+opacity:0;
+}
+
+.menu-btn.active span:nth-child(3){
+transform:rotate(-45deg) translate(6px,-6px);
+}
+
+.menu-btn:hover span:nth-child(1){
+transform:translateX(5px);
+}
+
+.menu-btn:hover span:nth-child(3){
+transform:translateX(-5px);
+}
+
+
+@media (max-width:1024px){
+
+.nav{
+  display:flex;
+  flex-direction:column;
+
+  gap:0;
+  justify-content:flex-start;
+  align-items:stretch;
+
+  width:100%;
+  max-width:none;      /* ←追加 */
+  margin:0;            /* ←追加 */
+  padding:0;           /* ←追加 */
+
+  max-height:0;
+  overflow:hidden;
+
+  background:rgba(0,0,0,0.3);
+  transition:0.3s;
+}
+
+.nav.active{
+  max-height:1000px;
+}
+
+.nav a{
+  width:100%;
+  padding:15px;
+  border-top:1px solid #333;
+  text-align:center;
+}
+
+}
+
+/* ハンバーガー */
+.menu-btn{
+  display:flex;
+  position:absolute;
+  right:20px;
+  top:20px;
+}
+
+.title{
+  height:80px;
+}
+
+.title img{
+  height:50px;
+}
+
+}
+
+.slider{
+margin-top:120px;
+}
+
+.mainSwiper{
+width:100%;
+ height:clamp(300px, 60vh, 600px);
+position:relative;
+overflow:hidden;
+}
+
+.mainSwiper::before{
+content:"";
+position:absolute;
+inset:0;
+background:rgba(0,0,0,0.4);
+z-index:2;
+}
+
+.mainSwiper img{
+width:100%;
+height:100%;
+object-fit:cover;
+transition:2s;
+position:relative;
+z-index:1;
+}
+
+.swiper-slide-active img{
+transform:scale(1.1);
+}
+
+.slide-text{
+position:absolute;
+bottom:20%;
+left:5%;
+z-index:3;
+font-size:clamp(20px, 5vw, 50px);
+letter-spacing:6px;
+font-weight:700;
+text-shadow:0 5px 20px rgba(0,0,0,0.8);
+}
+
+.nav-item{
+cursor:pointer;
+}
+
+.sub-menu{
+display:none;
+flex-direction:column;
+background:#02142c;
+}
+
+.nav-item.active .sub-menu{
+display:flex;
+}
+
+.nav-title{
+padding:8px 15px;
+font-size:22px;
+letter-spacing:3px;
+transition:0.3s;
+}
+
+.nav-title:hover{
+color:#d6002a;
+background:rgba(214,0,42,0.2);
+}
+
+.nav-title.active{
+color:#d6002a;
+background:rgba(214,0,42,0.2);
+}
+
+.featureSwiper .swiper-slide{
+transform:scale(0.8);
+transition:0.5s;
+}
+
+.featureSwiper .swiper-slide-active{
+transform:scale(1);
+}
+
+
+.feature-card:hover{
+  box-shadow:
+    0 0 25px rgba(214,0,42,0.6),
+    0 25px 60px rgba(0,0,0,0.8);
+}
+
+.news-text{
+  padding:5px 15px;
+  background:transparent;
+  color:#fff;
+  position:static;
+  z-index:5;
+}
+
+
+.news-text:first-child{
+  padding-bottom:5px;
+}
+
+
+.news-text .date{
+  font-size:12px;
+  color:#aaa;
+  margin-top:6px;
+  margin-bottom:5px;
+  line-height:1.2;  /* ←高さ潰す🔥 */
+}
+
+.feature-card:hover .title{
+background:#ff1a3c;
+transform:scale(1.03);
+transition:0.3s;
+}
+
+.feature-card::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  width:4px;
+  height:100%;
+  background:#d6002a;
+}
+
+.member-hero{
+background:linear-gradient(
+rgba(2,20,44,0.9),
+rgba(2,20,44,0.9)
+),
+url("main.jpeg") center/cover;
+display:flex;
+flex-direction:column;
+padding:80px 5%;
+}
+
+.member-hero h1{
+font-size:60px;
+margin:0;
+}
+
+.member-hero p{
+font-size:18px;
+}
+
+.category{
+  display:flex;
+}
+
+.category button{
+min-width:120px;
+font-weight:700;
+padding:15px 30px;
+border:1px solid #999;
+background:white;
+cursor:pointer;
+}
+
+.category button.active{
+background:#d6002a;
+color:white;
+gap:15px;
+}
+
+.result h2{
+color:#d6002a;
+margin-bottom:20px;
+}
+
+a{
+color:#ddd;
+text-decoration:none;
+transition:0.3s;
+}
+
+a:visited{
+color:#ddd;
+}
+
+a:hover{
+color:#d6002a;
+}
+
+a:active{
+color:#ddd;
+}
+
+.result p{
+color:#ddd;
+border-bottom:1px solid rgba(255,255,255,0.2);
+padding:10px 0;
+}
+
+/* ✅ セクションタイトル統一 */
+section h2{
+  display:block;
+  width:100%;
+  font-family:'Noto Sans JP', sans-serif;
+  font-size:clamp(34px,5vw,52px);
+  font-weight:900;
+  letter-spacing:3px;
+  color:#fff;
+
+  text-shadow:
+    -2px -2px 0 #d6002a,
+     2px -2px 0 #d6002a,
+    -2px  2px 0 #d6002a,
+     2px  2px 0 #d6002a,
+    0 6px 15px rgba(0,0,0,0.8);
+
+  position:relative;
+  display:inline-block;
+
+  margin-bottom:50px;
+  padding-left:15px;
+  padding-bottom:10px;
+
+  border-left:6px solid #d6002a;
+  border-bottom:2px solid rgba(255,255,255,0.2);
+}
+
+section h2::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:50%;
+  height:100%;
+  background:linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.4),
+    transparent
+  );
+  animation: shine 3s infinite;
+  pointer-events:none;
+}
+
+section h2:hover{
+  text-shadow:
+    0 0 20px #d6002a,
+    0 0 40px #d6002a;  
+  transform:scale(1.05);
+}
+
+
+section h2::after{
+content:"";
+display:block;
+width:60px;
+height:3px;
+background:#fff;
+margin-top:10px;
+}
+
+.voice h2,
+.sns h2{
+  width:100%;
+}
+
+.more-btn{
+  display:block;
+  width:clamp(200px, 60vw, 400px);  /* 画面に合わせて伸びる🔥 */
+  padding:20px;
+  font-size:clamp(16px, 3vw, 24px);
+  font-weight:700;
+  text-align:center;
+  border:2px solid #d6002a;
+  border-radius:50px;
+}
+
+.more-btn:hover{
+background:#d6002a;
+color:#fff;
+}
+
+.playerSwiper{
+  width:100%;
+  padding:0;
+}
+
+.playerSwiper .swiper-slide{
+  width:auto;
+  display:flex;
+  justify-content:center;
+  transform:scale(0.95);
+  transition:0.5s;
+  opacity:0.5;
+  align-items:center;
+}
+
+.playerSwiper .swiper-slide-active{
+  opacity:1;
+  transform:scale(1.1);
+}
+
+.player img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  border-radius:10px;
+  transition:0.5s;
+  box-shadow:0 5px 15px rgba(0,0,0,0.5);
+}
+
+.player{
+ width:clamp(260px, 70vw, 340px);
+  flex-shrink:0;
+  cursor:pointer;
+  display:block;
+  background:linear-gradient(
+   180deg,
+   rgba(10,31,63,0.9),
+   rgba(6,21,43,1)
+  );
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  border:1px solid rgba(255,255,255,0.05);
+  transition:0.3s;
+}
+
+.player:hover{
+  transform:translateY(-12px) scale(1.02);
+  box-shadow:0 25px 60px rgba(0,0,0,0.9);
+}
+
+/* ===== 選手スライド強化 ===== */
+/* 名前 */
+.player h3{
+  font-size:24px;
+  margin:10px 0 5px;
+}
+
+/* ポジション */
+.player p{
+  font-size:16px;
+  color:#ccc;
+  background:#111;
+  padding:5px 10px;
+  border-radius:20px;
+  display:inline-block;
+  margin-top:5px;
+}
+
+/* ホバー用「VIEW」 */
+.player{
+  position:relative;
+}
+
+.slide-text p{
+  font-size:20px;
+  margin-top:10px;
+  letter-spacing:2px;
+}
+
+.img-box{
+  position:relative;
+  overflow:hidden;
+  border-radius:10px;
+}
+
+.img-box::after{
+  content:"VIEW PROFILE";
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  opacity:0;
+  transition:0.3s;
+  font-size:16px;
+  letter-spacing:3px;
+}
+
+.player:hover img{
+  transform:scale(1.1);
+  filter:brightness(0.8);
+}
+
+.player:hover .img-box::after{
+  opacity:1;
+}
+
+footer{
+  text-align:center;
+  padding:30px 0;
+  background:#000;
+  border-top:2px solid #d6002a;
+  margin-top:80px;
+  box-shadow:0 -5px 20px rgba(0,0,0,0.8);
+}
+
+.footer-sns a{
+  padding:5px 10px;
+  border-radius:5px;
+  margin:0 10px;
+  margin-top:10px;
+  color:#ccc;
+  text-decoration:none;
+  font-size:14px;
+  letter-spacing:1px;
+}
+
+.footer-sns a:hover{
+  color:#fff;
+  background:rgba(214,0,42,0.3);
+  transform:translateY(-2px);
+}
+
+.sns-buttons{
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  flex-wrap:wrap;
+  margin-top:30px;
+}
+
+.sns-btn{
+  display:inline-block;
+  padding:15px 25px;
+  font-size:clamp(14px, 3vw, 20px);
+  border-radius:50px;
+  font-weight:700;
+  font-size:20px;
+  letter-spacing:2px;
+  text-decoration:none;
+  color:white;
+  position:relative;
+  overflow:hidden;
+  transition:0.3s;
+  border:2px solid #fff;
+  width:clamp(220px, 80vw, 320px);
+  text-align:center;
+  box-sizing:border-box;
+}
+
+/* ホバー共通 */
+.sns-btn:hover{
+  transform:translateY(-5px) scale(1.05);
+  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+}
+
+/* Instagram */
+.insta{
+  background:linear-gradient(45deg,#feda75,#d62976,#962fbf);
+}
+
+/* X */
+.x{
+  background:#000;
+}
+
+/* YouTube */
+.youtube{
+  background:#ff0000;
+}
+
+/* Threads */
+.threads{
+  background:#111;
+}
+
+/* 光エフェクト */
+.sns-btn::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background:linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.5),
+    transparent
+  );
+  transition:0.5s;
+}
+
+.sns-btn:hover::before{
+  left:100%;
+}
+
+.youtube:hover{
+  box-shadow:0 0 20px #ff0000;
+}
+
+.insta:hover{
+  box-shadow:0 0 20px #d62976;
+}
+
+.x:hover{
+  box-shadow:0 0 20px #fff;
+}
+
+.threads:hover{
+  box-shadow:0 0 20px #999;
+}
+
+#about h2,#about#sns h2{
+  padding-left:15px;
+  margin-left:0;
+}
+
+.player h3{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.player h3 span{
+  color:#fff;
+  background:#d6002a;
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:1px;
+  box-shadow:0 2px 8px rgba(214,0,42,0.6);
+
+}
+
+.swiper-button-next,
+.swiper-button-prev{
+  color:#fff;
+  background:rgba(0,0,0,0.5);
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:10;
+
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover{
+  background:#d6002a;
+}
+
+/* ✅ ボタン位置調整（超重要） */
+.playerSwiper{
+  position:relative;
+}
+
+.playerSwiper .swiper-button-next{
+  right:10px;
+}
+
+.playerSwiper .swiper-button-prev{
+  left:10px;
+}
+
+.recruit{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.recruit h2{
+  text-align:left;
+  width:100%;
+}
+
+.recruit-box{
+  max-width:950px;
+  margin:40px auto 0;   /* ←これでもOK */
+  padding:50px 40px;
+  color:#fff;
+  border-radius:15px;
+  border:1px solid rgba(255,255,255,0.15);
+}
+
+.feature-card,
+.recruit-box,
+.voice-card{
+  backdrop-filter:blur(20px);
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.2);
+}
+
+.recruit-box{
+  background:#fff;
+  color:#000;
+  border:none;
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+}
+
+.recruit-box h3{
+  font-size:28px;
+  color:#d6002a;
+  margin-bottom:20px;
+}
+
+.recruit-box p{
+  color:#333;
+  line-height:2.2;
+  font-size:15.5px;
+  letter-spacing:0.5px;
+}
+
+/* ✅ リストっぽくする */
+.recruit-box br{
+  margin-bottom:8px;
+}
+
+.recruit-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;                      /* ←アイコンとの間隔 */
+
+  padding:18px;
+  border-radius:50px;
+
+  font-weight:700;
+  font-size:18px;
+  letter-spacing:1px;
+
+  text-decoration:none;
+  color:#fff;
+
+  transition:0.3s;
+}
+
+.recruit-btn.line::before{
+  content:"📱";
+}
+
+.recruit-btn.insta::before{
+  content:"📸";
+}
+
+.recruit-btn.x::before{
+  content:"𝕏";
+}
+
+.recruit-btn.mail::before{
+  content:"✉";
+}
+
+.recruit-btn::before{
+  font-size:20px;
+}
+
+.recruit-btn.line{
+  background:#06c755;
+}
+
+.recruit-btn.insta{
+  background:linear-gradient(45deg,#feda75,#d62976,#962fbf);
+}
+
+.recruit-btn.x{
+  background:#000;
+}
+
+.recruit-btn.mail{
+  background:#d6002a;
+}
+
+.recruit-btn:hover{
+  transform:translateY(-6px) scale(1.05);
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.4);
+}
+
+.voice{
+  text-align:left;
+}
+
+.voice-box{
+  max-width:700px;
+  margin:0 auto;
+  padding:40px 20px;
+  border-left:4px solid #d6002a;
+  background:rgba(255,255,255,0.05);
+}
+
+.voice-box p{
+  line-height:1.8;
+  font-size:16px;
+}
+
+.voice-list{
+  display:flex;
+  flex-direction:column;
+  gap:25px;
+  max-width:950px;
+  margin:0 auto;
+}
+
+.voice-card{
+  color:#fff;
+    padding:clamp(20px, 5vw, 50px);
+  border-radius:12px;
+  border-left:4px solid #d6002a;
+  box-shadow:0 10px 25px rgba(0,0,0,0.6);
+  transition:0.3s;
+}
+
+.voice-card:hover{
+  transform:translateY(-5px);
+}
+
+.voice-card p{
+  line-height:1.8;
+  margin-bottom:15px;
+}
+
+.voice-card span{
+  font-size:14px;
+  color:#ccc;
+}
+
+.recruit-title{
+  display:inline-block;
+  margin-top:20px;
+  margin-bottom:10px;
+  font-weight:700;
+  color:#d6002a;
+  border-left:4px solid #d6002a;
+  padding-left:10px;
+}
+
+/* ✅ フォント基準 */
+body{
+  font-size:16px;
+}
+
+.recruit-box h3{
+  font-size:clamp(32px, 5vw, 48px);
+  font-weight:900;
+  letter-spacing:2px;
+
+  text-shadow:
+    0 0 10px rgba(214,0,42,0.4),
+    0 0 20px rgba(214,0,42,0.3);
+}
+
+
+/* 本文 */
+p{
+  font-size:16px;
+}
+
+/* 小さめテキスト */
+.small-text{
+  font-size:14px;
+}
+
+.voice{
+  text-align:left;
+}
+
+.sns h2{
+  text-align:left;
+}
+
+#member h2{
+  text-align:left;
+}
+
+/* ===== フォント統一 ===== */
+
+/* 🔴 赤文字（見出し系） */
+.recruit-box h3,
+.recruit-title {
+  font-size:32px;
+}
+
+.recruit-title{
+  font-size:30px;
+}
+
+/* ⚪ 白文字（本文） */
+.recruit-box p,
+.voice-card p {
+  font-size:clamp(14px, 3vw, 20px);
+}
+
+/* ✅ リスト */
+.recruit-box {
+  font-size:26px;
+}
+
+.recruit-box br{
+  line-height:2;
+}
+
+/* ===== 白BOX強調シャドウ ===== */
+.recruit-box,
+.voice-card{
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* ===== NEWSスライド ===== */
+.newsSwiper .swiper-slide{
+  width:440px !important;
+  display:flex;
+  justify-content:center;
+}
+
+/* ===== NEWSボタン位置 ===== */
+.newsSwiper{
+  position:relative;
+  padding-left:20px;
+}
+
+.newsSwiper .swiper-button-next{
+  right:10px;
+}
+
+.newsSwiper .swiper-button-prev{
+  left:10px;
+}
+
+.tag{
+  display:inline-block;
+  background:#d6002a;
+  color:white;
+  font-size:12px;
+  padding:4px 10px;
+  border-radius:20px;
+  margin-bottom:4px;
+  font-weight:700;
+  letter-spacing:1px;
+  margin-top:5px;
+  margin-right:6px;
+  transition:0.2s;
+}
+
+.tag:hover{
+  transform:scale(1.1);
+}
+
+.tag.result{
+  background:#d6002a;
+}
+
+.tag.info{
+  background:#007bff;
+}
+
+.tag.event{
+  background:#28a745;
+}
+
+.tag.new{
+  background:#ffcc00;
+  color:#000;
+}
+
+.feature-card a{
+display:block;
+}
+
+header.small{
+  padding:5px 0;
+}
+
+header.small .title{
+  height:60px;
+}
+
+header.small .title img{
+  height:40px;
+}
+
+.recruit-buttons{
+  display:grid;
+  grid-template-columns: repeat(2, 1fr); /* ←ここを2列に変更 */
+  gap:20px;
+  max-width:500px;
+  margin:30px auto 0;
+}
+
+/* ボタン */
+.recruit-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  border-radius:50px;
+  font-weight:700;
+  font-size:18px;
+  text-align:center;
+  text-decoration:none;
+  color:#fff;
+  background:#d6002a;
+}
+
+
+/* 説明文 */
+.recruit-note{
+  text-align:center;
+  margin-top:20px;
+  font-size:14px;
+  color:#ccc;
+}
+
+@media (max-width:1024px)
+{
+
+  .recruit-buttons{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+  }
+
+  .recruit-btn{
+    width:100%;
+    font-size:18px;
+    padding:18px;
+  }
+
+  /* 個別位置リセット（これ超重要） */
+  .recruit-btn.x,
+  .recruit-btn.mail{
+    grid-column:auto;
+  }
+
+  /* LINEだけ強調（おすすめ🔥） */
+  .recruit-btn.line{
+    font-size:20px;
+    padding:20px;
+  }
+
+}
+
+@media (max-width:1024px){
+  .mainSwiper{
+    height:clamp(300px, 60vh, 500px);
+  }
+}
+
+.login-btn{
+  display:block;
+  width:clamp(220px, 70vw, 400px);
+  margin:40px auto 0;
+  padding:22px;
+
+  font-size:24px;
+  font-weight:700;
+  letter-spacing:2px;
+
+  text-align:center;
+  color:white;
+  text-decoration:none;
+
+  background:linear-gradient(45deg,#d6002a,#ff1a3c);
+  border-radius:50px;
+
+  box-shadow:0 10px 30px rgba(214,0,42,0.6);
+  transition:0.3s;
+}
+
+/* ホバー */
+.login-btn:hover{
+  transform:translateY(-5px) scale(1.05);
+  box-shadow:0 15px 40px rgba(214,0,42,0.9);
+}
+
+/* 押したとき */
+.login-btn:active{
+  transform:scale(0.95);
+}
+
+#news-list p{
+  text-align:center;
+  padding:40px 0;
+  font-size:20px;
+  color:#ccc;
+}
+
+.slide-text h2{
+  font-size:clamp(30px, 8vw, 90px);
+  letter-spacing:clamp(3px, 1vw, 10px);
+}
+
+.slide-text p{
+  font-size:clamp(14px, 2vw, 22px);
+  margin-top:10px;
+  letter-spacing:clamp(1px, 0.5vw, 2px);
+}
+
+@media (max-width:768px){
+
+.mainSwiper{
+  height:300px;
+}
+
+.slide-text{
+  bottom:15%;
+  left:5%;
+}
+
+.slide-text h2{
+  font-size:28px;
+  letter-spacing:3px;
+}
+
+.slide-text p{
+  font-size:14px;
+}
+
+}
+
+@media (max-width:768px){
+
+.voice-card p{
+  font-size:14px;
+  line-height:1.7;
+}
+
+}
+
+@media (max-width:768px){
+
+.sns-buttons{
+  flex-direction:column;
+  align-items:center;
+  gap:15px;
+}
+
+}
+
+
+</style>
+</head>
+
+<body>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
+
+const db = getFirestore(app);
+
+// グローバル化
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+</script>
+
+<script>
+// ✅ indexに来たら強制ログアウト
+localStorage.removeItem("login");
+localStorage.removeItem("role");
+</script>
+
+
+<header>
+  <div class="title">
+    <img src="title.gif">
+  </div>
+
+  <div class="menu-btn">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <nav class="nav">
+    <a href="index.html" class="active">HOME</a>
+    <a href="index.html#news-feature">NEWS</a>
+    <a href="member.html">選手・スタッフ</a>
+    <a href="schedule.html">スケジュール</a>
+    <a href="index.html#sns">SNS</a>
+    <a href="member-only.html">部員専用</a>
+   </nav>
+</header>
+
+
+
+<div class="overlay"></div>
+
+<div class="slider">
+  <div class="swiper mainSwiper">
+    <div class="swiper-wrapper">
+
+      <div class="swiper-slide">
+        <img src="swiperslide01.jpeg">
+      </div>
+
+      <div class="swiper-slide">
+        <img src="swiperslide02.jpg">
+      </div>
+
+      <div class="swiper-slide">
+        <img src="swiperslide03.jpg">
+      </div>
+
+      <div class="swiper-slide">
+        <img src="swiperslide04.jpg">
+      </div>
+
+      <div class="swiper-slide">
+        <img src="swiperslide05.jpg">
+      </div>
+
+
+    </div>
+
+ <div class="slide-text">
+      <h2>AMBITIONS</h2>
+      <p>「野望」を持って戦い続けるチームへ</p>
+    </div>
+
+  </div>
+</div>
+
+<section class="feature fade" id="news-feature">
+  <h2>NEWS</h2>
+
+<div class="swiper newsSwiper">
+  <div class="swiper-wrapper" id="news-list"></div>
+
+  </div>
+
+  <!-- ✅ ここに置く -->
+  <div class="swiper-button-prev news-prev"></div>
+  <div class="swiper-button-next news-next"></div>
+
+</div>
+
+  <a href="news.html" class="more-btn">VIEW MORE</a>
+</section>
+
+<section class="member-hero fade" id="players">
+
+<h2>MEMBER</h2>
+
+<div class="swiper playerSwiper">
+
+  <div class="swiper-wrapper">
+
+    <div class="swiper-slide">
+      <a href="member.html?no=0" class="player">
+        <div class="img-box">
+          <img src="nakano.jpeg">
+        </div>
+        <h3>仲野 綾一 <span>#0</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=1" class="player">
+        <div class="img-box">
+          <img src="yamamotokou.jpeg">
+        </div>
+        <h3>山本 恒平 <span>#1</span></h3>
+        <p>Outfielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=2" class="player">
+        <div class="img-box">
+          <img src="deguchi.jpeg">
+        </div>
+        <h3>出口 裕斗 <span>#2</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=3" class="player">
+        <div class="img-box">
+          <img src="hamaguchi.jpeg">
+        </div>
+        <h3>濱口 恵輔 <span>#3</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=4" class="player">
+        <div class="img-box">
+          <img src="fujii.jpeg">
+        </div>
+        <h3>藤井 泰輔 <span>#4</span></h3>
+        <p>Catcher</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=5" class="player">
+        <div class="img-box">
+          <img src="kyuubu.png">
+        </div>
+        <h3>野中 凌 <span>#5</span></h3>
+        <p>Outfielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=6" class="player">
+        <div class="img-box">
+          <img src="orihashi.JPG">
+        </div>
+        <h3>折橋 哲 <span>#6</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=7" class="player">
+        <div class="img-box">
+          <img src="matsui.jpeg">
+        </div>
+        <h3>松井 勝廣 <span>#7</span></h3>
+        <p>Outfielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=8" class="player">
+        <div class="img-box">
+          <img src="ueshima.jpeg">
+        </div>
+        <h3>上島 崚 <span>#8</span></h3>
+        <p>Outfielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=9" class="player">
+        <div class="img-box">
+          <img src="fujimoto.jpeg">
+        </div>
+        <h3>藤本 恵汰 <span>#9</span></h3>
+        <p>Outfielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=10" class="player">
+        <div class="img-box">
+          <img src="itou.jpeg">
+        </div>
+        <h3>伊藤 雅敏 <span>#10</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=1" class="player">
+        <div class="img-box">
+          <img src="junbi.png">
+        </div>
+        <h3>後藤 智義 <span>#13</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=15" class="player">
+        <div class="img-box">
+          <img src="takamatsu.jpeg">
+        </div>
+        <h3>髙松 幸大 <span>#15</span></h3>
+        <p>Pitcher</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=18" class="player">
+        <div class="img-box">
+          <img src="junbi.png">
+        </div>
+        <h3>万力 康生 <span>#18</span></h3>
+        <p>Pitcher</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=19" class="player">
+        <div class="img-box">
+          <img src="matoba.jpg">
+        </div>
+        <h3>的場 且紘 <span>#19</span></h3>
+        <p>Pitcher</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=20" class="player">
+        <div class="img-box">
+          <img src="asuma.jpeg">
+        </div>
+        <h3>遊馬 ジェシー <span>#20</span></h3>
+        <p>Pitcher</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=23" class="player">
+        <div class="img-box">
+          <img src="yoshinaka.jpeg">
+        </div>
+        <h3>吉中 洋貴 <span>#23</span></h3>
+        <p>Outfielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=25" class="player">
+        <div class="img-box">
+          <img src="kyuubu.png">
+        </div>
+        <h3>浅海 勇輝 <span>#25</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=27" class="player">
+        <div class="img-box">
+          <img src="kubo.jpeg">
+        </div>
+        <h3>久保 慶太 <span>#27</span></h3>
+        <p>Outfielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=29" class="player">
+        <div class="img-box">
+          <img src="hanaoka.jpeg">
+        </div>
+        <h3>花岡 隆西 <span>#29</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=31" class="player">
+        <div class="img-box">
+          <img src="tatsumi.jpeg">
+        </div>
+        <h3>辰己 元太 <span>#31</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=32" class="player">
+        <div class="img-box">
+          <img src="yamamotomasa.jpeg">
+        </div>
+        <h3>山本 雅洋 <span>#32</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=33" class="player">
+        <div class="img-box">
+          <img src="takemoto.jpeg">
+        </div>
+        <h3>竹元 拓海 <span>#33</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=31" class="player">
+        <div class="img-box">
+          <img src="junbi.png">
+        </div>
+        <h3>中山 剛希 <span>#36</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=39" class="player">
+        <div class="img-box">
+          <img src="kanda.jpg">
+        </div>
+        <h3>神田 真希志 <span>#39</span></h3>
+        <p>Catcher</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=41" class="player">
+        <div class="img-box">
+          <img src="akashika.jpeg">
+        </div>
+        <h3>赤鹿 訓史 <span>#41</span></h3>
+        <p>Catcher</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=42" class="player">
+        <div class="img-box">
+          <img src="kyuubu.png">
+        </div>
+        <h3>藤田 悠斗 <span>#42</span></h3>
+        <p>Outfielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=45" class="player">
+        <div class="img-box">
+          <img src="yasumatsu.jpeg">
+        </div>
+        <h3>安松 修一 <span>#45</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=48" class="player">
+        <div class="img-box">
+          <img src="kyuubu.png">
+        </div>
+        <h3>高木 達也 <span>#48</span></h3>
+        <p>Pitcher</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=51" class="player">
+        <div class="img-box">
+          <img src="junbi.png">
+        </div>
+        <h3>林 冴丞 <span>#50</span></h3>
+        <p>Outfielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=51" class="player">
+        <div class="img-box">
+          <img src="nakata.jpeg">
+        </div>
+        <h3>中田 郁弥 <span>#51</span></h3>
+        <p>Outfielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=77" class="player">
+        <div class="img-box">
+          <img src="kyuubu.png">
+        </div>
+        <h3>川合 翔輝 <span>#77</span></h3>
+        <p>Pitcher</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=78" class="player">
+        <div class="img-box">
+          <img src="tsuyumine.jpeg">
+        </div>
+        <h3>露峯 大空 <span>#78</span></h3>
+        <p>Infielder</p>
+      </a>
+    </div>
+
+    <div class="swiper-slide">
+      <a href="member.html?no=99" class="player">
+        <div class="img-box">
+          <img src="kosho.jpeg">
+        </div>
+        <h3>古性 史大 <span>#99</span></h3>
+        <p>Pitcher</p>
+      </a>
+    </div>
+
+  </div>
+
+<!-- ナビボタン -->
+<div class="swiper-button-prev"></div>
+<div class="swiper-button-next"></div>
+
+</div>
+
+
+<a href="member.html" class="more-btn">VIEW MORE</a>
+
+</section>
+
+<section class="recruit fade" id="recruit">
+
+  <h2>RECRUIT</h2>
+
+  <div class="recruit-box">
+
+    <h3>選手募集中</h3>
+
+    <p>
+      NARA Ambitions Clubでは、共に戦う選手を募集しています。<br><br>
+
+<span class="recruit-title">募集条件</span><br>
+・社会人野球に本気で挑戦したい方<br>
+・仕事も野球も両立したい方<br>
+・高いレベルで成長したい方<br>
+・チームと共に上を目指せる方<br><br>
+
+<span class="recruit-title">活動情報</span><br>
+活動日：主に日・祝日<br>
+活動場所：奈良県内グラウンド<br>
+年齢層：10代～50代　幅広く活躍中<br><br>
+
+      ※体験・見学も随時受け付けています。<br>
+      チームの雰囲気を実際にご覧いただけます。<br>
+      応募の際は、氏名・年齢・ポジション・球歴等をご記入の上ご連絡ください。<br><br>
+
+      ＼まずは見学だけでもOKです！／
+    </p>
+
+<p style="
+  margin-top:30px;
+  font-weight:700;
+  text-align:center;
+  color:#d6002a;
+  font-size:18px;
+">
+  お好きな方法でご応募ください
+</p>
+
+    <div class="recruit-buttons">
+
+  <a href="https://line.me/R/ti/p/@684dtxru"
+     target="_blank" class="recruit-btn line">
+    LINE
+  </a>
+
+  <a href="https://www.instagram.com/nara_ambitions"
+     target="_blank" class="recruit-btn insta">
+    Instagram（DM）
+  </a>
+
+  <a href="https://twitter.com/ClubNara"
+     target="_blank" class="recruit-btn x">
+    X（DM）
+  </a>
+
+  <a href="mailto:info@ambitions1996.com?subject=入団希望&body=【氏名】%0A【年齢】%0A【ポジション】%0A【球歴】"
+     class="recruit-btn mail">
+    メール
+  </a>
+
+</div>
+
+<p class="recruit-note">
+※InstagramとXはプロフィールからDMでご応募ください
+</p>
+
+
+
+  </div>
+
+</section>
+
+<section class="voice fade">
+
+  <h2>VOICE</h2>
+
+  <div class="voice-list">
+
+    <div class="voice-card">
+      <p>
+        「選手同士で積極的に声を掛け合いながらプレーできる環境があり、<br>
+        日々自分自身の成長を実感できています。」
+      </p>
+    </div>
+
+    <div class="voice-card">
+      <p>
+        「仕事や家庭の都合で参加できない日もありますが、<br>
+        参加できる日はチームの仲間と楽しく、充実した時間を過ごせています。」
+      </p>
+    </div>
+
+    <div class="voice-card">
+      <p>
+        「体験で参加した際に、チームの雰囲気の良さと、<br>
+        お互いに切磋琢磨している環境に惹かれ、入団を決めました。」
+      </p>
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<section class="sns fade" id="sns">
+  <h2>SNS</h2>
+
+  <div class="sns-buttons">
+    <a href="https://www.instagram.com/nara_ambitions" target="_blank" rel="noopener noreferrer" class="sns-btn insta">📸 Instagram</a>
+    <a href="https://www.youtube.com/@AMBTV-nara1996" target="_blank" rel="noopener noreferrer" class="sns-btn youtube">▶ YouTube</a>
+    <a href="https://twitter.com/ClubNara" target="_blank" rel="noopener noreferrer" class="sns-btn x">𝕏 X</a>
+    <a href="https://www.threads.net/@nara_ambitions" target="_blank" rel="noopener noreferrer" class="sns-btn threads">＠ Threads</a>
+  </div>
+</section>
+
+<!-- ✅ ② 部員専用 -->
+<section id="member" class="fade">
+  <h2>部員専用ページ</h2>
+
+  <a href="member-only.html" class="login-btn">
+    LOGIN
+  </a>
+</section>
+
+<footer>
+  <p>© NARA Ambitions Club</p>
+<div class="footer-sns">
+  <a href="https://www.instagram.com/nara_ambitions" target="_blank" rel="noopener noreferrer" class="insta">Instagram</a>
+  <a href="https://www.youtube.com/@AMBTV-nara1996" target="_blank" rel="noopener noreferrer" class="youtube">YouTube</a>
+  <a href="https://twitter.com/ClubNara" target="_blank" rel="noopener noreferrer" class="x">X</a>
+  <a href="https://www.threads.net/@nara_ambitions" target="_blank" rel="noopener noreferrer" class="threads">Threads</a>
+</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+/* ===== Swiper ===== */
+new Swiper(".mainSwiper",{
+  loop:true,
+  autoplay:{
+    delay:3000,
+    disableOnInteraction:false
+  },
+  speed:1000,
+  slidesPerView:1
+});
+
+new Swiper(".playerSwiper",{
+  slidesPerView:"auto",
+  centeredSlides:true,
+  centeredSlidesBounds:true,
+  spaceBetween:5,
+  loop:true,
+  navigation:{
+    nextEl:".playerSwiper .swiper-button-next",
+    prevEl:".playerSwiper .swiper-button-prev",
+  }
+
+});
+
+
+
+/* ===== フェード ===== */
+const fades = document.querySelectorAll(".fade");
+
+window.addEventListener("scroll", () => {
+  fades.forEach(el=>{
+    if(el.getBoundingClientRect().top < window.innerHeight - 100){
+      el.classList.add("active");
+    }
+  });
+});
+
+/* ===== header縮小 ===== */
+const header = document.querySelector("header");
+
+window.addEventListener("scroll", () => {
+  if(header){
+    if(window.scrollY > 100){
+      header.classList.add("small");
+    }else{
+      header.classList.remove("small");
+    }
+  }
+});
+
+
+/* ===== ハンバーガー ===== */
+const menuBtn = document.querySelector(".menu-btn");
+const nav = document.querySelector(".nav");
+
+menuBtn.addEventListener("click", () => {
+  menuBtn.classList.toggle("active");
+  nav.classList.toggle("active");
+});
+
+
+/* ===== 日付フォーマット追加🔥 ===== */
+function formatDate(date){
+  const d = new Date(date);
+  return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+}
+
+async function renderNews(){
+
+  const snap = await getDocs(collection(db, "news"));
+
+  let news = [];
+
+  snap.forEach(docSnap=>{
+    news.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  // ✅ 承認済みだけ
+  const approvedNews = news.filter(n => n.approved === true);
+
+// ✅ 日付で新しい順
+approvedNews.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const box = document.getElementById("news-list");
+
+box.innerHTML = "";
+
+
+if(approvedNews.length === 0){
+  box.innerHTML = "<p>現在お知らせはありません</p>";
+  return;
+}
+
+// ✅ new
+approvedNews.forEach((n, i) => {
+    box.innerHTML += `
+      <div class="swiper-slide">
+        <div class="feature-card">
+
+         <div class="news-text">
+  <span class="tag ${n.tag}">${n.tag}</span>
+</div>
+
+<a href="news.html?id=${n.id}">
+  <img src="${n.img}">
+
+  <div class="title-box">
+    <p class="title">${n.title}</p>
+    <span class="date">${formatDate(n.date)}</span>
+  </div>
+</a>
+
+
+        </div>
+      </div>
+    `;
+  });
+}
+
+// ✅ 最後にこれ呼ぶ
+(async () => {
+  await renderNews();
+
+  new Swiper(".newsSwiper",{
+    slidesPerView:"auto",
+    spaceBetween:20,
+    loop:true,
+    navigation:{
+      nextEl:".news-next",
+      prevEl:".news-prev",
+    },
+  });
+})();
+
+</script>
+
+</body>
+</html>
+

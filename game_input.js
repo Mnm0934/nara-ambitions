@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+
+<!-- ✅ ここ追加（これが超重要） -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>試合結果入力</title>
+
+<style>
+body{
+  background:#02142c;
+  color:white;
+  text-align:center;
+  font-family:sans-serif;
+  margin:0;
+  padding:10px;
+}
+
+/* ✅ テーブルを横スクロール化 */
+div{
+  overflow-x:auto;
+}
+
+/* ✅ スマホで見やすく */
+table{
+  border-collapse:collapse;
+  margin:10px auto;
+  font-size:12px;
+  min-width:500px;
+}
+
+td,th{
+  border:1px solid #999;
+  padding:5px;
+  white-space:nowrap;
+}
+
+/* ✅ 入力をタップしやすく */
+input{
+  width:60px;
+  padding:5px;
+  font-size:14px;
+}
+
+/* ✅ 日付・テキストは広く */
+input[type="text"],
+input[type="date"]{
+  width:80%;
+  max-width:300px;
+}
+
+/* ✅ ボタン大きく */
+button{
+  margin:15px;
+  padding:15px 20px;
+  font-size:16px;
+  border:none;
+  border-radius:10px;
+  background:#00c3ff;
+  color:#000;
+}
+
+/* ✅ スマホ専用調整 */
+@media(max-width:600px){
+
+  h2{
+    font-size:20px;
+  }
+
+  table{
+    font-size:11px;
+  }
+
+  input{
+    width:50px;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
+
+const db = getFirestore(app);
+
+// 🔥 ここで window に登録
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.updateDoc = updateDoc;
+window.doc = doc;
+window.getDoc = getDoc;
+window.getDocs = getDocs;   // ←これも必要！
+
+// 🔥 checkAuth もここに入れる
+const ADMIN_PASSWORD = "19980725";
+
+function checkAuth(){
+  if(sessionStorage.getItem("adminAuth") === "true"){
+    return;
+  }
+
+  const input = prompt("管理者パスワードを入力してください");
+
+  if(input === null){
+    location.href = "index.html";
+    return;
+  }
+
+  if(input === ADMIN_PASSWORD){
+    sessionStorage.setItem("adminAuth", "true");
+  }else{
+    alert("パスワードが違います。もう一度アクセスしてください");
+    location.href = "member-only.html";
+  }
+}
+
+checkAuth();
+
+// 🔥 loadMembers もここに入れる
+let members = [];
+async function loadMembers() {
+  const snapshot = await getDocs(collection(db, "members"));
+  members = [];
+  snapshot.forEach(doc => members.push(doc.data()));
+}
+loadMembers();
+</script>
+
+<h2>試合結果入力</h2>
+
+<!-- ✅ 基本情報 -->
+<div>
+  日付：<input type="date" id="date"><br><br>
+  試合名：<input type="text" id="game"><br><br>
+  対戦相手：<input type="text" id="opponent"><br>
+<br>
+先攻/後攻：
+<select id="batFirst">
+  <option value="home">後攻（自チーム）</option>
+  <option value="away">先攻（自チーム）</option>
+</select>
+<br><br>
+</div>
+
+<!-- ✅ イニング -->
+<h3>スコア（自チーム）</h3>
+<div id="inning_my"></div>
+
+<h3>スコア（相手チーム）</h3>
+<div id="inning_op"></div>
+
+<!-- ✅ 打者 -->
+<h3>打者成績</h3>
+<div id="batters"></div>
+
+<button onclick="addBatter()">＋打者追加</button>
+
+<!-- ✅ 投手 -->
+<h3>投手成績</h3>
+<div id="pitchers"></div>
+<button onclick="addPitcher()">＋投手追加</button>
+
+<button onclick="tempSave()">途中保存</button>
+<button onclick="save()">保存</button>
+<button onclick="goList()">一覧へ</button>
+<button onclick="logout()">ログアウト</button>
+
+let members = [];
+async function loadMembers() {
+  const snapshot = await getDocs(collection(db, "members"));
+  members = [];
+
+  snapshot.forEach(docSnap => {
+    members.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  console.log("選手一覧読み込み完了:", members);
+}
+
+
+
+let batterCount = 0;
+
+function addBatter(){
+
+  batterCount++;
+
+  const html = `
+  <div style="border:1px solid #555; margin:10px; padding:10px;">
+    背番号：<input type="number" id="num_${batterCount}" oninput="autoFill(${batterCount})"><br><br>
+    名前：<input type="text" id="name_${batterCount}" readonly><br><br>
+
+打席：<input type="number" id="pa_${batterCount}">
+打数：<input type="number" id="ab_${batterCount}">
+安打：<input type="number" id="hit_${batterCount}" oninput="calcTB(${batterCount})">
+四死球：<input type="number" id="bb_${batterCount}"><br>
+
+犠打：<input type="number" id="sh_${batterCount}">
+犠飛：<input type="number" id="sf_${batterCount}">
+三振：<input type="number" id="so_${batterCount}">
+残塁：<input type="number" id="lob_${batterCount}"><br>
+
+得点圏打数：<input type="number" id="risp_ab_${batterCount}">
+得点圏安打：<input type="number" id="risp_hit_${batterCount}"><br>
+
+得点：<input type="number" id="run_${batterCount}">
+打点：<input type="number" id="rbi_${batterCount}"><br>
+
+盗塁：<input type="number" id="sb_${batterCount}">
+盗塁死：<input type="number" id="cs_${batterCount}"><br>
+
+二塁打：<input type="number" id="double_${batterCount}" oninput="calcTB(${batterCount})">
+三塁打：<input type="number" id="triple_${batterCount}" oninput="calcTB(${batterCount})">
+本塁打：<input type="number" id="hr_${batterCount}" oninput="calcTB(${batterCount})">
+塁打：<input type="number" id="tb_${batterCount}" readonly>    <br><br>
+
+    <button onclick="this.parentElement.remove()">削除</button>
+  </div>
+  `;
+
+  document.getElementById("batters").insertAdjacentHTML("beforeend", html);
+}
+
+let pitcherCount = 0;
+
+function addPitcher(){
+
+  pitcherCount++;
+
+  const html = `
+  <div style="border:1px solid #999; margin:10px; padding:10px;">
+    背番号：<input type="number" id="p_num_${pitcherCount}" oninput="autoFillPitcher(${pitcherCount})"><br><br>
+    名前：<input type="text" id="p_name_${pitcherCount}" readonly><br><br>
+
+    投球回：<input type="number" id="p_inning_${pitcherCount}">
+    打者数：<input type="number" id="p_bf_${pitcherCount}">
+    打数：<input type="number" id="p_ab_${pitcherCount}">
+    投球数：<input type="number" id="p_pitch_${pitcherCount}"><br>
+
+    被安打：<input type="number" id="p_hit_${pitcherCount}">
+    被本塁打：<input type="number" id="p_hr_${pitcherCount}">
+    被犠打：<input type="number" id="p_sh_${pitcherCount}">
+    被犠飛：<input type="number" id="p_sf_${pitcherCount}"><br>
+
+    四球：<input type="number" id="p_bb_${pitcherCount}">
+    死球：<input type="number" id="p_hbp_${pitcherCount}">
+    三振：<input type="number" id="p_k_${pitcherCount}">
+    暴投：<input type="number" id="p_wp_${pitcherCount}">
+    ボーク：<input type="number" id="p_bk_${pitcherCount}"><br>
+
+    失点：<input type="number" id="p_runs_${pitcherCount}">
+    自責点：<input type="number" id="p_er_${pitcherCount}">
+
+    <br><br>
+    <button onclick="this.parentElement.remove()">削除</button>
+  </div>
+  `;
+
+document.getElementById("pitchers").insertAdjacentHTML("beforeend", html);
+}
+
+// ✅ メンバー
+
+// ✅ イニング入力作成
+function createInning(prefix, targetId){
+
+  let html = "<div style='display:flex; flex-wrap:wrap; justify-content:center;'>";
+
+  for(let i=1;i<=12;i++){
+    html += `
+    <div style="margin:5px">
+      ${i}回<br>
+      <input type="number" id="${prefix}${i}">
+    </div>
+    `;
+  }
+
+  html += "</div>";
+
+  document.getElementById(targetId).innerHTML = html;
+}
+
+// ✅ 実行
+createInning("my", "inning_my");
+createInning("op", "inning_op");
+
+
+function collectData(){
+
+  const date = document.getElementById("date").value;
+  const game = document.getElementById("game").value;
+  const opponent = document.getElementById("opponent").value;
+const batFirst = document.getElementById("batFirst").value; // ←追加
+
+  let myInnings = [];
+  let opInnings = [];
+
+  for(let i=1;i<=12;i++){
+    const myVal = document.getElementById("my"+i).value;
+    const opVal = document.getElementById("op"+i).value;
+
+    myInnings.push(myVal === "" ? null : Number(myVal));
+    opInnings.push(opVal === "" ? null : Number(opVal));
+  }
+
+  let batters = [];
+
+  for(let i=1;i<=batterCount;i++){
+    if(!document.getElementById("name_"+i)) continue;
+
+    const number = document.getElementById("num_"+i).value;
+const name = document.getElementById("name_"+i).value;
+    if(!name) continue;
+
+batters.push({
+  number,
+  name,
+
+  pa: Number(document.getElementById("pa_"+i).value)||0,
+  ab: Number(document.getElementById("ab_"+i).value)||0,
+  hit: Number(document.getElementById("hit_"+i).value)||0,
+
+  bb: Number(document.getElementById("bb_"+i).value)||0,
+  sh: Number(document.getElementById("sh_"+i).value)||0,
+  sf: Number(document.getElementById("sf_"+i).value)||0,
+  so: Number(document.getElementById("so_"+i).value)||0,
+  lob: Number(document.getElementById("lob_"+i).value)||0,
+
+  risp_ab: Number(document.getElementById("risp_ab_"+i).value)||0,
+  risp_hit: Number(document.getElementById("risp_hit_"+i).value)||0,
+
+  run: Number(document.getElementById("run_"+i).value)||0,
+  rbi: Number(document.getElementById("rbi_"+i).value)||0,
+
+  sb: Number(document.getElementById("sb_"+i).value)||0,
+  cs: Number(document.getElementById("cs_"+i).value)||0,
+
+  double: Number(document.getElementById("double_"+i).value)||0,
+  triple: Number(document.getElementById("triple_"+i).value)||0,
+  hr: Number(document.getElementById("hr_"+i).value)||0,
+  tb: Number(document.getElementById("tb_"+i).value)||0
+});
+  }
+
+  let pitchers = [];
+
+  for(let i=1;i<=pitcherCount;i++){
+    if(!document.getElementById("p_name_"+i)) continue;
+
+const number = document.getElementById("p_num_"+i).value;
+    const name = document.getElementById("p_name_"+i).value;
+    if(!name) continue;
+
+    pitchers.push({
+  number,
+  name,
+  inning: Number(document.getElementById("p_inning_"+i).value)||0,
+  bf: Number(document.getElementById("p_bf_"+i).value)||0,
+  ab: Number(document.getElementById("p_ab_"+i).value)||0,
+  pitch: Number(document.getElementById("p_pitch_"+i).value)||0,
+
+  hit: Number(document.getElementById("p_hit_"+i).value)||0,
+  hr: Number(document.getElementById("p_hr_"+i).value)||0,
+  sh: Number(document.getElementById("p_sh_"+i).value)||0,
+  sf: Number(document.getElementById("p_sf_"+i).value)||0,
+
+  bb: Number(document.getElementById("p_bb_"+i).value)||0,
+  hbp: Number(document.getElementById("p_hbp_"+i).value)||0,
+  k: Number(document.getElementById("p_k_"+i).value)||0,
+  wp: Number(document.getElementById("p_wp_"+i).value)||0,
+  bk: Number(document.getElementById("p_bk_"+i).value)||0,
+
+  runs: Number(document.getElementById("p_runs_"+i).value)||0,
+  er: Number(document.getElementById("p_er_"+i).value)||0
+});
+  }
+
+  return {
+  id: Date.now(),
+  date,
+  game,
+  opponent,
+  batFirst,   // ←これ追加（超重要）
+  myInnings,
+  opInnings,
+  batters,
+  pitchers
+};
+}
+  
+async function save(){
+
+  const data = collectData();
+
+  if(!data.date || !data.game || !data.opponent){
+    alert("日付・試合名・対戦相手を入力してください");
+    return;
+  }
+
+  // ✅ URLからid取得（編集判定）
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+
+  if(id){
+    // ✅ 更新
+    const ref = doc(db, "results", id);
+    await updateDoc(ref, data);
+
+    alert("更新しました");
+
+  }else{
+    // ✅ 新規
+    await addDoc(collection(db, "results"), data);
+
+    alert("保存しました");
+  }
+
+  // 初期化
+  document.querySelectorAll("input").forEach(i => i.value="");
+}
+
+function tempSave(){
+
+  const data = collectData();
+
+  localStorage.setItem("tempGame", JSON.stringify(data));
+
+  alert("途中保存しました");
+}
+
+
+function autoFill(i){
+  const num = document.getElementById("num_"+i).value;
+  const nameInput = document.getElementById("name_"+i);
+
+  const player = members.find(p => String(p.number) === String(num));
+
+  if(player){
+    nameInput.value = player.name;
+  } else {
+    nameInput.value = "";
+  }
+}
+
+
+
+
+
+function autoFillPitcher(i){
+  const num = document.getElementById("p_num_"+i).value;
+  const player = members.find(p => String(p.number) === String(num));
+
+  if(player){
+    document.getElementById("p_name_"+i).value = player.name;
+  } else {
+    document.getElementById("p_name_"+i).value = "";
+  }
+}
+
+
+
+function calcTB(i){
+
+  const hit = Number(document.getElementById("hit_"+i).value)||0;
+  const d = Number(document.getElementById("double_"+i).value)||0;
+  const t = Number(document.getElementById("triple_"+i).value)||0;
+  const hr = Number(document.getElementById("hr_"+i).value)||0;
+
+  const single = hit - d - t - hr;
+
+  const tb =
+    single +
+    (d * 2) +
+    (t * 3) +
+    (hr * 4);
+
+  document.getElementById("tb_"+i).value = tb;
+}
+
+function goList(){
+  location.href = "game_list.html";
+}
+
+function logout(){
+  sessionStorage.removeItem("adminAuth");
+  alert("ログアウトしました");
+  location.href = "index.html";
+}
+
+async function loadEdit(){
+
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+
+  if(!id) return;
+
+  const snap = await getDoc(doc(db, "results", id));
+
+  if(!snap.exists()) return;
+
+  const gameData = snap.data();
+
+  // ✅ 基本情報
+  document.getElementById("date").value = gameData.date;
+  document.getElementById("game").value = gameData.game;
+  document.getElementById("opponent").value = gameData.opponent;
+  document.getElementById("batFirst").value = gameData.batFirst || "home";
+
+  // ✅ イニング
+  gameData.myInnings.forEach((v,i)=>{
+    document.getElementById("my"+(i+1)).value = v ?? "";
+  });
+
+  gameData.opInnings.forEach((v,i)=>{
+    document.getElementById("op"+(i+1)).value = v ?? "";
+  });
+
+  // ✅ 打者
+  (gameData.batters || []).forEach(p=>{
+    addBatter();
+    const i = batterCount;
+
+    document.getElementById("num_"+i).value = p.number;
+    document.getElementById("name_"+i).value = p.name;
+
+    document.getElementById("pa_"+i).value = p.pa;
+    document.getElementById("ab_"+i).value = p.ab;
+    document.getElementById("hit_"+i).value = p.hit;
+    document.getElementById("bb_"+i).value = p.bb;
+    document.getElementById("sh_"+i).value = p.sh;
+    document.getElementById("sf_"+i).value = p.sf;
+    document.getElementById("so_"+i).value = p.so;
+    document.getElementById("lob_"+i).value = p.lob;
+
+    document.getElementById("run_"+i).value = p.run;
+    document.getElementById("rbi_"+i).value = p.rbi;
+
+    document.getElementById("sb_"+i).value = p.sb;
+    document.getElementById("cs_"+i).value = p.cs;
+
+    document.getElementById("double_"+i).value = p.double;
+    document.getElementById("triple_"+i).value = p.triple;
+    document.getElementById("hr_"+i).value = p.hr;
+    document.getElementById("tb_"+i).value = p.tb;
+
+    document.getElementById("risp_ab_"+i).value = p.risp_ab;
+    document.getElementById("risp_hit_"+i).value = p.risp_hit;
+  });
+
+  // ✅ 投手
+  (gameData.pitchers || []).forEach(p=>{
+    addPitcher();
+    const i = pitcherCount;
+
+    document.getElementById("p_num_"+i).value = p.number;
+    document.getElementById("p_name_"+i).value = p.name;
+
+    document.getElementById("p_inning_"+i).value = p.inning;
+    document.getElementById("p_bf_"+i).value = p.bf;
+    document.getElementById("p_ab_"+i).value = p.ab;
+    document.getElementById("p_pitch_"+i).value = p.pitch;
+
+    document.getElementById("p_hit_"+i).value = p.hit;
+    document.getElementById("p_hr_"+i).value = p.hr;
+    document.getElementById("p_sh_"+i).value = p.sh;
+    document.getElementById("p_sf_"+i).value = p.sf;
+
+    document.getElementById("p_bb_"+i).value = p.bb;
+    document.getElementById("p_hbp_"+i).value = p.hbp;
+    document.getElementById("p_k_"+i).value = p.k;
+    document.getElementById("p_wp_"+i).value = p.wp;
+    document.getElementById("p_bk_"+i).value = p.bk;
+
+    document.getElementById("p_runs_"+i).value = p.runs;
+    document.getElementById("p_er_"+i).value = p.er;
+  });
+
+  alert("編集モードです");
+}
+
+loadEdit();
+loadMembers();
+</script>
+
+</body>
+
+<script src="js/game_input.js"></script>
+<script src="js/members.js"></script>
+<script src="js/edit.js"></script>
+
+</html>

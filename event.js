@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>予定登録</title>
+
+<style>
+body{
+  background:#02142c;
+  color:white;
+  text-align:center;
+  padding:20px;
+  margin:0;
+}
+
+.box{
+  background:#0a1f3f;
+  padding:15px;
+  border-radius:10px;
+  max-width:500px;
+  margin:auto;
+}
+
+input, select{
+  width:95%;
+  padding:10px;
+  margin:6px;
+  font-size:16px;
+}
+
+button{
+  padding:10px;
+  margin:5px;
+  border:none;
+  font-size:16px;
+}
+
+.header{
+  margin-top:15px;
+  font-size:18px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+}
+
+.calendar{
+  display:grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap:2px;
+  background:#ccc;
+}
+
+.cell{
+  min-height:90px;
+  padding:5px;
+  font-size:11px;
+  text-align:left;
+  cursor:pointer;
+}
+
+.date{
+  font-weight:bold;
+}
+
+.event{
+  font-size:10px;
+}
+
+.match{
+  background:#ff5252;
+  color:white;
+}
+
+.practice{
+  background:#2196f3;
+  color:white;
+}
+
+.modal{
+  position:fixed;
+  top:15%;
+  left:50%;
+  transform:translateX(-50%);
+  background:#0a1f3f;
+  padding:20px;
+  display:none;
+  border-radius:10px;
+  width:80%;
+  max-width:300px;
+}
+</style>
+</head>
+
+<body style="display:none;">
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ✅ 管理者チェック
+onAuthStateChanged(auth, (user) => {
+  const adminEmail = "nara.ambitions1996@gmail.com"; 
+
+  if (user && user.email === adminEmail) {
+    document.body.style.display = "block";
+  } else {
+    window.location.href = "member-only.html";
+  }
+});
+
+
+// ✅ グローバルに使えるようにする
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
+</script>
+
+<div class="box">
+
+<h2>予定登録</h2>
+
+<input type="date" id="date">
+
+<select id="type">
+  <option value="">種別選択</option>
+  <option value="公式戦">公式戦</option>
+  <option value="OP戦">OP戦</option>
+  <option value="練習">練習</option>
+  <option value="飲み会">飲み会</option>
+</select>
+
+
+<input type="text" id="place" placeholder="場所">
+<input type="text" id="time" placeholder="時間">
+<input type="text" id="opponent" placeholder="対戦相手">
+<input type="text" id="note" placeholder="その他">
+<input type="text" id="result" placeholder="試合結果（例：3-1 勝）">
+
+<button onclick="addEvent(true)" style="background:#ff9800;color:white;">
+  公開
+</button>
+
+<button onclick="addEvent(false)" style="background:#999;color:white;">
+  非公開
+</button>
+
+
+<button onclick="location.href='attendance-list.html'" style="
+  background:#2196f3;
+color:white;">
+ 出欠一覧
+</button>
+
+
+<!-- ✅ 戻るボタン（ここ追加） -->
+<button onclick="goBack()" style="background:#aaa;color:white;">
+  ← 戻る
+</button>
+
+</div>
+
+<!-- 月切替 -->
+<div class="header">
+  <button onclick="changeMonth(-1)">←</button>
+  <span id="title"></span>
+  <button onclick="changeMonth(1)">→</button>
+</div>
+
+<div class="calendar" id="calendar"></div>
+
+<div id="modal" class="modal"></div>
+
+<button onclick="logout()"
+  style="background:#d6002a;color:white;border-radius:5px;">
+  ログアウト
+</button>
+
+<script>
+
+// ↓↓↓ここから元のコード↓↓↓
+
+let events = [];
+let current = new Date();
+
+// ✅ 戻る
+function goBack(){
+  if(document.referrer){
+    history.back(); // ←これが必要
+  }else{
+    location.href = "member-schedule.html";
+  }
+}
+
+
+
+// ✅ 登録
+async function addEvent(isPublic){
+
+  const date = document.getElementById("date").value;
+  const type = document.getElementById("type").value;
+  const place = document.getElementById("place").value;
+  const time = document.getElementById("time").value;
+  const opponent = document.getElementById("opponent").value;
+  const note = document.getElementById("note").value;
+  const result = document.getElementById("result").value;
+
+  if(date === "" || type === ""){
+    alert("入力してください");
+    return;
+  }
+
+  // ✅ Firestore保存
+await addDoc(collection(db, "events"), {
+  date,
+  type,
+  place,
+  time,
+  opponent,
+  note,
+  result,
+  public: isPublic
+});
+
+alert("保存しました");
+
+loadEvents();
+
+  // ✅ 入力リセット
+  document.getElementById("date").value = "";
+  document.getElementById("type").value = "";
+  document.getElementById("place").value = "";
+  document.getElementById("time").value = "";
+  document.getElementById("opponent").value = "";
+  document.getElementById("note").value = "";
+  document.getElementById("result").value = "";
+}
+
+async function loadEvents(){
+
+  events = [];
+
+  const snapshot = await getDocs(collection(db, "events"));
+
+  snapshot.forEach(docSnap => {
+    events.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  render();
+
+  // 🔥 ここに移動
+  const params = new URLSearchParams(location.search);
+  const editDate = params.get("edit");
+
+  if(editDate){
+    const ev = events.find(e => e.date === editDate);
+
+    if(ev){
+      document.getElementById("date").value = ev.date;
+      document.getElementById("type").value = ev.type;
+      document.getElementById("place").value = ev.place;
+      document.getElementById("time").value = ev.time;
+      document.getElementById("opponent").value = ev.opponent;
+      document.getElementById("note").value = ev.note;
+      document.getElementById("result").value = ev.result || "";
+    }
+  }
+}
+
+// 月移動
+function changeMonth(num){
+  current.setMonth(current.getMonth() + num);
+  render();
+}
+
+// 描画
+function render(){
+  const cal = document.getElementById("calendar");
+  cal.innerHTML = "";
+
+  const year = current.getFullYear();
+  const month = current.getMonth();
+  document.getElementById("title").innerText = `${year}年${month+1}月`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+
+  for(let i=0; i<firstDay; i++){
+    cal.innerHTML += `<div class="cell"></div>`;
+  }
+
+  for(let d=1; d<=lastDate; d++){
+    const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const dayEvents = events.filter(e =>
+  e.date === dateStr && e.public === true
+);
+
+    let html = `<div class="date">${d}</div>`;
+    let className = "cell";
+
+dayEvents.forEach(ev => {
+
+  // 色分け
+  if(ev.type === "公式戦" || ev.type === "OP戦") className += " match";
+  if(ev.type === "練習") className += " practice";
+
+  html += `
+    <div class="event">
+      ● ${ev.time || ""}<br>
+      ${ev.type}
+    </div>
+  `;
+});
+
+    cal.innerHTML += `
+      <div class="${className}" onclick="showDetail('${dateStr}')">
+        ${html}
+      </div>
+    `;
+  }
+}
+
+// 詳細
+function showDetail(date){
+  const dayEvents = events.filter(e => e.date === date);
+
+  let html = `<h3>${date}</h3>`;
+
+  if(dayEvents.length > 0){
+
+  dayEvents.forEach((ev, index) => {
+
+  html += `
+    <hr>
+    <b>${index + 1}件目</b><br>
+    種類：${ev.type}<br>
+    時間：${ev.time || "-"}<br>
+    場所：${ev.place || "-"}<br>
+    相手：${ev.opponent || "-"}<br>
+    メモ：${ev.note || "-"}<br>
+    結果：${ev.result || "-"}<br>
+
+    <button onclick="editEvent('${date}', ${index})">編集</button>
+    <button onclick="removeEvent('${ev.id}')">削除</button>
+
+    <br><br>
+  `;
+});
+
+} else {
+  html += "予定なし";
+}
+
+  html += `<br><button onclick="closeModal()">閉じる</button>`;
+
+  const modal = document.getElementById("modal");
+  modal.innerHTML = html;
+  modal.style.display = "block";
+}
+
+function closeModal(){
+  document.getElementById("modal").style.display = "none";
+}
+
+function editEvent(date, index){
+  const dayEvents = events.filter(e => e.date === date);
+  const ev = dayEvents[index];
+
+  document.getElementById("date").value = ev.date;
+  document.getElementById("type").value = ev.type;
+  document.getElementById("place").value = ev.place;
+  document.getElementById("time").value = ev.time;
+  document.getElementById("opponent").value = ev.opponent;
+  document.getElementById("note").value = ev.note;
+document.getElementById("result").value = ev.result || "";
+
+  closeModal();
+}
+
+async function removeEvent(id){
+
+  if(confirm("削除する？")){
+    await deleteDoc(doc(db, "events", id)); // 🔥 Firestoreから削除
+    loadEvents(); // 再読み込み
+  }
+
+}
+
+loadEvents();
+
+
+function logout(){
+  import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")
+    .then(({ getAuth, signOut }) => {
+      const auth = getAuth();
+      signOut(auth).then(() => {
+        alert("ログアウトしました");
+        location.href = "index.html";
+      });
+    });
+}
+</script>
+
+
+</body>
+</html>

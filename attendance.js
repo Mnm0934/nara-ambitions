@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>出欠入力</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+
+<style>
+body{
+  background:#02142c;
+  color:white;
+  text-align:center;
+  padding:30px;
+}
+
+.box{
+  background:#0a1f3f;
+  padding:20px;
+  border-radius:10px;
+  max-width:400px;
+  margin:auto;
+}
+
+input, select{
+  width:95%;
+  padding:10px;
+  margin:8px;
+}
+
+button{
+  padding:10px;
+  margin:5px;
+  border:none;
+  font-size:16px;
+}
+
+.list{
+  margin-top:20px;
+  text-align:left;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>出欠確認</h2>
+
+<!-- ✅ ここに追加する -->
+<p style="font-size:12px;">
+🔴試合 / 🔵練習<br>
+✅出席 / ❌欠席 / ⚠️未定 / ⚪未回答
+</p>
+
+<input type="date" id="date">
+
+<select id="name" onchange="render();"></select>
+
+<input type="text" id="comment" placeholder="コメント">
+
+<!-- ✅ 予定登録ボタン（ちゃんと独立） -->
+
+<button onclick="add('出席')" style="background:#00c853;">
+  出席
+</button>
+
+<button onclick="add('欠席')" style="background:#ff5252;">
+  欠席
+</button>
+
+<button onclick="add('未定')" style="background:#ffd600;">
+  未定
+</button>
+
+<br>
+
+<button onclick="location.href='event.html'" style="background:#ff9800;">
+  予定登録(監督用)
+</button>
+
+
+<button onclick="location.href='attendance-list.html'" style="
+  background:#2196f3;
+  color:white;">
+  出欠一覧
+</button>
+
+
+<button onclick="location.href='member-only.html'" style="background:#999;">
+  ← 部員ページに戻る
+</button>
+
+
+</div>
+
+<div class="list" id="list"></div>
+
+
+<script type="module">
+
+let data = [];
+let events = [];
+let members = [];
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc   // ←追加
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ✅ グローバル化
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+
+// ✅ 出欠登録（ここが重要）
+async function add(status){
+
+  const raw = document.getElementById("name").value;
+  const name = raw.split(" ")[0];
+  const date = document.getElementById("date").value;
+  const comment = document.getElementById("comment").value;
+
+  if(name === "" || date === ""){
+    alert("入力してください");
+    return;
+  }
+
+  const hasEvent = events.some(e => e.date === date);
+  if(!hasEvent){
+    alert("予定なし");
+    return;
+  }
+
+  await addDoc(collection(db, "attendance"), {
+    name,
+    status,
+    date,
+    comment
+  });
+
+  alert("保存しました");
+
+  loadAll();
+
+  document.getElementById("date").value = "";
+  document.getElementById("comment").value = "";
+}
+
+function loadMembers(){
+  const select = document.getElementById("name");
+
+  let html = `<option value="">名前を選択</option>`;
+
+  if(members.length === 0){
+    html += `<option disabled>※メンバー未登録</option>`;
+  }
+
+  // 🔥 追加：番号で並び替え
+members.sort((a, b) => {
+  return (a.number || 9999) - (b.number || 9999);
+});
+
+members.forEach(m=>{
+
+  const label = m.active === false
+    ? `#${m.number} ${m.name}（休部）`
+    : `#${m.number} ${m.name}`;
+
+  html += `<option value="#${m.number} ${m.name}">
+             ${label}
+           </option>`;
+});
+
+  select.innerHTML = html;
+}
+
+
+// ✅ 自分の回答表示
+function render(){
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  const raw = document.getElementById("name").value;
+  const name = raw.split(" ")[0]; // ←これ追加
+
+  if(!name){
+    list.innerHTML = "<p>名前を選択してください</p>";
+    return;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+
+const myData = data
+  .filter(d => d.name === name && d.date >= today)
+  .sort((a, b) => a.date.localeCompare(b.date));
+
+
+  if(myData.length === 0){
+    list.innerHTML = "<p>まだ回答なし</p>";
+    return;
+  }
+
+  list.innerHTML += "<h3>あなたの回答</h3>";
+
+  myData.forEach(d=>{
+  list.innerHTML += `
+<div style="
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+">
+
+  <div>
+    📅 ${d.date} → ${d.status}
+  </div>
+
+  <button onclick="deleteRecord('${d.id}')" style="
+    background:#ff5252;
+    color:white;
+    font-size:12px;
+    padding:5px 10px;
+  ">
+    削除
+  </button>
+
+</div>
+`;
+});
+}
+
+function getEventLabel(type){
+
+  const map = {
+    "公式戦": "公式戦",
+    "OP戦": "OP戦",
+    "練習": "練習",
+    "飲み会": "飲み会"
+  };
+
+  return map[type] || "未設定";
+}
+
+
+// ✅ 詳細表示
+function showDetail(date){
+  const ev = events.find(e => e.date === date);
+
+  if(!ev){
+    alert("予定なし");
+    return;
+  }
+
+alert(
+  "📅 " + date + "\n" +
+  "種類：" + getEventLabel(ev.type) + "\n" +
+  "時間：" + (ev.time || "調整中") + "\n" +
+  "場所：" + (ev.place || "調整中")
+);
+}
+
+// ✅ カレンダー
+const picker = flatpickr("#date", {
+  locale: "ja", // ✅ これ追加🔥
+  dateFormat: "Y-m-d",
+  defaultDate: "today",
+  minDate: "today",
+
+  onDayCreate: function(dObj, dStr, fp, dayElem){
+
+// ✅ 日付を中央にする（これ追加🔥）
+dayElem.style.display = "flex";
+dayElem.style.alignItems = "center";
+dayElem.style.justifyContent = "center";
+dayElem.style.position = "relative";
+
+  const y = dayElem.dateObj.getFullYear();
+  const m = String(dayElem.dateObj.getMonth()+1).padStart(2,"0");
+  const d = String(dayElem.dateObj.getDate()).padStart(2,"0");
+  const date = `${y}-${m}-${d}`;
+
+  const raw = document.getElementById("name").value;
+const name = raw.split(" ")[0];
+
+  const ev = events.find(e => e.date === date);
+  const myAnswer = data.find(e => e.date === date && e.name === name);
+
+  // ✅ ① 予定（背景色にする）
+  if(ev){
+  if(ev.type === "公式戦" || ev.type === "OP戦")
+{
+    dayElem.style.background = "#ffdddd"; // 薄い赤
+  } else if(ev.type === "練習")
+{
+    dayElem.style.background = "#dde8ff"; // 薄い青
+  }
+
+  dayElem.style.color = "#000"; // ←黒文字にする🔥
+  dayElem.style.fontWeight = "bold";
+  dayElem.style.borderRadius = "6px";
+
+dayElem.style.position = "relative"; // ←これ追加
+
+const mark = document.createElement("div");
+mark.innerText =
+  (ev.type === "公式戦" || ev.type === "OP戦") ? "🔴" : "🔵";
+
+mark.style.position = "absolute";
+mark.style.bottom = "2px";
+mark.style.left = "2px";
+mark.style.fontSize = "10px";
+
+dayElem.appendChild(mark);
+}
+
+  // ✅ ② 回答状態（枠で分かりやすく）
+if(name && ev){
+
+  if(myAnswer){
+
+    // ✅ 回答済
+    if(myAnswer.status === "出席"){
+      dayElem.style.border = "3px solid #00c853";
+    } else if(myAnswer.status === "欠席"){
+      dayElem.style.border = "3px solid #ff5252";
+    } else {
+      dayElem.style.border = "3px solid #ffd600";
+    }
+
+    // ✅ チェックマーク
+    dayElem.style.position = "relative";
+
+    const check = document.createElement("div");
+    check.innerText = "✅";
+    check.style.position = "absolute";
+    check.style.top = "2px";
+    check.style.right = "2px";
+
+    dayElem.appendChild(check);
+
+  } else {
+  dayElem.style.border = "3px dashed #ff9800";
+  dayElem.style.background = "#fff3cd";
+  dayElem.style.color = "#000";
+
+  // 🔥 これ追加（未回答マーク）
+  const mark = document.createElement("div");
+  mark.innerText = "⚪";
+  mark.style.position = "absolute";
+  mark.style.top = "2px";
+  mark.style.right = "2px";
+
+  dayElem.appendChild(mark);
+}
+
+
+}
+
+  // ✅ ③ クリック
+  dayElem.addEventListener("click", function(){
+
+  showDetail(date); // ✅ 先に表示（ここ重要🔥）
+
+  document.getElementById("date").value = date;
+
+ setTimeout(() => {
+  picker.close();
+}, 100);
+
+  render();
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+});
+},
+
+  onChange: function(){
+    render();
+}
+});
+
+
+
+
+// ✅ ここに貼る（←この位置）
+
+// ✅ 正しい場所（ここ！！）
+const params = new URLSearchParams(location.search);
+const selectedDate = params.get("date");
+
+if(selectedDate){
+  document.getElementById("date").value = selectedDate;
+  render();
+}
+
+loadMembers();
+
+async function loadAll(){
+
+  // 出欠
+  data = [];
+  const attSnap = await getDocs(collection(db, "attendance"));
+  attSnap.forEach(d => {
+    data.push({
+      id: d.id,
+      ...d.data()
+    });
+  });
+
+  // 予定
+  events = [];
+  const evSnap = await getDocs(collection(db, "events"));
+  evSnap.forEach(d => {
+    events.push(d.data());
+  });
+
+  // メンバー
+  members = [];
+  const memSnap = await getDocs(collection(db, "members"));
+  memSnap.forEach(d => {
+    members.push(d.data());
+  });
+
+  loadMembers();
+  render();
+}
+async function deleteRecord(id){
+
+  if(!confirm("削除しますか？")) return;
+
+  await deleteDoc(doc(db, "attendance", id));
+
+  alert("削除しました");
+
+  loadAll();
+}
+
+loadAll();
+
+</script>
+
+</body>
+</html>

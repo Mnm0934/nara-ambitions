@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>試合動画一覧</title>
+
+<style>
+body{
+  background:#02142c;
+  color:white;
+  font-family:'Noto Sans JP';
+}
+
+.container{
+  width:100%;          /* ←追加🔥 */
+  max-width:none;      /* ←これ重要🔥 */
+  margin:50px auto;
+  padding:0 20px;      /* ←端の余白 */
+}
+
+.video{
+  margin-bottom:30px;
+  padding:20px;
+  background:#0a1f3f;
+  border-left:5px solid #d6002a;
+}
+
+.video{
+  padding:20px;
+  border-radius:10px;   /* ←角丸 */
+  transition:0.3s;
+}
+
+.video:hover{
+  transform:translateY(-5px);
+  box-shadow:0 15px 40px rgba(0,0,0,0.6);
+}
+
+
+/* ✅ スマホ対応 */
+@media screen and (max-width:768px){
+
+  .container{
+    margin:20px 10px;
+  }
+
+  h1{
+    font-size:20px;
+    text-align:center;
+  }
+
+  input{
+    width:100%;
+    margin-bottom:10px;
+  }
+
+  .video{
+    padding:10px;
+  }
+
+  iframe{
+    height:200px;
+  }
+
+  img{
+    border-radius:8px;
+  }
+
+  button{
+  font-size:14px;
+  padding:8px;
+}
+}
+
+@media screen and (max-width:768px){
+  .video-list{
+    grid-template-columns:1fr;   /* ←1列🔥 */
+  }
+}
+
+.video-list{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));  /* ←ここ🔥 */
+  max-width:1400px;
+  margin:0 auto;
+  gap:20px;
+}
+
+/* サムネを自動サイズに */
+.video img{
+  width:100%;
+  height:clamp(220px, 28vw, 360px);  /* ←これが最重要🔥 */
+  object-fit:cover;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* 動画も自動サイズ */
+iframe{
+  width:100%;
+  height:clamp(220px, 30vw, 450px);  /* ←これに変更🔥 */
+}
+
+.thumb{
+  width:100%;
+}
+
+.video-list h2{
+  grid-column: 1 / -1;   /* ←これ超重要🔥 */
+  text-align:left;
+  margin-left:0;         /* 念のため */
+}
+
+/* サムネ枠 */
+.thumb-wrap{
+  position:relative;
+  cursor:pointer;
+}
+
+/* 再生ボタン */
+.thumb-wrap::after{
+  content:"▶";
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  
+  font-size:60px;
+  color:white;
+  background:rgba(0,0,0,0.6);
+  
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  transition:0.3s;
+}
+
+/* ホバーで強調 */
+.thumb-wrap:hover::after{
+  transform:translate(-50%, -50%) scale(1.2);
+  background:#d6002a;
+}
+
+.search-box{
+  width:100%;
+  max-width:500px;   /* ←ここで幅制限🔥 */
+  padding:10px;
+  display:block;
+}
+
+.search-area{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;   /* スマホで折り返す */
+  align-items:center;
+  margin-bottom:20px;
+}
+
+/* input */
+.search-box{
+  flex:1;                /* ←横に伸びる🔥 */
+  min-width:200px;
+  max-width:400px;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+}
+
+/* select */
+.search-area select{
+  padding:12px;
+  border-radius:8px;
+  border:none;
+}
+
+/* ボタン共通 */
+.search-area button{
+  padding:12px 16px;
+  border:none;
+  border-radius:8px;
+  background:#0a1f3f;
+  color:white;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+/* hover */
+.search-area button:hover{
+  background:#d6002a;
+}
+
+.new{
+  background:#ffcc00;
+  color:#000;
+  padding:3px 8px;
+  font-size:12px;
+  border-radius:20px;
+  margin-left:10px;
+  font-weight:700;
+}
+
+</style>
+</head>
+
+<body>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
+
+const db = getFirestore(app);
+
+window.db = db;
+window.collection = collection;
+window.getDocs = getDocs;
+</script>
+
+<div class="container">
+<h1>試合動画一覧</h1>
+<button onclick="goRegister()">＋動画登録</button>
+
+<button onclick="goMember()" style="background:#888;">
+  ← 部員ページへ戻る
+</button>
+<div class="search-area">
+
+<input type="text" id="search"
+ placeholder="検索（例：○○クラブ）"
+ class="search-box">
+
+  <select id="yearFilter">
+    <option value="">全年度</option>
+  </select>
+
+<select id="monthFilter">
+  <option value="">全月</option>
+</select>
+
+  <button onclick="showAll()">すべて</button>
+  <button onclick="filterCategory('公式戦')">公式戦のみ</button>
+  <button onclick="filterCategory('OP戦')">OP戦のみ</button>
+
+</div>
+
+<div id="videoList"></div>
+
+</div>
+
+<script>
+let allVideos = [];
+
+async function loadVideos(){
+
+  const snap = await getDocs(collection(db, "videos"));
+
+  allVideos = [];
+
+  snap.forEach(doc => {
+    allVideos.push({
+      docId: doc.id,   // ←超重要🔥
+      ...doc.data()
+    });
+  });
+
+  setupFilters();
+render(allVideos);
+}
+function setupFilters(){
+
+  const yearFilter = document.getElementById("yearFilter");
+  const monthFilter = document.getElementById("monthFilter");
+
+  yearFilter.innerHTML = `<option value="">全年度</option>`;
+  monthFilter.innerHTML = `<option value="">全月</option>`;
+
+  const years = [...new Set(allVideos.map(v => v.date?.slice(0,4)).filter(Boolean))];
+  years.sort((a,b)=>b-a);
+
+  years.forEach(y=>{
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y + "年";
+    yearFilter.appendChild(opt);
+  });
+
+  const months = [...new Set(allVideos.map(v => v.date?.slice(5,7)).filter(Boolean))];
+  months.sort((a,b)=>b-a);
+
+  months.forEach(m=>{
+    const opt = document.createElement("option");
+    opt.value = m;
+    opt.textContent = Number(m) + "月";
+    monthFilter.appendChild(opt);
+  });
+}
+
+const list = document.getElementById("videoList");
+
+
+// ✅ NEW判定を外に出す🔥
+function isNew(date){
+  const today = new Date();
+  const d = new Date(date);
+  const diff = (today - d) / (1000 * 60 * 60 * 24);
+  return diff <= 7;
+}
+
+function render(videos){
+
+  list.innerHTML = "";
+// 日付で新しい順に並び替え🔥
+videos.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const categories = {
+    "公式戦": [],
+    "OP戦": [],
+    "その他": []
+  };
+
+    videos.forEach(v=>{
+    if(categories[v.category]){
+      categories[v.category].push(v);
+    }
+  });
+
+  for(let key in categories){
+
+  if(categories[key].length === 0) continue;
+
+  // セクション
+  const section = document.createElement("div");
+
+  // タイトル
+  const title = document.createElement("h2");
+  title.textContent = key;
+  section.appendChild(title);
+
+  // グリッド
+  const grid = document.createElement("div");
+  grid.className = "video-list";
+
+  // カード追加
+  categories[key].forEach(v=>{
+    const div = document.createElement("div");
+    div.className = "video";
+
+    div.innerHTML = `
+      <h3>
+        ${v.date} ${v.title}
+        ${isNew(v.date) ? '<span class="new">NEW</span>' : ''}
+      </h3>
+
+      <div class="thumb-wrap"
+ onclick="playVideo('${v.id}', this.querySelector('img'), '${v.docId}')">
+        <img src="https://img.youtube.com/vi/${v.id}/0.jpg" class="thumb">
+      </div>
+
+      <button onclick="editVideo('${v.docId}')">編集</button>
+    `;
+
+    grid.appendChild(div);
+  });
+
+  // ✅ ここはforEachの外🔥
+  section.appendChild(grid);
+  list.appendChild(section);
+  }
+}
+
+// ✅ 共通フィルター
+function applyFilter(category){
+
+  const keyword = document.getElementById("search").value.toLowerCase();
+  const year = document.getElementById("yearFilter").value;
+const month = document.getElementById("monthFilter").value;
+
+
+  let filtered = allVideos.filter(v=>{
+
+    const matchCategory = category ? v.category === category : true;
+    const matchKeyword = v.title.toLowerCase().includes(keyword);
+    const matchYear = year ? v.date && v.date.startsWith(year) : true;
+const matchMonth = month ? v.date && v.date.slice(5,7) === month : true;
+    return matchCategory && matchKeyword && matchYear && matchMonth;
+  });
+
+  render(filtered);
+}
+
+// ✅ ボタン
+function filterCategory(cat){
+  applyFilter(cat);
+}
+
+function showAll(){
+  applyFilter();
+}
+
+// ✅ イベント
+document.getElementById("search").addEventListener("input", ()=>applyFilter());
+document.getElementById("yearFilter").addEventListener("change", ()=>applyFilter());
+document.getElementById("monthFilter").addEventListener("change", ()=>applyFilter());
+
+// ✅ 初期表示
+loadVideos();
+
+function editVideo(docId){
+
+  const video = allVideos.find(v => v.docId === docId);
+
+  localStorage.setItem("editVideo", JSON.stringify(video));
+
+  location.href = "video-form.html";
+}
+
+function goRegister(){
+  localStorage.removeItem("editVideo"); // ←これ重要（編集状態をリセット）
+  location.href = "video-form.html";
+}
+
+function playVideo(id, el, docId){
+
+  const parent = el.parentElement;
+
+  parent.innerHTML = `
+    <iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>
+    <button onclick="editVideo('${docId}')">編集</button>
+  `;
+}
+
+
+function goMember(){
+  location.href = "member-only.html";
+}
+
+</script>
+</body>
+</html>
