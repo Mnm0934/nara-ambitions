@@ -88,10 +88,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getFirestore,
   collection,
+  getDocs,
+  getDoc,
   addDoc,
   updateDoc,
-  doc,
-  getDoc   // ←これ追加🔥
+  doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const app = initializeApp({
@@ -463,6 +464,8 @@ function autoFill(i){
 
 
 
+
+
 function autoFillPitcher(i){
   const num = document.getElementById("p_num_"+i).value;
   const player = members.find(p => String(p.number) === String(num));
@@ -473,6 +476,7 @@ function autoFillPitcher(i){
     document.getElementById("p_name_"+i).value = "";
   }
 }
+
 
 }
 
