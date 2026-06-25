@@ -148,7 +148,8 @@ await loadMembers();
 // Firestore 初期化が終わるまで待つ
 if (!window.getDocs) {
   window.addEventListener("load", () => loadResults());
-  return;
+} else {
+  loadResults();
 }
 
 // ================= ソート設定 =================
