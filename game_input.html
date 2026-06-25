@@ -171,6 +171,11 @@ loadMembers();
 
 <button onclick="tempSave()">途中保存</button>
 <button onclick="save()">保存</button>
+
+<button onclick="deleteGame()" style="background:#ff6666; color:white;">
+  削除
+</button>
+
 <button onclick="goList()">一覧へ</button>
 <button onclick="logout()">ログアウト</button>
 
@@ -535,13 +540,30 @@ function goList(){
   location.href = "game_list.html";
 }
 
-/* ============================
-   ログアウト
-============================ */
 function logout(){
   sessionStorage.removeItem("adminAuth");
   alert("ログアウトしました");
   location.href = "index.html";
+}
+
+/* ============================
+   削除
+============================ */
+async function deleteGame(){
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+
+  if(!id){
+    alert("削除できる試合がありません（編集モードではありません）");
+    return;
+  }
+
+  if(!confirm("この試合を削除しますか？")) return;
+
+  await deleteDoc(doc(db, "results", id));
+
+  alert("削除しました");
+  location.href = "game_list.html";
 }
 </script>
 </body>
