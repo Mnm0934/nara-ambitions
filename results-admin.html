@@ -171,6 +171,12 @@ let batterSortOrder = "desc";
 let pitcherSortKey = "era";
 let pitcherSortOrder = "desc";
 
+function changeMode(m){
+  mode = m;
+  render();
+}
+
+
 function changeBatterSort(key){
   if(batterSortKey === key){
     batterSortOrder = batterSortOrder === "desc" ? "asc" : "desc";
