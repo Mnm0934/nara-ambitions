@@ -104,25 +104,34 @@ tr:nth-child(even){
 
 <body>
 <script type="module">
-import { initializeApp } from "...firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore,
   collection,
   getDocs,
   deleteDoc,
   doc
-} from "...firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const app = initializeApp({...});
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
+
 const db = getFirestore(app);
 
+// ★ ここで window に登録（これより前に loadMembers を呼んではダメ）
 window.db = db;
 window.getDocs = getDocs;
 window.collection = collection;
 window.deleteDoc = deleteDoc;
 window.doc = doc;
 
-// ★★★ members を Firestore から読み込む（ここに置く！）★★★
+// ★★★ Firestore から members を読み込む（安全版）★★★
 let members = [];
 
 async function loadMembers(){
@@ -131,7 +140,8 @@ async function loadMembers(){
   snap.forEach(docSnap => members.push(docSnap.data()));
 }
 
-loadMembers();   // ← ★ここに置くのが正解！
+// ★ getDocs を window に登録した “後” に呼ぶことが絶対条件
+loadMembers();
 </script>
 
 
