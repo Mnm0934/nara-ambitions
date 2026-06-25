@@ -144,13 +144,15 @@ await loadMembers();
 </script>
 
 <script>
-
-// Firestore 初期化が終わるまで待つ
-if (!window.getDocs) {
-  window.addEventListener("load", () => loadResults());
-} else {
-  loadResults();
-}
+window.addEventListener("load", () => {
+  // Firestore 初期化が終わるまで待つ
+  const wait = setInterval(() => {
+    if (window.members && Array.isArray(window.members)) {
+      clearInterval(wait);
+      loadResults();
+    }
+  }, 50);
+});
 
 // ================= ソート設定 =================
 let batterSortKey = "ops";
