@@ -145,8 +145,13 @@ await loadMembers();
 
 <script>
 
-// ================= ソート設定 =================
+// Firestore 初期化が終わるまで待つ
+if (!window.getDocs) {
+  window.addEventListener("load", () => loadResults());
+  return;
+}
 
+// ================= ソート設定 =================
 let batterSortKey = "ops";
 let batterSortOrder = "desc";
 
