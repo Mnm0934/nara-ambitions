@@ -133,6 +133,9 @@ async function loadMembers() {
   const snapshot = await getDocs(collection(db, "members"));
   members = [];
   snapshot.forEach(doc => members.push(doc.data()));
+
+  // ★ これが今回の修正点（重要）
+  window.members = members;
 }
 loadMembers();
 </script>
@@ -170,7 +173,6 @@ loadMembers();
 <button onclick="save()">保存</button>
 <button onclick="goList()">一覧へ</button>
 <button onclick="logout()">ログアウト</button>
-
 
 <script>
 /* ============================
@@ -280,13 +282,13 @@ function addPitcher(){
 ============================ */
 function autoFill(i){
   const num = document.getElementById("num_"+i).value;
-  const player = members.find(p => String(p.number) === String(num));
+  const player = window.members?.find(p => String(p.number) === String(num));
   document.getElementById("name_"+i).value = player ? player.name : "";
 }
 
 function autoFillPitcher(i){
   const num = document.getElementById("p_num_"+i).value;
-  const player = members.find(p => String(p.number) === String(num));
+  const player = window.members?.find(p => String(p.number) === String(num));
   document.getElementById("p_name_"+i).value = player ? player.name : "";
 }
 
@@ -304,7 +306,6 @@ function calcTB(i){
 
   document.getElementById("tb_"+i).value = tb;
 }
-
 /* ============================
    データ収集
 ============================ */
