@@ -15,6 +15,12 @@ body{
   padding:10px;
 }
 
+.inning-row{
+  display:inline-block;
+  margin-right:10px;
+  text-align:center;
+}
+
 div{
   overflow-x:auto;
 }
@@ -71,9 +77,6 @@ button{
 <body>
 
 <script type="module">
-/* ============================
-   Firebase 初期化
-============================ */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore,
@@ -96,7 +99,6 @@ const app = initializeApp({
 
 const db = getFirestore(app);
 
-// window に登録
 window.db = db;
 window.collection = collection;
 window.addDoc = addDoc;
@@ -105,9 +107,6 @@ window.doc = doc;
 window.getDoc = getDoc;
 window.getDocs = getDocs;
 
-/* ============================
-   管理者認証
-============================ */
 const ADMIN_PASSWORD = "19980725";
 
 function checkAuth(){
@@ -129,9 +128,6 @@ function checkAuth(){
 }
 checkAuth();
 
-/* ============================
-   メンバー読み込み
-============================ */
 let members = [];
 async function loadMembers() {
   const snapshot = await getDocs(collection(db, "members"));
@@ -175,9 +171,10 @@ loadMembers();
 <button onclick="goList()">一覧へ</button>
 <button onclick="logout()">ログアウト</button>
 
+
 <script>
 /* ============================
-   イニング生成
+   イニング生成（スコア欄）
 ============================ */
 function createInning(prefix, targetId){
   let html = "";
@@ -185,7 +182,7 @@ function createInning(prefix, targetId){
     html += `
       <div class="inning-row">
         <label>${i}回</label>
-        <input id="${prefix}${i}" type="number" min="0" style="width:60px;">
+        <input id="${prefix}${i}" type="number" min="0">
       </div>
     `;
   }
@@ -279,7 +276,7 @@ function addPitcher(){
 }
 
 /* ============================
-   自動入力
+   自動入力（背番号 → 名前）
 ============================ */
 function autoFill(i){
   const num = document.getElementById("num_"+i).value;
@@ -529,12 +526,17 @@ async function loadEdit(){
 }
 
 loadEdit();
-loadMembers();
 
+/* ============================
+   ページ遷移
+============================ */
 function goList(){
   location.href = "game_list.html";
 }
 
+/* ============================
+   ログアウト
+============================ */
 function logout(){
   sessionStorage.removeItem("adminAuth");
   alert("ログアウトしました");
