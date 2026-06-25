@@ -104,24 +104,16 @@ tr:nth-child(even){
 
 <body>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "...firebase-app.js";
 import {
   getFirestore,
   collection,
   getDocs,
   deleteDoc,
   doc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "...firebase-firestore.js";
 
-const app = initializeApp({
-  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
-  authDomain: "nara-ambitions.firebaseapp.com",
-  projectId: "nara-ambitions",
-  storageBucket: "nara-ambitions.firebasestorage.app",
-  messagingSenderId: "690491149380",
-  appId: "1:690491149380:web:e854ec4df26cd98c474011"
-});
-
+const app = initializeApp({...});
 const db = getFirestore(app);
 
 window.db = db;
@@ -129,19 +121,18 @@ window.getDocs = getDocs;
 window.collection = collection;
 window.deleteDoc = deleteDoc;
 window.doc = doc;
-</script>
 
+// ★★★ members を Firestore から読み込む（ここに置く！）★★★
 let members = [];
 
 async function loadMembers(){
   const snap = await getDocs(collection(db, "members"));
   members = [];
-  snap.forEach(docSnap => {
-    members.push(docSnap.data());
-  });
+  snap.forEach(docSnap => members.push(docSnap.data()));
 }
 
-loadMembers();
+loadMembers();   // ← ★ここに置くのが正解！
+</script>
 
 
   <button onclick="location.href='member-only.html'" style="
