@@ -66,54 +66,14 @@ tr:nth-child(even){
 </head>
 
 <body>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  deleteDoc,
-  doc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const app = initializeApp({
-  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
-  authDomain: "nara-ambitions.firebaseapp.com",
-  projectId: "nara-ambitions",
-  storageBucket: "nara-ambitions.firebasestorage.app",
-  messagingSenderId: "690491149380",
-  appId: "1:690491149380:web:e854ec4df26cd98c474011"
-});
-
-const db = getFirestore(app);
-
-// ★ window に登録（ここより前に loadMembers を呼ばない）
-window.db = db;
-window.getDocs = getDocs;
-window.collection = collection;
-window.deleteDoc = deleteDoc;
-window.doc = doc;
-
-// ★ Firestore から members を読み込む
-let members = [];
-
-async function loadMembers(){
-  const snap = await getDocs(collection(db, "members"));
-  members = [];
-  snap.forEach(docSnap => members.push(docSnap.data()));
-}
-
-// ★ ここで待つ（getDocs undefined を防ぐ）
-await loadMembers();
-
-
-  <button onclick="location.href='member-only.html'" style="
-    background:#666;
-    color:white;
-    padding:10px 15px;
-    border-radius:20px;
-    cursor:pointer;">
-  ← 部員専用ページに戻る</button>
+<button onclick="location.href='member-only.html'" style="
+  background:#666;
+  color:white;
+  padding:10px 15px;
+  border-radius:20px;
+  cursor:pointer;">
+← 部員専用ページに戻る</button>
 <br>
 
 <button onclick="goInput()">入力画面へ</button>
@@ -142,6 +102,46 @@ await loadMembers();
 <div id="ranking"></div>
 
 <button onclick="deleteBrokenData()">バグデータ削除</button>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  deleteDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
+
+const db = getFirestore(app);
+
+// window に登録
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
+
+// members 読み込み
+let members = [];
+
+async function loadMembers(){
+  const snap = await getDocs(collection(db, "members"));
+  members = [];
+  snap.forEach(docSnap => members.push(docSnap.data()));
+}
+
+await loadMembers();
+</script>
 
 <script>
 
@@ -392,7 +392,6 @@ gameList.innerHTML = Array.from(gameSet).map(g=>{
 renderPitcher();
 }
 
-
 function renderPitcher(){
 
   let rawData = resultsData;
@@ -536,7 +535,63 @@ function renderPitcher(){
   makeRanking(data);
 }
 
-  // ================= ランキング =================
+function makeRanking(data){
+
+  const box = document.getElementById("ranking");
+
+  let batterStats = {};
+  let pitcherStats = {};
+  let batterGames = {};
+  let pitcherGames = {};
+
+  data.forEach(game=>{
+
+    // ---- 打者 ----
+    (game.batters || []).forEach(p=>{
+      const cleanName = p.name.replace(/^#\d+\s*/, "");
+      const member = members.find(m => m.name === cleanName);
+      if(!member || member.role !== "選手") return;
+
+      if(!batterStats[cleanName]){
+        batterStats[cleanName] = {pa:0, ab:0, hit:0};
+        batterGames[cleanName] = new Set();
+      }
+
+      batterStats[cleanName].pa += p.pa||0;
+      batterStats[cleanName].ab += p.ab||0;
+      batterStats[cleanName].hit += p.hit||0;
+
+      batterGames[cleanName].add(game.date + game.opponent);
+    });
+
+    // ---- 投手 ----
+    (game.pitchers || []).forEach(p=>{
+      const cleanName = p.name.replace(/^#\d+\s*/, "");
+      const member = members.find(m => m.name === cleanName);
+      if(!member || member.role !== "選手") return;
+
+      if(!pitcherStats[cleanName]){
+        pitcherStats[cleanName] = {inningOut:0, er:0};
+        pitcherGames[cleanName] = new Set();
+      }
+
+      const ip = p.inning || 0;
+      const whole = Math.floor(ip);
+      const decimal = Number((ip - whole).toFixed(1));
+
+      let outs = whole * 3;
+      if(decimal === 0.1) outs += 1;
+      if(decimal === 0.2) outs += 2;
+
+      pitcherStats[cleanName].inningOut += outs;
+      pitcherStats[cleanName].er += p.er||0;
+
+      pitcherGames[cleanName].add(game.date + game.opponent);
+    });
+
+  });
+
+  // ---- 打率ランキング ----
   const hitters = Object.keys(batterStats).map(name=>{
     const p = batterStats[name];
     const games = batterGames[name].size;
@@ -550,6 +605,7 @@ function renderPitcher(){
   .filter(p => p.isQualified)
   .sort((a,b)=>b.avg - a.avg);
 
+  // ---- 防御率ランキング ----
   const pitchers = Object.keys(pitcherStats).map(name=>{
     const p = pitcherStats[name];
     const games = pitcherGames[name].size;
@@ -564,7 +620,7 @@ function renderPitcher(){
   .filter(p => p.isQualified)
   .sort((a,b)=>a.era - b.era);
 
-  // 表示
+  // ---- 表示 ----
   let html = "<h3>打率ランキング（規定）</h3>";
   hitters.slice(0,5).forEach((p,i)=>{
     html += `${i+1}位 ${p.name} (${p.avg.toFixed(3)})<br>`;
@@ -578,7 +634,8 @@ function renderPitcher(){
   box.innerHTML = html;
 }
 
-// ================= バグデータ削除 =================
+/* ================= バグデータ削除 ================= */
+
 async function deleteBrokenData(){
 
   if(!confirm("日付なしデータ削除する？")) return;
@@ -596,7 +653,8 @@ async function deleteBrokenData(){
   loadResults();
 }
 
-// ================= 編集 =================
+/* ================= 編集 ================= */
+
 function editGame(label){
 
   const parts = label.split(" vs ");
@@ -617,11 +675,11 @@ function editGame(label){
   window.location.href = "game_input.html";
 }
 
-// ================= 初期ロード =================
+/* ================= 初期ロード ================= */
+
 loadResults();
 
 </script>
 
 </body>
 </html>
-
