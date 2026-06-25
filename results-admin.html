@@ -132,29 +132,39 @@ window.deleteDoc = deleteDoc;
 window.doc = doc;
 
 // members 読み込み
-let members = [];
+window.members = [];
 
 async function loadMembers(){
   const snap = await getDocs(collection(db, "members"));
-  members = [];
-  snap.forEach(docSnap => members.push(docSnap.data()));
+  window.members = [];
+  snap.forEach(docSnap => window.members.push(docSnap.data()));
 }
 
 await loadMembers();
 </script>
 
 <script>
+
+// ================= Firestore 初期化完了待ち =================
+// GitHub Pages は script の読み込み順が前後するため、
+// Firestore の module script が実行されるまで待つ仕組みを入れる。
+
 window.addEventListener("load", () => {
-  // Firestore 初期化が終わるまで待つ
+
   const wait = setInterval(() => {
-    if (window.members && Array.isArray(window.members)) {
+
+    // Firestore 初期化が完了しているかチェック
+    if (window.getDocs && window.members) {
       clearInterval(wait);
-      loadResults();
+      loadResults();   // ← 初めてここで実行される
     }
+
   }, 50);
+
 });
 
 // ================= ソート設定 =================
+
 let batterSortKey = "ops";
 let batterSortOrder = "desc";
 
@@ -191,7 +201,7 @@ function sortArrow(key, currentKey, order){
 let resultsData = [];
 
 async function loadResults(){
-  const snap = await getDocs(collection(db, "results"));
+  const snap = await window.getDocs(window.collection(window.db, "results"));
   resultsData = [];
   snap.forEach(docSnap => {
     resultsData.push({
@@ -211,7 +221,7 @@ function goInput(){
 // ================= players 取得 =================
 
 function getPlayers(){
-  return members
+  return window.members
     .sort((a,b)=>a.number - b.number)
     .map(m => ({
       num: m.number,
@@ -285,7 +295,7 @@ let list = [];
 getPlayers()
 .filter(p => {
   const cleanName = p.name.replace(/^#\d+\s*/, "");
-  const member = members.find(m => m.name === cleanName);
+  const member = window.members.find(m => m.name === cleanName);
   return member && member.role === "選手";
 })
 .forEach(p=>{
@@ -303,7 +313,7 @@ getPlayers()
 
     (game.batters || []).forEach(row=>{
       const cleanName = row.name.replace(/^#\d+\s*/, "");
-      const member = members.find(m => m.name === cleanName);
+      const member = window.members.find(m => m.name === cleanName);
       if(!member || member.role !== "選手") return;
 
       if(cleanName === name){
@@ -445,7 +455,7 @@ function renderPitcher(){
   getPlayers()
   .filter(p => {
     const cleanName = p.name.replace(/^#\d+\s*/, "");
-    const member = members.find(m => m.name === cleanName);
+    const member = window.members.find(m => m.name === cleanName);
     return member && member.role === "選手";
   })
   .forEach(p=>{
@@ -557,7 +567,7 @@ function makeRanking(data){
     // ---- 打者 ----
     (game.batters || []).forEach(p=>{
       const cleanName = p.name.replace(/^#\d+\s*/, "");
-      const member = members.find(m => m.name === cleanName);
+      const member = window.members.find(m => m.name === cleanName);
       if(!member || member.role !== "選手") return;
 
       if(!batterStats[cleanName]){
@@ -575,7 +585,7 @@ function makeRanking(data){
     // ---- 投手 ----
     (game.pitchers || []).forEach(p=>{
       const cleanName = p.name.replace(/^#\d+\s*/, "");
-      const member = members.find(m => m.name === cleanName);
+      const member = window.members.find(m => m.name === cleanName);
       if(!member || member.role !== "選手") return;
 
       if(!pitcherStats[cleanName]){
@@ -648,12 +658,12 @@ async function deleteBrokenData(){
 
   if(!confirm("日付なしデータ削除する？")) return;
 
-  const snap = await getDocs(collection(db, "results"));
+  const snap = await window.getDocs(window.collection(window.db, "results"));
 
   for (const docSnap of snap.docs){
     const d = docSnap.data();
     if(!d.date || !d.game || !d.opponent){
-      await deleteDoc(doc(db, "results", docSnap.id));
+      await window.deleteDoc(window.doc(window.db, "results", docSnap.id));
     }
   }
 
@@ -683,9 +693,7 @@ function editGame(label){
   window.location.href = "game_input.html";
 }
 
-/* ================= 初期ロード ================= */
-
-loadResults();
+/* ================= 初期ロード（待ち処理は 2/6 に記載済み） ================= */
 
 </script>
 
