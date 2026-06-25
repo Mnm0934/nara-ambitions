@@ -290,20 +290,15 @@ document.getElementById("pitchers").insertAdjacentHTML("beforeend", html);
 
 // ✅ イニング入力作成
 function createInning(prefix, targetId){
-
-  let html = "<div style='display:flex; flex-wrap:wrap; justify-content:center;'>";
-
-  for(let i=1;i<=12;i++){
+  let html = "";
+  for(let i = 1; i <= 12; i++){
     html += `
-    <div style="margin:5px">
-      ${i}回<br>
-      <input type="number" id="${prefix}${i}">
-    </div>
+      <div class="inning-row">
+        <label>${i}回</label>
+        <input id="${prefix}${i}" type="number" min="0" style="width:60px;">
+      </div>
     `;
   }
-
-  html += "</div>";
-
   document.getElementById(targetId).innerHTML = html;
 }
 
