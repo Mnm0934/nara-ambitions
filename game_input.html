@@ -606,8 +606,8 @@ loadMembers();
 
 </body>
 
-<script src="js/game_input.js"></script>
-<script src="js/members.js"></script>
-<script src="js/edit.js"></script>
+<script src="./game_input.js"></script>
+<script src="./members.js"></script>
+<script src="./edit.js"></script>
 
 </html>
