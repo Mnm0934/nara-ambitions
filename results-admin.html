@@ -409,8 +409,14 @@ list.forEach(p=>{
 
 // 対象試合
 const gameList = document.getElementById("gameList");
-gameList.innerHTML = Array.from(gameSet).map(g=>{
-  return `<div onclick="editGame('${g}')" style="cursor:pointer; color:yellow;">${g}</div>`;
+gameList.innerHTML = data.map(g=>{
+  const label = `${g.date} ${g.game} vs ${g.opponent}`;
+  return `
+    <div onclick="location.href='game_input.html?id=${g.id}'"
+         style="cursor:pointer; color:yellow; margin:5px 0;">
+      ${label}
+    </div>
+  `;
 }).join("");
 
 renderPitcher();
