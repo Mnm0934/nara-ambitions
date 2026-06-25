@@ -131,6 +131,19 @@ window.deleteDoc = deleteDoc;
 window.doc = doc;
 </script>
 
+let members = [];
+
+async function loadMembers(){
+  const snap = await getDocs(collection(db, "members"));
+  members = [];
+  snap.forEach(docSnap => {
+    members.push(docSnap.data());
+  });
+}
+
+loadMembers();
+
+
   <button onclick="location.href='member-only.html'" style="
     background:#666;
     color:white;
