@@ -411,164 +411,162 @@ list.forEach(p=>{
   </tr>
   `;
 });
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>成績一覧</title>
 
-// 対象試合
-const gameList = document.getElementById("gameList");
-gameList.innerHTML = data.map(g=>{
-  const label = `${g.date} ${g.game} vs ${g.opponent}`;
-  return `
-    <div onclick="location.href='game_input.html?id=${g.id}'"
-         style="cursor:pointer; color:yellow; margin:5px 0;">
-      ${label}
-    </div>
-  `;
-}).join("");
-
-renderPitcher();
+<style>
+body{
+  background:#02142c;
+  color:white;
+  text-align:center;
+  font-family: "Segoe UI", "Meiryo", sans-serif;
 }
 
-function renderPitcher(){
+table{
+  border-collapse: collapse;
+  font-size:12px;
+  margin:20px auto;
+  width: max-content;
+  min-width:100%;
+  table-layout: fixed;
+}
 
-  let rawData = resultsData;
-  let data = [...rawData];
+th, td{
+  width: 60px;
+}
 
-  // 日付ソート
-  data.sort((a,b)=> new Date(a.date) - new Date(b.date));
+th{
+  background:#333;
+  cursor:pointer;
+  font-weight:bold;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
 
-  // モード処理
-  if(mode === "recent") data = data.slice(-5);
+td,th{
+  border:1px solid #999;
+  padding:4px;
+  white-space:nowrap;
+  text-align:center;
+}
 
-  if(mode === "year"){
-    const thisYear = new Date().getFullYear();
-    data = data.filter(g => g.date && g.date.startsWith(thisYear));
-  }
+td:nth-child(2), th:nth-child(2){
+  min-width:80px;
+  text-align:left;
+}
 
-  const table = document.getElementById("pitcherTable");
+td:nth-child(1), th:nth-child(1){
+  width:40px;
+}
 
-  table.innerHTML = `
-  <thead>
-    <tr>
-      <th onclick="changePitcherSort('num')">背番号 ${sortArrow('num', pitcherSortKey, pitcherSortOrder)}</th>
-      <th>名前</th>
-      <th>試合</th>
-      <th>規定</th>
-      <th>投球回</th>
-      <th>被安打</th>
-      <th>四球</th>
-      <th>三振</th>
-      <th>自責点</th>
-      <th onclick="changePitcherSort('era')">防御率 ${sortArrow('era', pitcherSortKey, pitcherSortOrder)}</th>
-      <th>WHIP</th>
-      <th>K/BB</th>
-    </tr>
-  </thead>
-  <tbody id="pitcherBody"></tbody>
-  `;
+td:not(:nth-child(2)){
+  width:45px;
+}
 
-  const tbody = document.getElementById("pitcherBody");
+tr:nth-child(even){
+  background:#0a2a4a;
+}
 
-  let list = [];
+#pitcherTable td:nth-child(2),
+#pitcherTable th:nth-child(2){
+  width: 80px;
+}
+</style>
+</head>
 
-  getPlayers()
-  .filter(p => {
-    const cleanName = p.name.replace(/^#\d+\s*/, "");
-    const member = window.members.find(m => m.name === cleanName);
-    return member && member.role === "選手";
-  })
-  .forEach(p=>{
-    const num = p.num;
-    const name = p.name;
+<body>
 
-    let games = 0;
-    let inningOut = 0, hit=0, bb=0, so=0, er=0;
+<button onclick="location.href='member-only.html'" style="
+  background:#666;
+  color:white;
+  padding:10px 15px;
+  border-radius:20px;
+  cursor:pointer;">
+← 部員専用ページに戻る</button>
+<br>
 
-    data.forEach(game=>{
-      let played = false;
+<button onclick="goInput()">入力画面へ</button>
+<br>
 
-      (game.pitchers || []).forEach(row=>{
-        if(row.name.replace(/^#\d+\s*/, "") === name){
+<div style="margin:10px;">
+  <button onclick="changeMode('all')">通算</button>
+  <button onclick="changeMode('year')">今年度</button>
+  <button onclick="changeMode('recent')">直近5試合</button>
+</div>
 
-          played = true;
+<h2>打者成績一覧</h2>
+<div style="overflow:auto; max-height:500px;">
+  <table id="batterTable"></table>
+</div>
 
-          const ip = row.inning || 0;
-          const whole = Math.floor(ip);
-          const decimal = Number((ip - whole).toFixed(1));
+<h2>投手成績一覧</h2>
+<div style="overflow:auto; max-height:400px;">
+  <table id="pitcherTable"></table>
+</div>
 
-          let outs = whole * 3;
-          if(decimal === 0.1) outs += 1;
-          if(decimal === 0.2) outs += 2;
+<h3>対象試合</h3>
+<div id="gameList"></div>
 
-          inningOut += outs;
-          hit += row.hit || 0;
-          bb += row.bb || 0;
-          so += row.k || 0;
-          er += row.er || 0;
-        }
-      });
+<h2>ランキング</h2>
+<div id="ranking"></div>
 
-      if(played) games++;
-    });
+<button onclick="deleteBrokenData()">バグデータ削除</button>
 
-    const displayInning =
-      Math.floor(inningOut / 3) + "." + (inningOut % 3);
+<!-- ================= Firestore 初期化 ================= -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  deleteDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const realInning = inningOut / 3;
-    const isQualified = games > 0 && realInning >= games * 1.2;
+const app = initializeApp({
+  apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
+  authDomain: "nara-ambitions.firebaseapp.com",
+  projectId: "nara-ambitions",
+  storageBucket: "nara-ambitions.firebasestorage.app",
+  messagingSenderId: "690491149380",
+  appId: "1:690491149380:web:e854ec4df26cd98c474011"
+});
 
-    list.push({
-      num,
-      name,
-      games,
-      isQualified,
-      inning: displayInning,
-      hit,
-      bb,
-      so,
-      er,
-      era: realInning ? er / realInning * 9 : 999,
-      whip: realInning ? (hit + bb) / realInning : 999,
-      kbb: bb ? so / bb : 0
-    });
-  });
+const db = getFirestore(app);
 
-  // 投球回 0 の選手は除外
-  list = list.filter(p => {
-    const [whole, decimal] = p.inning.split(".");
-    return Number(whole) > 0 || Number(decimal) > 0;
-  });
+// window に登録
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
 
-  // ソート
-  list.sort((a,b)=>{
-    if(pitcherSortOrder === "desc"){
-      return b[pitcherSortKey] - a[pitcherSortKey];
-    }else{
-      return a[pitcherSortKey] - b[pitcherSortKey];
-    }
-  });
+// メンバー情報（必要なら後で読み込む）
+window.members = [];
+</script>
 
-  // 表示
-  tbody.innerHTML = "";
-  list.forEach(p=>{
-    tbody.innerHTML += `
-    <tr>
-      <td>${p.num}</td>
-      <td>${p.name}</td>
-      <td>${p.games}</td>
-      <td>${p.isQualified ? "○" : "-"}</td>
-      <td>${p.inning}</td>
-      <td>${p.hit}</td>
-      <td>${p.bb}</td>
-      <td>${p.so}</td>
-      <td>${p.er}</td>
-      <td>${p.era !== 999 ? p.era.toFixed(2) : "-"}</td>
-      <td>${p.whip !== 999 ? p.whip.toFixed(2) : "-"}</td>
-      <td>${p.kbb ? p.kbb.toFixed(2) : "-"}</td>
-    </tr>
+<script>
+// ================= 対象試合一覧 =================
+
+function renderGameList(data){
+  const gameList = document.getElementById("gameList");
+
+  gameList.innerHTML = data.map(g=>{
+    const label = `${g.date} ${g.game} vs ${g.opponent}`;
+    return `
+      <div onclick="location.href='game_input.html?id=${g.id}'"
+           style="cursor:pointer; color:yellow; margin:5px 0;">
+        ${label}
+      </div>
     `;
-  });
-
-  makeRanking(data);
+  }).join("");
 }
+
+// ================= ランキング =================
 
 function makeRanking(data){
 
@@ -669,7 +667,7 @@ function makeRanking(data){
   box.innerHTML = html;
 }
 
-/* ================= バグデータ削除 ================= */
+// ================= バグデータ削除 =================
 
 async function deleteBrokenData(){
 
@@ -688,30 +686,20 @@ async function deleteBrokenData(){
   loadResults();
 }
 
-/* ================= 編集 ================= */
+// ================= 初期ロード =================
 
-function editGame(label){
+window.addEventListener("load", () => {
 
-  const parts = label.split(" vs ");
-  const left = parts[0].split(" ");
+  const wait = setInterval(() => {
 
-  const date = left[0];
-  const game = left.slice(1).join(" ");
-  const opponent = parts[1];
+    if (window.getDocs && window.members) {
+      clearInterval(wait);
+      loadResults();   // ← 成績データ読み込み
+    }
 
-  const match = resultsData.find(g =>
-    g.date === date &&
-    g.game === game &&
-    g.opponent === opponent
-  );
+  }, 50);
 
-  localStorage.setItem("editGame", JSON.stringify(match));
-
-  window.location.href = "game_input.html";
-}
-
-/* ================= 初期ロード（待ち処理は 2/6 に記載済み） ================= */
-
+});
 </script>
 
 </body>
