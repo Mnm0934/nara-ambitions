@@ -11,27 +11,19 @@ body{
   color:white;
   font-family:'Noto Sans JP', sans-serif;
 }
-
-/* 中央 */
 .container{
   max-width:900px;
   margin:100px auto;
 }
-
-/* タイトル */
 h1{
   text-align:center;
   margin-bottom:40px;
 }
-
-/* メニュー一覧 */
 .menu{
   display:flex;
   flex-direction:column;
   gap:15px;
 }
-
-/* ボタン */
 .menu a{
   display:block;
   padding:15px;
@@ -42,18 +34,14 @@ h1{
   font-size:18px;
   transition:0.2s;
 }
-
 .menu a:hover{
   background:#d6002a;
   transform:translateX(5px);
 }
-
-/* ログアウト */
 .logout{
   margin-top:40px;
   text-align:center;
 }
-
 button{
   padding:10px 20px;
   background:#d6002a;
@@ -68,46 +56,36 @@ button{
 <body>
 
 <script>
-
 const USERS = {
   nakano: "1996",
   admin: "0725"
 };
 
-// ✅ ID入力
+// ID入力
 const inputId = prompt("🔐 IDを入力してください");
+if(!inputId){ location.href = "index.html"; }
 
-if(inputId === null || inputId.trim() === ""){
-  alert("キャンセルされました");
-  location.href = "index.html";
-}
-
-// ✅ パスワード入力
 const inputPass = prompt("🔒 パスワードを入力してください");
+if(!inputPass){ location.href = "index.html"; }
 
-if(inputPass === null || inputPass.trim() === ""){
-  alert("キャンセルされました");
-  location.href = "index.html";
-}
-
-// ✅ 判定
 const id = inputId.trim();
 const pass = inputPass.trim();
 
 if(USERS[id] && USERS[id] === pass){
 
-  // ✅ 管理者判定
+  // 管理者判定（localStorage で保持）
   if(id === "admin"){
     window.isAdmin = true;
+    localStorage.setItem("isAdmin", "true");
   }else{
     window.isAdmin = false;
+    localStorage.removeItem("isAdmin");
   }
 
 }else{
   alert("IDまたはパスワードが違います");
   location.href = "index.html";
 }
-
 </script>
 
 
@@ -117,38 +95,33 @@ if(USERS[id] && USERS[id] === pass){
 
   <div class="menu">
 
-  <!-- ✅ 出欠確認（自作ページ） -->
-  <a href="attendance.html">出欠入力</a>
-  <a href="attendance-list.html">出欠一覧</a>
+    <a href="attendance.html">出欠入力</a>
+    <a href="attendance-list.html">出欠一覧</a>
 
-  <!-- ✅ 活動日程 -->
-  <a href="member-schedule.html">活動日程スケジュール</a>
+    <a href="member-schedule.html">活動日程スケジュール</a>
 
-  <!-- ✅ NEWS更新 -->
-  <a href="news-admin.html">NEWS登録</a>
+    <a href="news-admin.html">NEWS登録</a>
 
-  <!-- ✅ 成績 -->
-  <a href="game_list.html">試合結果一覧</a>
-  <a href="results-admin.html">選手成績一覧</a>
-<a href="video-list.html">試合動画一覧</a>
-<a href="video-form.html" class="admin-only">試合動画登録(管理者限定)</a>
-  <a href="game_input.html" class="admin-only">成績入力(管理者限定)</a>
-<a href="event.html" class="admin-only">予定登録(管理者限定)</a>
+    <a href="game_list.html">試合結果一覧</a>
+    <a href="results-admin.html">選手成績一覧</a>
 
+    <a href="video-list.html">試合動画一覧</a>
+    <a href="video-form.html" class="admin-only">試合動画登録(管理者限定)</a>
 
-  <!-- ✅ 選手登録 -->
-<a href="members.html" class="admin-only">選手登録(管理者限定)</a>
+    <a href="game_input.html" class="admin-only">成績入力(管理者限定)</a>
 
-  <!-- ✅ PDF -->
-  <a href="rules.pdf" target="_blank">部則（PDF）</a>
-  <a href="nyuubu.pdf" target="_blank">入部届（PDF）</a>
-  <a href="kyubu.pdf" target="_blank">休部届（PDF）</a>
-  <a href="taibu.pdf" target="_blank">退部届（PDF）</a>
+    <a href="event.html" class="admin-only">予定登録(管理者限定)</a>
 
-  <!-- ✅ 昔のHP -->
-  <a href="https://www.ambitions1996.com/">旧ホームページを見る</a>
+    <a href="members.html" class="admin-only">選手登録(管理者限定)</a>
 
-</div>
+    <a href="rules.pdf" target="_blank">部則（PDF）</a>
+    <a href="nyuubu.pdf" target="_blank">入部届（PDF）</a>
+    <a href="kyubu.pdf" target="_blank">休部届（PDF）</a>
+    <a href="taibu.pdf" target="_blank">退部届（PDF）</a>
+
+    <a href="https://www.ambitions1996.com/">旧ホームページを見る</a>
+
+  </div>
 
   <div class="logout">
     <button onclick="logout()">ログアウト</button>
@@ -159,19 +132,18 @@ if(USERS[id] && USERS[id] === pass){
 <script>
 function logout(){
   alert("ログアウトしました");
+  localStorage.removeItem("isAdmin");
   location.href = "index.html";
 }
-</script>
 
-<script>
 window.onload = function(){
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
 
-  if(!window.isAdmin){
+  if(!isAdmin){
     document.querySelectorAll(".admin-only").forEach(el=>{
       el.style.display = "none";
     });
   }
-
 }
 </script>
 
