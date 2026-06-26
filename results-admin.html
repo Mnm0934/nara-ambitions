@@ -125,20 +125,22 @@ const app = initializeApp({
 
 const db = getFirestore(app);
 
-// window に登録
 window.db = db;
 window.getDocs = getDocs;
 window.collection = collection;
 window.deleteDoc = deleteDoc;
 window.doc = doc;
 
-// ================= メンバー読み込み =================
 window.members = [];
 
 async function loadMembers(){
   const snap = await getDocs(collection(db, "members"));
   window.members = snap.docs.map(d => d.data());
 }
+
+// ★ これを追加するだけでOK
+window.loadMembers = loadMembers;
+
 </script>
 
 <script>
