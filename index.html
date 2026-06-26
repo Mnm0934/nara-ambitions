@@ -1487,10 +1487,8 @@ header.small .title img{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs
+import { 
+  getFirestore, collection, getDocs 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const app = initializeApp({
@@ -1508,14 +1506,50 @@ const db = getFirestore(app);
 window.db = db;
 window.getDocs = getDocs;
 window.collection = collection;
-</script>
 
-<script>
-// ✅ indexに来たら強制ログアウト
-localStorage.removeItem("login");
-localStorage.removeItem("role");
-</script>
+// ニュース表示
+async function renderNews(){
+  const list = document.getElementById("news-list");
+  if(!list) return;
 
+  list.innerHTML = "<p>読み込み中...</p>";
+
+  try{
+    const snap = await getDocs(collection(db, "news"));
+    let items = [];
+
+    snap.forEach(d => items.push(d.data()));
+
+    items.sort((a,b)=> b.date.localeCompare(a.date));
+
+    if(items.length === 0){
+      list.innerHTML = "<p>ニュースはありません</p>";
+      return;
+    }
+
+    let html = "";
+    items.slice(0,5).forEach(n => {
+      html += `
+        <div class="news-item">
+          <div class="news-text">
+            <div class="tag ${n.type}">${n.type}</div>
+            <h3>${n.title}</h3>
+            <div class="date">${n.date}</div>
+          </div>
+        </div>
+      `;
+    });
+
+    list.innerHTML = html;
+
+  }catch(e){
+    console.error(e);
+    list.innerHTML = "<p>読み込みエラー</p>";
+  }
+}
+
+renderNews();
+</script>
 
 <header>
   <div class="title">
