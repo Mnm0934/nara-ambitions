@@ -239,16 +239,10 @@ function renderList(){
 
 
 // ✅ 詳細へ
-function goDetail(date,game,opponent){
-
-  localStorage.setItem("viewGame",JSON.stringify({
-    date:date,
-    game:game,
-    opponent:opponent
-  }));
-
-  location.href = "game_detail.html";
+function goDetail(id){
+  location.href = "game_detail.html?id=" + id;
 }
+
 
 function createScoreBoard(my, op, cls, game){
 let topName, topData, bottomName, bottomData;
@@ -460,7 +454,7 @@ function changeMonth(select, year){
 
       <b>${result}</b><br>
 
-      <button onclick="goDetail('${game.date}','${game.game}','${game.opponent}')">詳細</button>
+      <button onclick="goDetail('${game.id}')">詳細</button>
       <button onclick="editGame('${game.id}')">編集</button>
       <button onclick="deleteGame('${game.id}')">削除</button>
     </div>
