@@ -72,7 +72,7 @@ body{
 </style>
 </head>
 
-<body>
+<body style="display:none;">
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -108,7 +108,7 @@ window.deleteDoc = deleteDoc;
 window.doc = doc;
 window.updateDoc = updateDoc;
 
-window.addMember = async function(){
+async function addMember(){
 
   const number = document.getElementById("number").value;
   const name = document.getElementById("name").value;
@@ -173,23 +173,25 @@ window.addMember = async function(){
 
 <script>
 
-// ✅ パスワード
-const adminPass = "19980725";
+const saved = localStorage.getItem("userLogin");
 
-// ✅ ログイン状態
-let isLoggedIn = localStorage.getItem("adminLogin");
+if(!saved){
+  alert("ログインしてください");
+  location.href = "index.html";
+}else{
+  const user = JSON.parse(saved);
 
-if(!isLoggedIn){
-  const input = prompt("管理者パスワード");
-
-  if(input === adminPass){
-    localStorage.setItem("adminLogin","true");
+  if(Date.now() > user.expire){
+    alert("ログインの有効期限が切れました");
+    localStorage.removeItem("userLogin");
+    location.href = "index.html";
+  }else if(user.id !== "admin"){
+    alert("管理者のみアクセス可能です");
+    location.href = "member-only.html";
   }else{
-    alert("権限なし");
-    window.location.href = "member-only.html";
+    document.body.style.display = "block";
   }
 }
-
 // ✅ データ
 let members = [];
 let editIndex = -1;
@@ -228,10 +230,33 @@ async function saveEdit(i){
     return;
   }
 
-  await updateDoc(doc(db, "members", members[i].id), {
-    number: newNumber ? Number(newNumber) : null,
-    name: newName
-  });
+  const oldNumber = members[i].number;
+const newNumberVal = newNumber ? Number(newNumber) : null;
+
+// メンバー更新
+await updateDoc(doc(db, "members", members[i].id), {
+  number: newNumberVal,
+  name: newName
+});
+
+// 🔥 ここ追加（超重要）
+if(oldNumber !== newNumberVal){
+
+  const attSnap = await getDocs(collection(db, "attendance"));
+
+  for(const d of attSnap.docs){
+
+    if(d.data().name === `#${oldNumber}`){
+
+      await updateDoc(doc(db, "attendance", d.id), {
+        name: `#${newNumberVal}`
+      });
+
+    }
+
+  }
+
+}
 
   editIndex = -1;
   loadMembers();
@@ -281,7 +306,7 @@ async function resetAll(){
 // ✅ ログアウト
 function logout(){
   if(confirm("ログアウトしますか？")){
-    localStorage.removeItem("adminLogin");
+    localStorage.removeItem("userLogin");
     window.location.href = "member-only.html";
   }
 }
@@ -290,7 +315,7 @@ function logout(){
 // ✅ 表示
 function render(){
 
-  members.sort((a,b)=>{
+  members = [...members].sort((a,b)=>{
   if(a.number === null) return 1;
   if(b.number === null) return -1;
   return a.number - b.number;
@@ -341,7 +366,10 @@ function render(){
 
   document.getElementById("list").innerHTML = html;
 }
-loadMembers();
+
+if(document.body.style.display === "block"){
+  loadMembers();
+}
 
 /* ✅ これを追加 */
 window.addMember = addMember;

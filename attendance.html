@@ -44,7 +44,27 @@ button{
 </style>
 </head>
 
-<body>
+<body style="display:none;">
+<script>
+const saved = localStorage.getItem("userLogin");
+
+if(!saved){
+  alert("ログインしてください");
+  location.href = "index.html";
+}else{
+  const user = JSON.parse(saved);
+
+  // ✅ 期限チェック
+  if(Date.now() > user.expire){
+    alert("ログインの有効期限が切れました");
+    localStorage.removeItem("userLogin");
+    location.href = "index.html";
+  }else{
+    // ✅ 部員は誰でもOK（admin不要）
+    document.body.style.display = "block";
+  }
+}
+</script>
 
 <div class="box">
 
@@ -135,6 +155,8 @@ window.db = db;
 window.collection = collection;
 window.addDoc = addDoc;
 window.getDocs = getDocs;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
 
 // ✅ 出欠登録（ここが重要）
 async function add(status){
@@ -162,10 +184,11 @@ async function add(status){
     comment
   });
 
-  alert("保存しました");
+alert("保存しました");
 
+if(document.body.style.display === "block"){
   loadAll();
-
+}
   document.getElementById("date").value = "";
   document.getElementById("comment").value = "";
 }
@@ -180,7 +203,7 @@ function loadMembers(){
   }
 
   // 🔥 追加：番号で並び替え
-members.sort((a, b) => {
+members = [...members].sort((a, b) => {
   return (a.number || 9999) - (b.number || 9999);
 });
 
@@ -414,10 +437,7 @@ const selectedDate = params.get("date");
 
 if(selectedDate){
   document.getElementById("date").value = selectedDate;
-  render();
 }
-
-loadMembers();
 
 async function loadAll(){
 
@@ -435,19 +455,28 @@ async function loadAll(){
   events = [];
   const evSnap = await getDocs(collection(db, "events"));
   evSnap.forEach(d => {
-    events.push(d.data());
+    events.push({
+  id: d.id,
+  ...d.data()
+});
   });
 
   // メンバー
-  members = [];
-  const memSnap = await getDocs(collection(db, "members"));
-  memSnap.forEach(d => {
-    members.push(d.data());
+members = [];
+const memSnap = await getDocs(collection(db, "members"));
+memSnap.forEach(d => {
+  members.push({
+    id: d.id,
+    ...d.data()
   });
+});
 
+  if(document.body.style.display === "block"){
   loadMembers();
   render();
 }
+}
+
 async function deleteRecord(id){
 
   if(!confirm("削除しますか？")) return;
@@ -456,11 +485,10 @@ async function deleteRecord(id){
 
   alert("削除しました");
 
-  loadAll();
-}
-
-loadAll();
-
+  if(document.body.style.display === "block"){
+    loadAll();
+  }
+} // ←🔥これ追加
 </script>
 
 </body>

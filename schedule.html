@@ -852,9 +852,9 @@ function renderNext(){
   today.setHours(0,0,0,0);
 
   let next = events
-    .filter(e => e.public)
-    .sort((a,b) => new Date(a.date) - new Date(b.date))
-    .find(e => new Date(e.date) >= today);
+  .filter(e => e.public === true)
+  .sort((a,b) => new Date(a.date) - new Date(b.date))
+  .find(e => new Date(e.date) >= today);
 
   if(next){
     nextBox.innerHTML = `
@@ -897,7 +897,11 @@ function renderCalendar(){
 
     let className = "day";
 
-    const event = events.find(e => e.date === fullDate && e.public);
+    const dayEvents = events.filter(e =>
+  e.date === fullDate && e.public === true
+);
+
+const event = dayEvents[0];
 
 // ✅ マッチ日
 if(event){

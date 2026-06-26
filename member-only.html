@@ -74,39 +74,65 @@ const USERS = {
   admin: "0725"
 };
 
-// ✅ ID入力
-const inputId = prompt("🔐 IDを入力してください");
+function checkLogin(){
 
-if(inputId === null || inputId.trim() === ""){
-  alert("キャンセルされました");
-  location.href = "index.html";
-}
+  // ✅ すでにログイン済ならスルー
+  const saved = localStorage.getItem("userLogin");
 
-// ✅ パスワード入力
-const inputPass = prompt("🔒 パスワードを入力してください");
+  if(saved){
+  const user = JSON.parse(saved);
 
-if(inputPass === null || inputPass.trim() === ""){
-  alert("キャンセルされました");
-  location.href = "index.html";
-}
-
-// ✅ 判定
-const id = inputId.trim();
-const pass = inputPass.trim();
-
-if(USERS[id] && USERS[id] === pass){
-
-  // ✅ 管理者判定
-  if(id === "admin"){
-    window.isAdmin = true;
+  if(Date.now() > user.expire){
+    localStorage.removeItem("userLogin");
   }else{
-    window.isAdmin = false;
+    // ✅ 管理者判定
+    window.isAdmin = user.id === "admin";
+
+    // ✅ ここ追加（超重要）
+    user.expire = Date.now() + (1 * 60 * 60 * 1000);
+    localStorage.setItem("userLogin", JSON.stringify(user));
+
+    return;
+  }
+}
+
+
+  // ✅ 入力
+  const inputId = prompt("🔐 IDを入力してください");
+
+  if(!inputId){
+    location.href = "index.html";
+    return;
   }
 
-}else{
-  alert("IDまたはパスワードが違います");
-  location.href = "index.html";
+  const inputPass = prompt("🔒 パスワードを入力してください");
+
+  if(!inputPass){
+    location.href = "index.html";
+    return;
+  }
+
+  // ✅ 判定
+  if(USERS[inputId] && USERS[inputId] === inputPass){
+
+    // ✅ 保存
+    const now = Date.now();
+const expire = now + (1 * 60 * 60 * 1000); // ✅ 1時間
+
+localStorage.setItem("userLogin", JSON.stringify({
+  id: inputId,
+  expire: expire
+}));
+
+    window.isAdmin = inputId === "admin";
+
+  }else{
+    alert("IDまたはパスワードが違います");
+    location.href = "index.html";
+  }
 }
+
+checkLogin();
 
 </script>
 
@@ -159,6 +185,7 @@ if(USERS[id] && USERS[id] === pass){
 
 <script>
 function logout(){
+  localStorage.removeItem("userLogin");
   alert("ログアウトしました");
   location.href = "index.html";
 }

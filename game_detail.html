@@ -70,6 +70,26 @@ button{
 </head>
 
 <body>
+<script>
+try {
+  const saved = localStorage.getItem("userLogin");
+  if(!saved) throw new Error();
+
+  const user = JSON.parse(saved);
+
+  if(Date.now() > user.expire){
+    throw new Error();
+  }
+
+  user.expire = Date.now() + (1 * 60 * 60 * 1000);
+  localStorage.setItem("userLogin", JSON.stringify(user));
+
+}catch(e){
+  alert("ログインしてください");
+  localStorage.removeItem("userLogin");
+  location.href = "index.html";
+}
+</script>
 
 <div class="title">試合結果詳細</div>
 
@@ -114,31 +134,54 @@ let match = null;
 async function loadGame(){
 
   if(!id){
-    document.body.innerHTML = "IDなし";
+    alert("試合IDがありません");
+    location.href = "game_list.html";
     return;
   }
 
   const ref = doc(db, "results", id);
-  const snap = await getDoc(ref);
 
-  if(!snap.exists()){
-    document.body.innerHTML = "データなし";
-    return;
+  try {
+
+    const snap = await getDoc(ref);
+
+    if(!snap.exists()){
+      alert("データが見つかりません");
+      location.href = "game_list.html";
+      return;
+    }
+
+    match = snap.data();
+    renderAll();
+
+  }catch(e){
+    alert("通信エラーが発生しました");
+    location.href = "game_list.html";
   }
-
-  match = snap.data();
-
-  renderAll();
 }
 
+	
+							
 function renderAll(){
+
+  // ✅ ここに追加
+  const myTotal = (match.myInnings || []).reduce((a,b)=>a+(b||0),0);
+const opTotal = (match.opInnings || []).reduce((a,b)=>a+(b||0),0);
+
+let result = "";
+if(myTotal > opTotal) result = "勝ち";
+else if(myTotal < opTotal) result = "負け";
+else result = "引分";
+
+document.querySelector(".title").innerText =
+  `${match.game} vs ${match.opponent}（${result}）`;
 
   // ✅ 基本情報
   document.getElementById("info").innerHTML = `
   <b>${match.date}</b><br>
   ${match.game}<br>
   vs ${match.opponent}
-  `;
+`;
 
 // ================= スコア =================
 
@@ -240,9 +283,12 @@ function calcSLG(p){
 }
 
 function calcOPS(p){
-  const obp = parseFloat(calcOBP(p)) || 0;
-  const slg = parseFloat(calcSLG(p)) || 0;
-  return (obp + slg).toFixed(3);
+  const obp = calcOBP(p);
+  const slg = calcSLG(p);
+
+  if(obp === "-" || slg === "-") return "-";
+
+  return (parseFloat(obp) + parseFloat(slg)).toFixed(3);
 }
 
 function calcRISP(p){
@@ -294,10 +340,15 @@ batHTML += "</tr>";
     <td>${p.sh||0}</td>
     <td>${p.sf||0}</td>
     <td>${p.lob||0}</td>
-    <td>${p.run||0}</td>
-    <td>${p.rbi||0}</td>
-    <td>${p.sb||0}</td>
-    <td>${p.cs||0}</td>
+
+<td>${p.risp_ab||0}</td>
+<td>${p.risp_hit||0}</td>
+
+<td>${p.run||0}</td>
+<td>${p.rbi||0}</td>
+
+<td>${p.sb||0}</td>
+<td>${p.cs||0}</td>
 
     <td>${p.double||0}</td>
     <td>${p.triple||0}</td>
@@ -305,13 +356,11 @@ batHTML += "</tr>";
     <td>${p.tb||0}</td>
 
     <td>${calcAVG(p)}</td>
-    <td>${calcOBP(p)}</td>
-    <td>${calcSLG(p)}</td>
-    <td>${calcOPS(p)}</td>
+<td>${calcOBP(p)}</td>
+<td>${calcSLG(p)}</td>
+<td>${calcOPS(p)}</td>
 
-    <td>${p.risp_ab||0}</td>
-    <td>${p.risp_hit||0}</td>
-    <td>${calcRISP(p)}</td>
+<td>${calcRISP(p)}</td>
   </tr>
   `;
 });

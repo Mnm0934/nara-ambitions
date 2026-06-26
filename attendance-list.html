@@ -100,7 +100,25 @@ th small{
 </style>
 </head>
 
-<body>
+<body style="display:none;">
+<script>
+const saved = localStorage.getItem("userLogin");
+
+if(!saved){
+  alert("ログインしてください");
+  location.href = "index.html";
+}else{
+  const user = JSON.parse(saved);
+
+  if(Date.now() > user.expire){
+    alert("ログインの有効期限が切れました");
+    localStorage.removeItem("userLogin");
+    location.href = "index.html";
+  }else{
+    document.body.style.display = "block";
+  }
+}
+</script>
 
 <h2>📊 出欠一覧</h2>
 <div id="title" style="margin:10px;font-size:18px;"></div>
@@ -362,11 +380,6 @@ if(rec){
   `<div style="margin-bottom:20px;">${summaryHtml}</div>` + html;
 }
 
-renderTabs();
-if(monthKeys.length > 0){
-  changeMonth(monthKeys[0]);
-}
-
 function changeMonth(month){
   currentMonth = month; // ✅ 追加
   renderTable(month);
@@ -389,27 +402,43 @@ async function loadAll(){
   data = [];
   const attSnap = await getDocs(collection(db, "attendance"));
   attSnap.forEach(d => {
-    data.push({ ...d.data() });
+    data.push({
+  id: d.id,
+  ...d.data()
+});
   });
 
   // イベント
   events = [];
   const evSnap = await getDocs(collection(db, "events"));
-  evSnap.forEach(d => {
-    events.push(d.data());
+evSnap.forEach(d => {
+  events.push({
+    ...d.data()
   });
+});
+
 
   // メンバー
   members = [];
   const memSnap = await getDocs(collection(db, "members"));
   memSnap.forEach(d => {
-    members.push(d.data());
+    members.push({
+  id: d.id,
+  ...d.data()
+});
   });
 
-  init(); // ←重要
+  init();
+renderTabs();
+
+if(monthKeys.length > 0){
+  changeMonth(monthKeys[0]);
+}
 }
 
-loadAll();
+if(document.body.style.display === "block"){
+  loadAll();
+}
 
 </script>
 
