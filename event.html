@@ -120,17 +120,15 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ✅ 管理者チェック
-onAuthStateChanged(auth, (user) => {
-  const adminEmail = "nara.ambitions1996@gmail.com"; 
+// member-only の admin 判定を module 内でも読めるようにする
+const isAdmin = window.isAdmin;
 
-  if (user && user.email === adminEmail) {
-    document.body.style.display = "block";
-  } else {
-    window.location.href = "member-only.html";
-  }
-});
-
+// 認証
+if (isAdmin === true) {
+  document.body.style.display = "block";
+} else {
+  location.href = "member-only.html";
+}
 
 // ✅ グローバルに使えるようにする
 window.db = db;
