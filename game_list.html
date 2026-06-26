@@ -159,18 +159,20 @@ let data = [];
 
 async function loadData(){
 
-  const snap = await getDocs(collection(db, "results"));
+  const snap = await window.getDocs(window.collection(window.db, "results"));
 
   data = [];
 
   snap.forEach(docSnap => {
     data.push({
-      id: docSnap.id,   // ←超重要🔥
+      id: docSnap.id,
       ...docSnap.data()
     });
   });
 
-  renderList(); // ←後で作る
+  console.log(data);  // ←これ追加！！！
+
+  renderList();
 }
 
 // ✅ 年月ごとにグループ化
@@ -179,7 +181,12 @@ function renderList(){
   const groups = {};
 
   data.forEach(game=>{
+
+    if (!game.date) return;
     const date = new Date(game.date);
+
+    if (isNaN(date)) return;
+
     const y = date.getFullYear();
     const m = date.getMonth() + 1;
 
@@ -188,6 +195,12 @@ function renderList(){
 
     groups[y][m].push(game);
   });
+
+  // ✅ これ追加！！！！！
+  if (Object.keys(groups).length === 0){
+    document.getElementById("list").innerHTML = "試合データなし";
+    return;
+  }
 
   let html = "";
 
@@ -379,7 +392,10 @@ async function deleteGame(id){
 
   if(!confirm("本当に削除しますか？")) return;
 
-  await deleteDoc(doc(db, "results", id));
+  await window.deleteDoc(
+  window.doc(window.db, "results", id)
+);
+
 
   alert("削除しました");
 
@@ -405,7 +421,12 @@ function toggleMonth(el){
 
 function changeMonth(select, year){
 
+  const groups = window.groups;
+  if (!groups || !groups[year]) return;
+
   const month = select.value;
+  if (!groups[year][month]) return;
+
   const target = document.getElementById(`month-${year}`);
 
   let html = "";
@@ -449,7 +470,18 @@ function changeMonth(select, year){
   target.innerHTML = html;
 }
 
-loadData();
+window.addEventListener("load", () => {
+
+  const wait = setInterval(async () => {
+
+    if (window.getDocs) {
+      clearInterval(wait);
+      await loadData();
+    }
+
+  }, 50);
+
+});
 
 </script>
 
