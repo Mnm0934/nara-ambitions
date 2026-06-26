@@ -109,6 +109,9 @@ window.addDoc = addDoc;
 window.getDocs = getDocs;
 window.deleteDoc = deleteDoc;
 window.doc = doc;
+
+// 🔥 最重要：module 読み込み後に loadEvents() を実行
+window.loadEvents();
 </script>
 
 
@@ -310,8 +313,6 @@ async function removeEvent(id){
     loadEvents();
   }
 }
-
-loadEvents();
 
 // ログアウト
 function logout(){
