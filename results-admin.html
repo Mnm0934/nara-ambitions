@@ -135,10 +135,15 @@ window.doc = doc;
 window.members = [];
 
 async function loadMembers(){
-  const snap = await getDocs(collection(db, "members"));
-  window.members = [];
-  snap.forEach(docSnap => window.members.push(docSnap.data()));
-}
+  const snap = await getDocs(collection(db, "results"));
+snap.forEach(docSnap => {
+  const data = docSnap.data();
+  html += `
+    <div onclick="location.href='game_input.html?id=${docSnap.id}'">
+      ${data.date} ${data.game} vs ${data.opponent}
+    </div>
+  `;
+});
 
 await loadMembers();
 </script>
