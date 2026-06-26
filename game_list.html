@@ -313,7 +313,7 @@ for(let i=0;i<maxInning;i++){
 }
 
   // ✅ ヒット合計（バッターから）
-const gameData = data.find(g =>
+const gameData = (window.data || []).find(g =>
   g.date === game.date &&
   g.game === game.game &&
   g.opponent === game.opponent

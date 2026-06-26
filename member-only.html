@@ -74,65 +74,39 @@ const USERS = {
   admin: "0725"
 };
 
-function checkLogin(){
+// ✅ ID入力
+const inputId = prompt("🔐 IDを入力してください");
 
-  // ✅ すでにログイン済ならスルー
-  const saved = localStorage.getItem("userLogin");
-
-  if(saved){
-  const user = JSON.parse(saved);
-
-  if(Date.now() > user.expire){
-    localStorage.removeItem("userLogin");
-  }else{
-    // ✅ 管理者判定
-    window.isAdmin = user.id === "admin";
-
-    // ✅ ここ追加（超重要）
-    user.expire = Date.now() + (1 * 60 * 60 * 1000);
-    localStorage.setItem("userLogin", JSON.stringify(user));
-
-    return;
-  }
+if(inputId === null || inputId.trim() === ""){
+  alert("キャンセルされました");
+  location.href = "index.html";
 }
 
+// ✅ パスワード入力
+const inputPass = prompt("🔒 パスワードを入力してください");
 
-  // ✅ 入力
-  const inputId = prompt("🔐 IDを入力してください");
-
-  if(!inputId){
-    location.href = "index.html";
-    return;
-  }
-
-  const inputPass = prompt("🔒 パスワードを入力してください");
-
-  if(!inputPass){
-    location.href = "index.html";
-    return;
-  }
-
-  // ✅ 判定
-  if(USERS[inputId] && USERS[inputId] === inputPass){
-
-    // ✅ 保存
-    const now = Date.now();
-const expire = now + (1 * 60 * 60 * 1000); // ✅ 1時間
-
-localStorage.setItem("userLogin", JSON.stringify({
-  id: inputId,
-  expire: expire
-}));
-
-    window.isAdmin = inputId === "admin";
-
-  }else{
-    alert("IDまたはパスワードが違います");
-    location.href = "index.html";
-  }
+if(inputPass === null || inputPass.trim() === ""){
+  alert("キャンセルされました");
+  location.href = "index.html";
 }
 
-checkLogin();
+// ✅ 判定
+const id = inputId.trim();
+const pass = inputPass.trim();
+
+if(USERS[id] && USERS[id] === pass){
+
+  // ✅ 管理者判定
+  if(id === "admin"){
+    window.isAdmin = true;
+  }else{
+    window.isAdmin = false;
+  }
+
+}else{
+  alert("IDまたはパスワードが違います");
+  location.href = "index.html";
+}
 
 </script>
 
@@ -158,10 +132,9 @@ checkLogin();
   <a href="results-admin.html">選手成績一覧</a>
 <a href="video-list.html">試合動画一覧</a>
 <a href="video-form.html" class="admin-only">試合動画登録(管理者限定)</a>
-  <a href="game_input.html"class="admin-only">成績入力(管理者限定)</a>
-
-  <!-- ✅ 予定登録 -->
+  <a href="game_input.html" class="admin-only">成績入力(管理者限定)</a>
 <a href="event.html" class="admin-only">予定登録(管理者限定)</a>
+
 
   <!-- ✅ 選手登録 -->
 <a href="members.html" class="admin-only">選手登録(管理者限定)</a>
@@ -185,7 +158,6 @@ checkLogin();
 
 <script>
 function logout(){
-  localStorage.removeItem("userLogin");
   alert("ログアウトしました");
   location.href = "index.html";
 }
