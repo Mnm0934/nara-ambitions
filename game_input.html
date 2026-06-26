@@ -130,7 +130,7 @@ function checkAuth(){
 checkAuth();
 
 let members = [];
-async function loadMembers() {
+window.loadMembers = async function() {
   const snapshot = await getDocs(collection(db, "members"));
   members = [];
   snapshot.forEach(doc => members.push(doc.data()));
@@ -532,9 +532,11 @@ async function loadEdit(){
 }
 
 window.addEventListener("load", async () => {
-  await loadMembers();  // ← 先に読み込み
-  loadEdit();           // ← そのあと
+  await window.loadMembers();
+  loadEdit();
 });
+
+
 
 /* ============================
    ページ遷移
