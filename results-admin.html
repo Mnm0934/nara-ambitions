@@ -144,9 +144,34 @@ window.loadMembers = loadMembers;
 </script>
 
 <script>
+
+function normalize(name){
+  return (name || "")
+    .replace(/^#\d+\s*/, "")
+    .trim();
+}
+
 // ================= Firestore results 読み込み =================
 
 let resultsData = [];
+
+let batterSortKey = "num";
+let batterSortOrder = "asc";
+
+function changeBatterSort(key){
+  if(batterSortKey === key){
+    batterSortOrder = batterSortOrder === "asc" ? "desc" : "asc";
+  }else{
+    batterSortKey = key;
+    batterSortOrder = "desc";
+  }
+  render();
+}
+
+function sortArrow(key, currentKey, order){
+  if(key !== currentKey) return "";
+  return order === "asc" ? "▲" : "▼";
+}
 
 async function loadResults(){
   const snap = await window.getDocs(window.collection(window.db, "results"));
@@ -164,6 +189,11 @@ async function loadResults(){
 
 let mode = "all";
 
+function changeMode(m){
+  mode = m;
+  render();
+}
+
 function goInput(){
   window.location.href = "game_input.html";
 }
@@ -172,6 +202,7 @@ function goInput(){
 
 function getPlayers(){
   return window.members
+    .filter(m => m.role === "選手")
     .sort((a,b)=>a.number - b.number)
     .map(m => ({
       num: m.number,
@@ -240,13 +271,8 @@ function render(){
 
   let list = [];
 
-  getPlayers()
-  .filter(p => {
-    const cleanName = p.name.replace(/^#\d+\s*/, "");
-    const member = window.members.find(m => m.name === cleanName);
-    return member && member.role === "選手";
-  })
-  .forEach(p=>{
+  getPlayers().forEach(p=>{
+
     const num = p.num;
     const name = p.name;
 
@@ -260,28 +286,42 @@ function render(){
       let played = false;
 
       (game.batters || []).forEach(row=>{
-        const cleanName = row.name.replace(/^#\d+\s*/, "");
-        const member = window.members.find(m => m.name === cleanName);
-        if(!member || member.role !== "選手") return;
+        const cleanName = normalize(row.name);
+const member = window.members.find(m => normalize(m.name) === cleanName);
 
-        if(cleanName === name){
-          played = true;
-          pa += row.pa||0;
-          ab += row.ab||0;
-          hit += row.hit||0;
-          bb += row.bb||0;
-          rbi += row.rbi||0;
-          sb += row.sb||0;
-          sb_fail += row.cs||0;
-          double += row.double||0;
-          triple += row.triple||0;
-          hr += row.hr||0;
-          sac += row.sac||0;
-          sf += row.sf||0;
-          so += row.so||0;
-          risp_ab += row.risp_ab||0;
-          risp_hit += row.risp_hit||0;
-        }
+if(!member || member.role !== "選手") return;
+
+if(cleanName === normalize(name)){
+  played = true;
+  pa += row.pa||0;
+  ab += row.ab||0;
+  hit += row.hit||0;
+  bb += row.bb||0;
+  rbi += row.rbi||0;
+  sb += row.sb||0;
+  sb_fail += row.cs||0;
+
+  double += row.double||0;
+  triple += row.triple||0;
+  hr += row.hr||0;
+
+  // ✅ これ追加
+  const single = (row.hit || 0)
+             - (row.double || 0)
+             - (row.triple || 0)
+             - (row.hr || 0);
+
+tb += single
+     + (row.double || 0) * 2
+     + (row.triple || 0) * 3
+     + (row.hr || 0) * 4;
+
+  sac += row.sac||0;
+  sf += row.sf||0;
+  so += row.so||0;
+  risp_ab += row.risp_ab||0;
+  risp_hit += row.risp_hit||0;
+}
       });
 
       if(played) games++;
@@ -398,13 +438,7 @@ function renderPitcher(data){
 
   let list = [];
 
-  getPlayers()
-  .filter(p => {
-    const cleanName = p.name.replace(/^#\d+\s*/, "");
-    const member = window.members.find(m => m.name === cleanName);
-    return member && member.role === "選手";
-  })
-  .forEach(p=>{
+  getPlayers().forEach(p=>{
     const num = p.num;
     const name = p.name;
 
@@ -415,7 +449,7 @@ function renderPitcher(data){
       let played = false;
 
       (game.pitchers || []).forEach(row=>{
-        if(row.name.replace(/^#\d+\s*/, "") === name){
+        if(normalize(row.name) === normalize(name)){
 
           played = true;
 
@@ -531,7 +565,7 @@ function makeRanking(data){
     // ---- 打者 ----
     (game.batters || []).forEach(p=>{
       const cleanName = p.name.replace(/^#\d+\s*/, "");
-      const member = window.members.find(m => m.name === cleanName);
+      const member = window.members.find(m => normalize(m.name) === normalize(cleanName));
       if(!member || member.role !== "選手") return;
 
       if(!batterStats[cleanName]){
@@ -549,7 +583,7 @@ function makeRanking(data){
     // ---- 投手 ----
     (game.pitchers || []).forEach(p=>{
       const cleanName = p.name.replace(/^#\d+\s*/, "");
-      const member = window.members.find(m => m.name === cleanName);
+      const member = window.members.find(m => normalize(m.name) === normalize(cleanName));
       if(!member || member.role !== "選手") return;
 
       if(!pitcherStats[cleanName]){
