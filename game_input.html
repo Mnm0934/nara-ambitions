@@ -422,13 +422,13 @@ async function save(){
   const id = params.get("id");
 
   if(id){
-    const ref = doc(db, "results", id);
-    await updateDoc(ref, data);
-    alert("更新しました");
-  }else{
-    await addDoc(collection(db, "results"), data);
-    alert("保存しました");
-  }
+  const ref = window.doc(window.db, "results", id);
+  await window.updateDoc(ref, data);
+  alert("更新しました");
+}else{
+  await window.addDoc(window.collection(window.db, "results"), data);
+  alert("保存しました");
+}
 
   document.querySelectorAll("input").forEach(i => i.value="");
 }
@@ -452,7 +452,7 @@ async function loadEdit(){
 
   if(!id) return;
 
-  const snap = await getDoc(doc(db, "results", id));
+  const snap = await window.getDoc(window.doc(window.db, "results", id));
   if(!snap.exists()) return;
 
   const gameData = snap.data();
@@ -563,7 +563,7 @@ async function deleteGame(){
 
   if(!confirm("この試合を削除しますか？")) return;
 
-  await deleteDoc(doc(db, "results", id));
+  await window.deleteDoc(window.doc(window.db, "results", id));
 
   alert("削除しました");
   location.href = "game_list.html";
