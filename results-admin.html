@@ -179,7 +179,7 @@ async function loadResults(){
 
   snap.forEach(docSnap => {
     resultsData.push({
-  id: docSnap.id,
+  firestoreId: docSnap.id,
   ...docSnap.data()
 });
   });
