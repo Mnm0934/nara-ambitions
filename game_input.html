@@ -85,6 +85,7 @@ import {
   getDoc,
   addDoc,
   updateDoc,
+  deleteDoc,   // ← これ追加
   doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -137,7 +138,7 @@ async function loadMembers() {
   // ★ これが超重要（自動入力が動くようになる）
   window.members = members;
 }
-loadMembers();
+
 </script>
 
 <h2>試合結果入力</h2>
@@ -394,10 +395,9 @@ function collectData(){
   }
 
   return {
-    id: Date.now(),
-    date,
-    game,
-    opponent,
+  date,
+  game,
+  opponent,
     batFirst,
     myInnings,
     opInnings,
@@ -531,7 +531,10 @@ async function loadEdit(){
   alert("編集モードです");
 }
 
-loadEdit();
+window.addEventListener("load", async () => {
+  await loadMembers();  // ← 先に読み込み
+  loadEdit();           // ← そのあと
+});
 
 /* ============================
    ページ遷移
