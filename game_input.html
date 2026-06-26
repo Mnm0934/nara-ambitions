@@ -450,9 +450,16 @@ async function loadEdit(){
   const params = new URLSearchParams(location.search);
   const id = params.get("id");
 
+  console.log("id確認:", id);   // ✅ ここ追加
+
   if(!id) return;
 
-  const snap = await window.getDoc(window.doc(window.db, "results", id));
+  const snap = await window.getDoc(
+    window.doc(window.db, "results", id)
+  );
+
+  console.log("exists:", snap.exists());   // ✅ ここ追加
+
   if(!snap.exists()) return;
 
   const gameData = snap.data();
@@ -535,11 +542,11 @@ window.addEventListener("load", () => {
 
   const wait = setInterval(async () => {
 
-    if (window.getDoc && window.loadMembers) {
+    if (window.getDoc && window.getDocs && window.loadMembers) {
       clearInterval(wait);
 
       await window.loadMembers();
-      await loadEdit();   // ← ここawait付けるのが重要
+      await loadEdit();
     }
 
   }, 50);

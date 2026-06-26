@@ -165,9 +165,9 @@ async function loadData(){
 
   snap.forEach(docSnap => {
     data.push({
-      id: docSnap.id,
-      ...docSnap.data()
-    });
+  ...docSnap.data(),
+  id: docSnap.id
+});
   });
 
   console.log(data);  // ←これ追加！！！
