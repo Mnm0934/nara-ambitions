@@ -112,38 +112,15 @@ h3:hover{
   background:#ffb300;
 }
 
+.box button {
+  display: inline-block !important;
+}
+
+
 </style>
 </head>
 
 <body>
-<script>
-const saved = localStorage.getItem("userLogin");
-
-if(!saved){
-  alert("ログインしてください");
-  location.href = "index.html";
-}else{
-  const user = JSON.parse(saved);
-
-  // ✅ 有効期限チェック
-  if(Date.now() > user.expire){
-    alert("ログインの有効期限が切れました");
-
-    localStorage.removeItem("userLogin");
-
-    location.href = "index.html";
-    return;
-  }
-
-  // ✅ 管理者判定
-  window.isAdmin = user.id === "admin";
-
-  // ✅ セッション延長（1時間再セット）
-  user.expire = Date.now() + (1 * 60 * 60 * 1000);
-  localStorage.setItem("userLogin", JSON.stringify(user));
-}
-
-</script>
 
 <h2>NARA Ambitions club 試合一覧</h2>
 
@@ -472,24 +449,21 @@ function changeMonth(select, year){
       cls = "draw"; result = "引分";
     }
 
-html += `
-<div class="box ${cls}">
-  ${game.date} ${game.game}<br>
-  vs ${game.opponent}<br>
-  <b>${myTotal} - ${opTotal}</b>
+    html += `
+    <div class="box ${cls}">
+      ${game.date} ${game.game}<br>
+      vs ${game.opponent}<br>
+      <b>${myTotal} - ${opTotal}</b>
 
-  ${createScoreBoard(my, op, cls, game)}
+      ${createScoreBoard(my, op, cls, game)}
 
-  <b>${result}</b><br>
+      <b>${result}</b><br>
 
-  <button onclick="goDetail('${game.id}')">詳細</button>
-
-  ${window.isAdmin ? `
-    <button onclick="editGame('${game.id}')">編集</button>
-    <button onclick="deleteGame('${game.id}')">削除</button>
-  ` : ``}
-</div>
-`;
+      <button onclick="goDetail('${game.id}')">詳細</button>
+      <button onclick="editGame('${game.id}')">編集</button>
+      <button onclick="deleteGame('${game.id}')">削除</button>
+    </div>
+    `;
   });
 
   target.innerHTML = html;
