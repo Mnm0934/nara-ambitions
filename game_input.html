@@ -531,10 +531,22 @@ async function loadEdit(){
   alert("編集モードです");
 }
 
-window.addEventListener("load", async () => {
-  await window.loadMembers();
-  loadEdit();
+window.addEventListener("load", () => {
+
+  const wait = setInterval(async () => {
+
+    if (window.getDoc && window.loadMembers) {
+      clearInterval(wait);
+
+      await window.loadMembers();
+      await loadEdit();   // ← ここawait付けるのが重要
+    }
+
+  }, 50);
+
 });
+
+
 
 
 
