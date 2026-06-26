@@ -124,7 +124,9 @@ const db = getFirestore(app);
 const isAdmin = window.isAdmin;
 
 // 認証
-if (isAdmin === true) {
+const isAdmin = localStorage.getItem("isAdmin") === "true";
+
+if (isAdmin) {
   document.body.style.display = "block";
 } else {
   location.href = "member-only.html";
