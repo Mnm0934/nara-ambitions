@@ -74,9 +74,12 @@ button{
 <body style="display:none;">
 
 
+<!-- 🔥 Firebase 読み込み & 認証 -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { 
+  getFirestore, collection, addDoc, getDocs, deleteDoc, doc 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
@@ -90,7 +93,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔥 localStorage の admin 判定を使用
+// 🔥 localStorage の admin 判定
 const isAdmin = localStorage.getItem("isAdmin") === "true";
 
 if (isAdmin) {
@@ -99,7 +102,7 @@ if (isAdmin) {
   location.href = "member-only.html";
 }
 
-// Firestore をグローバル化
+// 🔥 Firestore 関数を module 外で使えるようにする
 window.db = db;
 window.collection = collection;
 window.addDoc = addDoc;
@@ -109,6 +112,7 @@ window.doc = doc;
 </script>
 
 
+<!-- ここから画面本体 -->
 <div class="box">
 
 <h2>予定登録</h2>
@@ -138,6 +142,8 @@ window.doc = doc;
 
 </div>
 
+
+<!-- 月切替 -->
 <div class="header">
   <button onclick="changeMonth(-1)">←</button>
   <span id="title"></span>
@@ -150,6 +156,8 @@ window.doc = doc;
 
 <button onclick="logout()" style="background:#d6002a;color:white;border-radius:5px;">ログアウト</button>
 
+
+<!-- 🔥 Firestore 操作用スクリプト（module 外） -->
 <script>
 let events = [];
 let current = new Date();
@@ -165,13 +173,13 @@ function goBack(){
 
 // 登録
 async function addEvent(isPublic){
-  const date = date.value;
-  const type = type.value;
-  const place = place.value;
-  const time = time.value;
-  const opponent = opponent.value;
-  const note = note.value;
-  const result = result.value;
+  const date = document.getElementById("date").value;
+  const type = document.getElementById("type").value;
+  const place = document.getElementById("place").value;
+  const time = document.getElementById("time").value;
+  const opponent = document.getElementById("opponent").value;
+  const note = document.getElementById("note").value;
+  const result = document.getElementById("result").value;
 
   if(date === "" || type === ""){
     alert("入力してください");
@@ -185,16 +193,9 @@ async function addEvent(isPublic){
 
   alert("保存しました");
   loadEvents();
-
-  date.value = "";
-  type.value = "";
-  place.value = "";
-  time.value = "";
-  opponent.value = "";
-  note.value = "";
-  result.value = "";
 }
 
+// 読み込み
 async function loadEvents(){
   events = [];
   const snapshot = await getDocs(collection(db, "events"));
@@ -204,18 +205,20 @@ async function loadEvents(){
   render();
 }
 
+// 月移動
 function changeMonth(num){
   current.setMonth(current.getMonth() + num);
   render();
 }
 
+// 描画
 function render(){
   const cal = document.getElementById("calendar");
   cal.innerHTML = "";
 
   const year = current.getFullYear();
   const month = current.getMonth();
-  title.innerText = `${year}年${month+1}月`;
+  document.getElementById("title").innerText = `${year}年${month+1}月`;
 
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month + 1, 0).getDate();
@@ -251,6 +254,7 @@ function render(){
   }
 }
 
+// 詳細
 function showDetail(date){
   const dayEvents = events.filter(e => e.date === date);
   let html = `<h3>${date}</h3>`;
@@ -278,12 +282,12 @@ function showDetail(date){
 
   html += `<br><button onclick="closeModal()">閉じる</button>`;
 
-  modal.innerHTML = html;
-  modal.style.display = "block";
+  document.getElementById("modal").innerHTML = html;
+  document.getElementById("modal").style.display = "block";
 }
 
 function closeModal(){
-  modal.style.display = "none";
+  document.getElementById("modal").style.display = "none";
 }
 
 function editEvent(date, index){
@@ -309,6 +313,7 @@ async function removeEvent(id){
 
 loadEvents();
 
+// ログアウト
 function logout(){
   localStorage.removeItem("isAdmin");
   alert("ログアウトしました");
