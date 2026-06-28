@@ -68,6 +68,20 @@ button{
   width:80%;
   max-width:300px;
 }
+
+
+/* 非公開イベント */
+.private {
+  background:#555;
+  color:#eee;
+}
+
+/* 飲み会 */
+.party {
+  background:#9c27b0;
+  color:white;
+}
+
 </style>
 </head>
 
@@ -238,16 +252,25 @@ function render(){
     let className = "cell";
 
     dayEvents.forEach(ev => {
-      if(ev.type === "公式戦" || ev.type === "OP戦") className += " match";
-      if(ev.type === "練習") className += " practice";
 
-      html += `
-        <div class="event">
-          ● ${ev.time || ""}<br>
-          ${ev.type}
-        </div>
-      `;
-    });
+  // 種類ごとに色分け
+  if(ev.public !== true){
+    className += " private";
+  }else{
+    if(ev.type === "公式戦" || ev.type === "OP戦") className += " match";
+    if(ev.type === "練習") className += " practice";
+    if(ev.type === "飲み会") className += " party";
+  }
+
+  html += `
+    <div class="event">
+      <b>● ${ev.time || ""}</b><br>
+      <b>${ev.type}</b><br>
+      <span style="font-size:10px;">${ev.place || ""}</span>
+    </div>
+  `;
+});
+
 
     cal.innerHTML += `
       <div class="${className}" onclick="showDetail('${dateStr}')">
