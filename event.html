@@ -98,11 +98,23 @@ button{
 </head>
 
 <body style="display:none;">
+<script>
+const loggedIn = localStorage.getItem("loggedIn");
+const role = localStorage.getItem("role");
 
+if(!loggedIn){
+  alert("ログインしてください");
+  location.href = "index.html";
+}else if(role !== "admin"){
+  alert("管理者のみアクセスできます");
+  location.href = "member-only.html";
+}else{
+  document.body.style.display = "block";
+}
+</script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore,
   collection,
@@ -122,19 +134,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
-
-// ✅ 管理者チェック
-onAuthStateChanged(auth, (user) => {
-  const adminEmail = "nara.ambitions1996@gmail.com"; 
-
-  if (user && user.email === adminEmail) {
-    document.body.style.display = "block";
-  } else {
-    window.location.href = "member-only.html";
-  }
-});
 
 
 // ✅ グローバルに使えるようにする
@@ -429,14 +429,11 @@ loadEvents();
 
 
 function logout(){
-  import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")
-    .then(({ getAuth, signOut }) => {
-      const auth = getAuth();
-      signOut(auth).then(() => {
-        alert("ログアウトしました");
-        location.href = "index.html";
-      });
-    });
+  if(confirm("ログアウトしますか？")){
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("role");
+    location.href = "index.html";
+  }
 }
 </script>
 

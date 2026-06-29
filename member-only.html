@@ -81,10 +81,10 @@ if(USERS[id] && USERS[id] === pass){
   }));
 
   if(id === "admin"){
-    localStorage.setItem("isAdmin", "true");
-  }else{
-    localStorage.removeItem("isAdmin");
-  }
+  localStorage.setItem("role", "admin");
+}else{
+  localStorage.setItem("role", "member");
+}
 
 }else{
   alert("IDまたはパスワードが違います");
@@ -137,12 +137,13 @@ if(USERS[id] && USERS[id] === pass){
 function logout(){
   alert("ログアウトしました");
   localStorage.removeItem("loggedIn");
-  localStorage.removeItem("isAdmin");
+  localStorage.removeItem("role");
   location.href = "index.html";
 }
 
 window.onload = function(){
-  const isAdmin = localStorage.getItem("isAdmin") === "true";
+  const role = localStorage.getItem("role");
+  const isAdmin = role === "admin";
 
   if(!isAdmin){
     document.querySelectorAll(".admin-only").forEach(el=>{

@@ -90,15 +90,11 @@ if(!loggedIn){
 <script>
 const role = localStorage.getItem("role");
 
-if(!role || role !== "admin"){
-  alert("管理者のみアクセスできます");
-  location.href = "member-only.html";
-}
-
 if(role !== "admin"){
   alert("管理者のみアクセスできます");
   location.href = "member-only.html";
 }
+
 </script>
 
 <script type="module">
