@@ -241,6 +241,10 @@ const db = getFirestore(app);
 window.db = db;
 window.collection = collection;
 window.getDocs = getDocs;
+// ✅ 追加（重要🔥）
+window.startApp = function(){
+  loadVideos();
+};
 </script>
 
 <div class="container">
@@ -430,7 +434,6 @@ document.getElementById("yearFilter").addEventListener("change", ()=>applyFilter
 document.getElementById("monthFilter").addEventListener("change", ()=>applyFilter());
 
 // ✅ 初期表示
-loadVideos();
 
 function editVideo(docId){
 
@@ -460,6 +463,13 @@ function playVideo(id, el, docId){
 function goMember(){
   location.href = "member-only.html";
 }
+
+window.onload = function(){
+  if(window.startApp){
+    startApp();
+  }
+};
+
 
 </script>
 </body>

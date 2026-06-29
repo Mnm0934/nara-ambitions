@@ -67,34 +67,6 @@ tr:nth-child(even){
 
 <body>
 
-<script>
-const saved = localStorage.getItem("userLogin");
-
-if(!saved){
-  alert("ログインしてください");
-  location.href = "index.html";
-}else{
-  const user = JSON.parse(saved);
-
-  // ✅ 有効期限チェック
-  if(Date.now() > user.expire){
-    alert("ログインの有効期限が切れました");
-
-    localStorage.removeItem("userLogin");
-
-    location.href = "index.html";
-    return;
-  }
-
-  // ✅ 管理者判定
-  window.isAdmin = user.id === "admin";
-
-  // ✅ ここ重要（使うたび延長）
-  user.expire = Date.now() + (1 * 60 * 60 * 1000);
-  localStorage.setItem("userLogin", JSON.stringify(user));
-}
-</script>
-
 <button onclick="location.href='member-only.html'" style="
   background:#666;
   color:white;
@@ -104,7 +76,8 @@ if(!saved){
 ← 部員専用ページに戻る</button>
 <br>
 
-<button onclick="goInput()" class="admin-only">入力画面へ</button><br>
+<button onclick="goInput()">入力画面へ</button>
+<br>
 
 <div style="margin:10px;">
   <button onclick="changeMode('all')">通算</button>
@@ -251,9 +224,13 @@ function render(){
   if(mode === "recent") data = data.slice(-5);
 
   if(mode === "year"){
-    const thisYear = new Date().getFullYear();
-    data = data.filter(g => g.date && g.date.startsWith(thisYear));
-  }
+  const thisYear = new Date().getFullYear();
+
+  data = data.filter(g => {
+    if(!g.date) return false;
+    return new Date(g.date).getFullYear() === thisYear;
+  });
+}
 
   // 対象試合一覧
   renderGameList(data);
@@ -310,55 +287,55 @@ function render(){
     let risp_ab=0, risp_hit=0;
 
     data.forEach(game=>{
-      let played = false;
+  let played = false;
 
-      (game.batters || []).forEach(row=>{
-        const cleanName = normalize(row.name);
-const member = window.members.find(m => normalize(m.name) === cleanName);
+  for(const row of (game.batters || [])){
+    const cleanName = normalize(row.name);
+    const member = window.members.find(m => normalize(m.name) === cleanName);
 
-if(!member || member.role !== "選手") return;
+    if(!member || member.role !== "選手"){
+      continue;
+    }
 
-if(cleanName === normalize(name)){
-  played = true;
-  pa += row.pa||0;
-  ab += row.ab||0;
-  hit += row.hit||0;
-  bb += row.bb||0;
-  rbi += row.rbi||0;
-  sb += row.sb||0;
-  sb_fail += row.cs||0;
+    if(cleanName === normalize(name)){
+      played = true;
 
-  double += row.double||0;
-  triple += row.triple||0;
-  hr += row.hr||0;
+      pa += row.pa||0;
+      ab += row.ab||0;
+      hit += row.hit||0;
+      bb += row.bb||0;
+      rbi += row.rbi||0;
+      sb += row.sb||0;
+      sb_fail += row.cs||0;
 
-  // ✅ これ追加
-  const single = (row.hit || 0)
-             - (row.double || 0)
-             - (row.triple || 0)
-             - (row.hr || 0);
+      double += row.double||0;
+      triple += row.triple||0;
+      hr += row.hr||0;
 
-tb += single
-     + (row.double || 0) * 2
-     + (row.triple || 0) * 3
-     + (row.hr || 0) * 4;
+      const single = (row.hit||0)
+        - (row.double||0)
+        - (row.triple||0)
+        - (row.hr||0);
 
-  sac += row.sh||0;
-  sf += row.sf||0;
-  so += row.so||0;
-  risp_ab += row.risp_ab||0;
-  risp_hit += row.risp_hit||0;
-}
-      });
+      tb += single
+        + (row.double||0)*2
+        + (row.triple||0)*3
+        + (row.hr||0)*4;
 
-      if(played) games++;
-    });
+      sac += row.sac||0;
+      sf += row.sf||0;
+      so += row.so||0;
+      risp_ab += row.risp_ab||0;
+      risp_hit += row.risp_hit||0;
+    }
+  }
+
+  if(played) games++;
+});
 
     const avg = ab ? hit/ab : 0;
-const obp = (ab+bb+sf) ? (hit+bb)/(ab+bb+sf) : 0;
-const slg = ab ? tb/ab : 0;   // ← これ追加
-const ops = obp + slg;        // ← ここ変更
-
+    const obp = (ab+bb+sf) ? (hit+bb)/(ab+bb+sf) : 0;
+    const ops = avg + obp;
 
     const regulation = games * 3.1;
     const isQualified = games > 0 && pa >= regulation;
@@ -413,7 +390,7 @@ const ops = obp + slg;        // ← ここ変更
       <td>${p.ab ? p.avg.toFixed(3) : "-"}</td>
       <td>${p.ab ? p.obp.toFixed(3) : "-"}</td>
       <td>${p.risp ? p.risp.toFixed(3) : "-"}</td>
-      <td>${p.ab ? p.ops.toFixed(3) : "-"}</td>
+      <td>${p.ops ? p.ops.toFixed(3) : "-"}</td>
     </tr>
     `;
   });
@@ -475,31 +452,31 @@ function renderPitcher(data){
     let inningOut = 0, hit=0, bb=0, so=0, er=0;
 
     data.forEach(game=>{
-      let played = false;
+  let played = false;
 
-      (game.pitchers || []).forEach(row=>{
-        if(normalize(row.name) === normalize(name)){
+  (game.pitchers || []).forEach(row=>{
+    if(normalize(row.name) === normalize(name)){
 
-          played = true;
+      played = true;
 
-          const ip = row.inning || 0;
-          const whole = Math.floor(ip);
-          const decimal = Number((ip - whole).toFixed(1));
+      const ip = row.inning || 0;
+      const whole = Math.floor(ip);
+      const decimal = Number((ip - whole).toFixed(1));
 
-          let outs = whole * 3;
-          if(decimal === 0.1) outs += 1;
-          if(decimal === 0.2) outs += 2;
+      let outs = whole * 3;
+      if(decimal === 0.1) outs += 1;
+      if(decimal === 0.2) outs += 2;
 
-          inningOut += outs;
-          hit += row.hit || 0;
-          bb += row.bb || 0;
-          so += row.k || 0;
-          er += row.er || 0;
-        }
-      });
+      inningOut += outs;
+      hit += row.hit || 0;
+      bb += row.bb || 0;
+      so += row.k || 0;
+      er += row.er || 0;
+    }
+  });
 
-      if(played) games++;
-    });
+  if(played) games++;
+});
 
     const displayInning =
       Math.floor(inningOut / 3) + "." + (inningOut % 3);
@@ -592,10 +569,12 @@ function makeRanking(data){
   data.forEach(game=>{
 
     // ---- 打者 ----
-    (game.batters || []).forEach(p=>{
+    for(const p of (game.batters || [])){
       const cleanName = p.name.replace(/^#\d+\s*/, "");
       const member = window.members.find(m => normalize(m.name) === normalize(cleanName));
-      if(!member || member.role !== "選手") return;
+      if(!member || member.role !== "選手"){
+  continue;
+}
 
       if(!batterStats[cleanName]){
         batterStats[cleanName] = {pa:0, ab:0, hit:0};
@@ -610,10 +589,12 @@ function makeRanking(data){
     });
 
     // ---- 投手 ----
-    (game.pitchers || []).forEach(p=>{
+    for(const p of (game.pitchers || [])){
       const cleanName = p.name.replace(/^#\d+\s*/, "");
       const member = window.members.find(m => normalize(m.name) === normalize(cleanName));
-      if(!member || member.role !== "選手") return;
+      if(!member || member.role !== "選手"){
+  continue;
+}
 
       if(!pitcherStats[cleanName]){
         pitcherStats[cleanName] = {inningOut:0, er:0};
@@ -702,18 +683,12 @@ async function deleteBrokenData(){
 
 window.addEventListener("load", () => {
 
-  // ✅ ここに追加
-  if(!window.isAdmin){
-    document.querySelectorAll(".admin-only").forEach(el=>{
-      el.style.display = "none";
-    });
-  }
-
   const wait = setInterval(() => {
 
     if (window.getDocs) {
       clearInterval(wait);
 
+      // members → results の順で読み込む
       loadMembers().then(() => {
         loadResults();
       });

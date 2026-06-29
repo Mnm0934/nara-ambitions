@@ -156,11 +156,11 @@ function renderAll(){
 
   // ✅ ここに追加
   const myTotal = (match.myInnings || []).reduce((a,b)=>a+(b||0),0);
-const opTotal = (match.opInnings || []).reduce((a,b)=>a+(b||0),0);
+const opponentTotal = (match.opInnings || []).reduce((a,b)=>a+(b||0),0);
 
 let result = "";
-if(myTotal > opTotal) result = "勝ち";
-else if(myTotal < opTotal) result = "負け";
+if(myTotal > opponentTotal) result = "勝ち";
+else if(myTotal < opponentTotal) result = "負け";
 else result = "引分";
 
 document.querySelector(".title").innerText =
@@ -197,7 +197,7 @@ if(match.batFirst === "away"){
 }
 
 let total = topData.reduce((a,b)=>a+(b||0),0);
-let opTotal = bottomData.reduce((a,b)=>a+(b||0),0);
+let bottomTotal = bottomData.reduce((a,b)=>a+(b||0),0);
 
 // ✅ イニング数決定
 let maxInning = 9;
@@ -224,7 +224,7 @@ for(let i=0;i<maxInning;i++){
   scoreHTML += `<td>${
     v === null && 
     i === maxInning-1 && 
-    total > opTotal && topName !== "Ambitions"
+    total > bottomTotal && topName !== "Ambitions"
       ? "×"
       : (v ?? "-")
   }</td>`;
@@ -240,14 +240,14 @@ for(let i=0;i<maxInning;i++){
   scoreHTML += `<td>${
     v === null && 
     i === maxInning-1 && 
-    opTotal > total &&
+    bottomTotal > total &&
 bottomName === "Ambitions"
       ? "×"
       : (v ?? "-")
   }</td>`;
 }
 
-scoreHTML += `<td>${opTotal}</td></tr>`;
+scoreHTML += `<td>${bottomTotal}</td></tr>`;
 
 scoreHTML += "</table>";
 

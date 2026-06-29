@@ -157,6 +157,11 @@ window.addMember = async function(){
   alert("登録成功！");
 };
 
+// ✅ 追加（超重要🔥）
+window.startApp = function(){
+  loadMembers();
+};
+
 
 </script>
 
@@ -348,10 +353,8 @@ function render(){
 
   document.getElementById("list").innerHTML = html;
 }
-loadMembers();
 
 /* ✅ これを追加 */
-window.addMember = addMember;
 window.resetAll = resetAll;
 window.logout = logout;
 window.startEdit = startEdit;
@@ -360,7 +363,15 @@ window.cancelEdit = cancelEdit;
 window.deleteMember = deleteMember;
 window.toggleActive = toggleActive;
 
+window.onload = function(){
+  if(window.startApp){
+    startApp();
+  }
+};
+
 </script>
 
 </body>
 </html>
+
+

@@ -430,7 +430,6 @@ if(selectedDate){
 }
 
 async function loadAll(){
-
   // 出欠
   data = [];
   const attSnap = await getDocs(collection(db, "attendance"));
@@ -445,27 +444,33 @@ async function loadAll(){
   events = [];
   const evSnap = await getDocs(collection(db, "events"));
   evSnap.forEach(d => {
-    events.push({
+events.push({
   id: d.id,
-  ...d.data()
+  ...d.data(),
+  date: typeof d.data().date === "string"
+    ? d.data().date
+    : d.data().date.toDate().toISOString().slice(0,10)
 });
   });
 
   // メンバー
-members = [];
-const memSnap = await getDocs(collection(db, "members"));
-memSnap.forEach(d => {
-  members.push({
-    id: d.id,
-    ...d.data()
+  members = [];
+  const memSnap = await getDocs(collection(db, "members"));
+  memSnap.forEach(d => {
+    members.push({
+      id: d.id,
+      ...d.data()
+    });
   });
-});
 
   if(document.body.style.display === "block"){
-  loadMembers();
-  render();
+    loadMembers();
+    render();
+  }
 }
-}
+
+// ✅ これを最後に追加
+loadAll();
 
 async function deleteRecord(id){
 

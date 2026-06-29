@@ -249,7 +249,6 @@ let summaryHtml = "";
 
 
 targetDates = targetDates
-  .filter(d => d >= todayStr)
   .sort((a,b)=> new Date(a) - new Date(b));
 
 
@@ -419,7 +418,8 @@ async function loadAll(){
   const evSnap = await getDocs(collection(db, "events"));
 evSnap.forEach(d => {
   events.push({
-    ...d.data()
+    ...d.data(),
+   date: d.data().date.toDate().toISOString().slice(0,10)
   });
 });
 

@@ -89,14 +89,12 @@ if(!saved){
     alert("ログインの有効期限が切れました");
     localStorage.removeItem("userLogin");
     location.href = "index.html";
-    return;
   }
 
   // ✅ 管理者判定
   if(user.id !== "admin"){
     alert("管理者のみアクセスできます");
     location.href = "member-only.html";
-    return;
   }
 
   window.isAdmin = true;
