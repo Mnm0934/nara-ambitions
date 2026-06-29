@@ -74,6 +74,33 @@ body{
 
 <body style="display:none;">
 
+<!-- ✅ ログイン -->
+<script>
+const loggedIn = localStorage.getItem("loggedIn");
+
+if(!loggedIn){
+  alert("ログインしてください");
+  location.href = "index.html";
+}else{
+  document.body.style.display = "block";
+}
+</script>
+
+<!-- ✅ 管理者だけ -->
+<script>
+const role = localStorage.getItem("role");
+
+if(!role || role !== "admin"){
+  alert("管理者のみアクセスできます");
+  location.href = "member-only.html";
+}
+
+if(role !== "admin"){
+  alert("管理者のみアクセスできます");
+  location.href = "member-only.html";
+}
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -108,7 +135,7 @@ window.deleteDoc = deleteDoc;
 window.doc = doc;
 window.updateDoc = updateDoc;
 
-async function addMember(){
+window.addMember = async function(){
 
   const number = document.getElementById("number").value;
   const name = document.getElementById("name").value;
@@ -173,25 +200,6 @@ async function addMember(){
 
 <script>
 
-const saved = localStorage.getItem("userLogin");
-
-if(!saved){
-  alert("ログインしてください");
-  location.href = "index.html";
-}else{
-  const user = JSON.parse(saved);
-
-  if(Date.now() > user.expire){
-    alert("ログインの有効期限が切れました");
-    localStorage.removeItem("userLogin");
-    location.href = "index.html";
-  }else if(user.id !== "admin"){
-    alert("管理者のみアクセス可能です");
-    location.href = "member-only.html";
-  }else{
-    document.body.style.display = "block";
-  }
-}
 // ✅ データ
 let members = [];
 let editIndex = -1;
@@ -230,33 +238,10 @@ async function saveEdit(i){
     return;
   }
 
-  const oldNumber = members[i].number;
-const newNumberVal = newNumber ? Number(newNumber) : null;
-
-// メンバー更新
-await updateDoc(doc(db, "members", members[i].id), {
-  number: newNumberVal,
-  name: newName
-});
-
-// 🔥 ここ追加（超重要）
-if(oldNumber !== newNumberVal){
-
-  const attSnap = await getDocs(collection(db, "attendance"));
-
-  for(const d of attSnap.docs){
-
-    if(d.data().name === `#${oldNumber}`){
-
-      await updateDoc(doc(db, "attendance", d.id), {
-        name: `#${newNumberVal}`
-      });
-
-    }
-
-  }
-
-}
+  await updateDoc(doc(db, "members", members[i].id), {
+    number: newNumber ? Number(newNumber) : null,
+    name: newName
+  });
 
   editIndex = -1;
   loadMembers();
@@ -306,7 +291,8 @@ async function resetAll(){
 // ✅ ログアウト
 function logout(){
   if(confirm("ログアウトしますか？")){
-    localStorage.removeItem("userLogin");
+    localStorage.removeItem("loggedIn");
+localStorage.removeItem("role");
     window.location.href = "member-only.html";
   }
 }
@@ -315,7 +301,7 @@ function logout(){
 // ✅ 表示
 function render(){
 
-  members = [...members].sort((a,b)=>{
+  members.sort((a,b)=>{
   if(a.number === null) return 1;
   if(b.number === null) return -1;
   return a.number - b.number;
@@ -366,10 +352,7 @@ function render(){
 
   document.getElementById("list").innerHTML = html;
 }
-
-if(document.body.style.display === "block"){
-  loadMembers();
-}
+loadMembers();
 
 /* ✅ これを追加 */
 window.addMember = addMember;

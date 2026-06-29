@@ -46,23 +46,13 @@ button{
 
 <body style="display:none;">
 <script>
-const saved = localStorage.getItem("userLogin");
+const loggedIn = localStorage.getItem("loggedIn");
 
-if(!saved){
+if(!loggedIn){
   alert("ログインしてください");
   location.href = "index.html";
 }else{
-  const user = JSON.parse(saved);
-
-  // ✅ 期限チェック
-  if(Date.now() > user.expire){
-    alert("ログインの有効期限が切れました");
-    localStorage.removeItem("userLogin");
-    location.href = "index.html";
-  }else{
-    // ✅ 部員は誰でもOK（admin不要）
-    document.body.style.display = "block";
-  }
+  document.body.style.display = "block";
 }
 </script>
 

@@ -67,27 +67,15 @@ button{
 
 <body style="display:none;">
 <script>
-const saved = localStorage.getItem("userLogin");
+const loggedIn = localStorage.getItem("loggedIn");
 
-if(!saved){
+if(!loggedIn){
   alert("ログインしてください");
   location.href = "index.html";
 }else{
-  const user = JSON.parse(saved); // ✅ これが必要
-
-  if(Date.now() > user.expire){
-    alert("ログインの有効期限が切れました");
-    localStorage.removeItem("userLogin");
-    location.href = "index.html";
-  }else{
-    document.body.style.display = "block";
-
-    // ✅ ここだけでOK（1回だけ）
-    localStorage.setItem("role", user.role);
-  }
+  document.body.style.display = "block";
 }
 </script>
-
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -348,13 +336,13 @@ async function approveNews(i){
   });
 
   loadNews();
+  updatePendingCount();
 
   alert("承認しました");
 }
 
-if(document.body.style.display === "block"){
-  loadNews();
-}
+// ✅ これを最後に追加
+loadNews();
 
 </script>
 

@@ -31,6 +31,17 @@ button{
 </head>
 
 <body style="display:none;">
+<script>
+const loggedIn = localStorage.getItem("loggedIn");
+
+if(!loggedIn){
+  alert("ログインしてください");
+  location.href = "index.html";
+}else{
+  document.body.style.display = "block";
+}
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -65,25 +76,30 @@ window.updateDoc = updateDoc;
 </script>
 
 <script>
-const saved = localStorage.getItem("userLogin");
+const ADMIN_PASSWORD = "19980725";
 
-if(!saved){
-  alert("ログインしてください");
-  location.href = "index.html";
-}else{
-  const user = JSON.parse(saved);
+function checkAuth(){
 
-  if(Date.now() > user.expire){
-    alert("ログインの有効期限が切れました");
-    localStorage.removeItem("userLogin");
+  if(sessionStorage.getItem("adminAuth") === "true"){
+    return;
+  }
+
+  const input = prompt("管理者パスワードを入力してください");
+
+  if(input === null){
     location.href = "index.html";
-  }else if(user.id !== "admin"){
-    alert("管理者のみアクセス可能です");
-    location.href = "member-only.html";
+    return;
+  }
+
+  if(input === ADMIN_PASSWORD){
+    sessionStorage.setItem("adminAuth", "true");
   }else{
-    document.body.style.display = "block";
+    alert("パスワードが違います");
+    location.href = "member-only.html"; // ←戻り先は合わせる
   }
 }
+
+checkAuth();
 </script>
 
 <div class="container">
@@ -124,13 +140,7 @@ async function saveVideo(){
     return;
   }
 
-  let videoId = "";
-
-if(url.includes("v=")){
-  videoId = url.split("v=")[1].split("&")[0];
-}else if(url.includes("youtu.be/")){
-  videoId = url.split("youtu.be/")[1];
-}
+  const videoId = url.split("v=")[1];
 
   const edit = JSON.parse(localStorage.getItem("editVideo"));
 

@@ -218,28 +218,20 @@ body{
 </style>
 </head>
 
+<body>
 <body style="display:none;">
-<script>
-const saved = localStorage.getItem("userLogin");
 
-if(!saved){
+<script>
+const loggedIn = localStorage.getItem("loggedIn");
+
+if(!loggedIn){
   alert("ログインしてください");
   location.href = "index.html";
 }else{
-  const user = JSON.parse(saved);
-
-  if(Date.now() > user.expire){
-    alert("ログインの有効期限が切れました");
-    localStorage.removeItem("userLogin");
-    location.href = "index.html";
-  }else{
-    document.body.style.display = "block";
-
-    // ✅ ここに移動🔥
-    loadData();
-  }
+  document.body.style.display = "block";
 }
 </script>
+
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -377,9 +369,7 @@ weeks.forEach(w => {
 
     let className = "day";
 
-    const event = events.find(e =>
-  e.date === fullDate
-);
+    const event = events.find(e => e.date === fullDate);
 
 // ✅ 出欠集計
 const membersCount = 33; // メンバー数（あなたの人数）
@@ -448,6 +438,10 @@ ${event ? `
     localStorage.removeItem("savedDate");
   }
 }
+
+// 初期表示
+loadData();
+
 
 function changeMonth(n){
   currentMonth += n;
@@ -545,11 +539,6 @@ async function loadData(){
 
   renderCalendar();
 }
-
-// ✅ ✅ ここに1回だけ置く（重要）
-window.addEventListener("focus", () => {
-  loadData();
-});
 
 function editEvent(date){
   location.href = "event.html?edit=" + date;

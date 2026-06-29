@@ -73,15 +73,16 @@ const pass = inputPass.trim();
 
 if(USERS[id] && USERS[id] === pass){
 
-  // ログイン成功フラグ
   localStorage.setItem("loggedIn", "true");
 
-  // 管理者判定
+  // ✅ 有効期限も付ける
+  localStorage.setItem("userLogin", JSON.stringify({
+    expire: Date.now() + 1000 * 60 * 60 * 5 // 5時間
+  }));
+
   if(id === "admin"){
-    window.isAdmin = true;
     localStorage.setItem("isAdmin", "true");
   }else{
-    window.isAdmin = false;
     localStorage.removeItem("isAdmin");
   }
 

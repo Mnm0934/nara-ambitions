@@ -209,24 +209,13 @@ iframe{
 
 <body style="display:none;">
 <script>
-const saved = localStorage.getItem("userLogin");
+const loggedIn = localStorage.getItem("loggedIn");
 
-if(!saved){
+if(!loggedIn){
   alert("ログインしてください");
   location.href = "index.html";
 }else{
-  const user = JSON.parse(saved);
-
-  if(Date.now() > user.expire){
-    alert("ログインの有効期限が切れました");
-    localStorage.removeItem("userLogin");
-    location.href = "index.html";
-  }else{
-    document.body.style.display = "block";
-
-    // ✅ roleも統一しておく（他ページと同じ）
-    localStorage.setItem("role", user.role);
-  }
+  document.body.style.display = "block";
 }
 </script>
 
@@ -383,21 +372,19 @@ videos.sort((a, b) => new Date(b.date) - new Date(a.date));
     const div = document.createElement("div");
     div.className = "video";
 
-    const role = localStorage.getItem("role");
+    div.innerHTML = `
+      <h3>
+        ${v.date} ${v.title}
+        ${isNew(v.date) ? '<span class="new">NEW</span>' : ''}
+      </h3>
 
-div.innerHTML = `
-  <h3>
-    ${v.date} ${v.title}
-    ${isNew(v.date) ? '<span class="new">NEW</span>' : ''}
-  </h3>
+      <div class="thumb-wrap"
+ onclick="playVideo('${v.id}', this.querySelector('img'), '${v.docId}')">
+        <img src="https://img.youtube.com/vi/${v.id}/0.jpg" class="thumb">
+      </div>
 
-  <div class="thumb-wrap"
-    onclick="playVideo('${v.id}', this.querySelector('img'), '${v.docId}')">
-    <img src="https://img.youtube.com/vi/${v.id}/0.jpg" class="thumb">
-  </div>
-
-  ${role === "admin" ? `<button onclick="editVideo('${v.docId}')">編集</button>` : ""}
-`;
+      <button onclick="editVideo('${v.docId}')">編集</button>
+    `;
 
     grid.appendChild(div);
   });
@@ -443,9 +430,7 @@ document.getElementById("yearFilter").addEventListener("change", ()=>applyFilter
 document.getElementById("monthFilter").addEventListener("change", ()=>applyFilter());
 
 // ✅ 初期表示
-if(document.body.style.display === "block"){
-  loadVideos();
-}
+loadVideos();
 
 function editVideo(docId){
 
@@ -465,12 +450,10 @@ function playVideo(id, el, docId){
 
   const parent = el.parentElement;
 
-  const role = localStorage.getItem("role");
-
-parent.innerHTML = `
-  <iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>
-  ${role === "admin" ? `<button onclick="editVideo('${docId}')">編集</button>` : ""}
-`;
+  parent.innerHTML = `
+    <iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>
+    <button onclick="editVideo('${docId}')">編集</button>
+  `;
 }
 
 

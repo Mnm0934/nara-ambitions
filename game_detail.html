@@ -68,26 +68,16 @@ button{
 
 </style>
 </head>
+<body style="display:none;">
 
-<body>
 <script>
-try {
-  const saved = localStorage.getItem("userLogin");
-  if(!saved) throw new Error();
+const loggedIn = localStorage.getItem("loggedIn");
 
-  const user = JSON.parse(saved);
-
-  if(Date.now() > user.expire){
-    throw new Error();
-  }
-
-  user.expire = Date.now() + (1 * 60 * 60 * 1000);
-  localStorage.setItem("userLogin", JSON.stringify(user));
-
-}catch(e){
+if(!loggedIn){
   alert("ログインしてください");
-  localStorage.removeItem("userLogin");
   location.href = "index.html";
+}else{
+  document.body.style.display = "block";
 }
 </script>
 
