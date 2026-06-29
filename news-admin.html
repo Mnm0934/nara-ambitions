@@ -107,6 +107,13 @@ window.getDocs = getDocs;
 window.deleteDoc = deleteDoc;
 window.doc = doc;
 window.updateDoc = updateDoc;
+
+// ✅ ここ追加（重要🔥）
+window.startApp = function(){
+  if(window.loadNews){
+    loadNews();
+  }
+};
 </script>
 
 
@@ -341,8 +348,11 @@ async function approveNews(i){
   alert("承認しました");
 }
 
-// ✅ これを最後に追加
-loadNews();
+window.onload = function(){
+  if(window.startApp){
+    startApp();
+  }
+}
 
 </script>
 

@@ -218,7 +218,6 @@ body{
 </style>
 </head>
 
-<body>
 <body style="display:none;">
 
 <script>
@@ -255,6 +254,13 @@ const db = getFirestore(app);
 window.db = db;
 window.getDocs = getDocs;
 window.collection = collection;
+// ✅ 追加（これ超重要🔥）
+window.startApp = function(){
+  if(window.loadData){
+    loadData();
+  }
+};
+
 </script>
 
 <h2>📅 部員用スケジュール</h2>
@@ -439,10 +445,6 @@ ${event ? `
   }
 }
 
-// 初期表示
-loadData();
-
-
 function changeMonth(n){
   currentMonth += n;
 
@@ -562,6 +564,12 @@ window.onclick = function(e){
 
 function goToInput(date){
   location.href = "attendance.html?date=" + date;
+}
+
+window.onload = function(){
+  if(window.startApp){
+    startApp();
+  }
 }
 
 </script>
