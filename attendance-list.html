@@ -424,14 +424,24 @@ evSnap.forEach(d => {
 
   const data = d.data();
 
+  // ✅ date無いの防ぐ
+  if(!data.date){
+    console.warn("date無しデータ:", data);
+    return;
+  }
 
-if(!data.date) return;
+  let formattedDate = "";
 
-  let rawDate = data.date;
+  if(typeof data.date === "string"){
+    formattedDate = data.date.replaceAll("/", "-");
 
-  const formattedDate = typeof rawDate === "string"
-    ? rawDate.replaceAll("/", "-")
-    : rawDate.toDate().toISOString().slice(0,10);
+  }else if(data.date.toDate){
+    formattedDate = data.date.toDate().toISOString().slice(0,10);
+
+  }else{
+    console.warn("日付不正:", data);
+    return;
+  }
 
   events.push({
     ...data,
@@ -457,6 +467,9 @@ renderTabs();
 
 if(monthKeys.length > 0){
   changeMonth(monthKeys[0]);
+} else {
+  // ✅ データなしでも表示
+  renderTable();
 }
 }
 

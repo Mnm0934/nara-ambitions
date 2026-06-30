@@ -87,19 +87,15 @@ if(!saved){
 
   // ✅ 期限チェック
   if(Date.now() > user.expire){
-    localStorage.removeItem("userLogin");
-    alert("期限切れ");
-    location.href = "index.html";
-    return;
-  }
+  localStorage.removeItem("userLogin");
+  alert("期限切れ");
+  location.href = "index.html";
+}
 
-  // ✅ 管理者チェック
-  if(user.id !== "admin"){
-    alert("管理者のみ");
-    location.href = "member-only.html";
-    return;
-  }
-
+if(user.id !== "admin"){
+  alert("管理者のみ");
+  location.href = "member-only.html";
+}
   // ✅ 表示ON
   document.body.style.display = "block";
 }
