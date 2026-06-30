@@ -266,10 +266,12 @@ targetDates.forEach(date => {
 // ✅ 未回答者を取得
 const notAnswered = members.filter(m => {
 
-  if(m.active === false) return false; // ✅ 休部除外
+  if(m.active === false) return false;
 
   const id = m.name;
-  const rec = data.find(d => d.name.includes(id) && d.date === date);
+
+  // ✅ return追加
+  return !data.some(d => d.name.includes(id) && d.date === date);
 });
 
 // ✅ 未回答まとめを作る（←ここが別！）
