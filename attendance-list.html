@@ -213,11 +213,14 @@ function init(){
 
     if(!months[key]) months[key] = [];
 
-    months[key].push(e.date);
+    // ✅ 重複チェックを追加
+    if(!months[key].includes(e.date)){
+      months[key].push(e.date);
+    }
+
   });
 
   monthKeys = Object.keys(months).sort();
-
 }
 
 
@@ -265,7 +268,7 @@ const notAnswered = members.filter(m => {
 
   if(m.active === false) return false; // ✅ 休部除外
 
-  const id = `#${m.number}`;
+  const id = m.name;
   return !data.some(d => d.name === id && d.date === date);
 });
 
@@ -320,18 +323,17 @@ if(ev){
   // メンバーごと
   members.forEach(m=>{
 
-  const id = `#${m.number}`;
+  const id = m.name;
   const displayName = `#${m.number} ${m.name}`;
 
-  // ✅ フィルター（これ追加🔥）
   if(selectedDate){
-    const rec = data.find(d => d.name === id && d.date === selectedDate);
 
-    // 出席者以外は表示しない
-    if(!rec || rec.status !== "出席"){
-      return;
-    }
+  const rec = data.find(d => d.name === id && d.date === selectedDate);
+
+  if(!rec || rec.status !== "出席"){
+    return;
   }
+}
     let p=0,a=0,u=0;
 
     html += "<tr>";
@@ -417,11 +419,19 @@ async function loadAll(){
   events = [];
   const evSnap = await getDocs(collection(db, "events"));
 evSnap.forEach(d => {
+
+  let rawDate = d.data().date;
+
+  const formattedDate = typeof rawDate === "string"
+    ? rawDate
+    : rawDate.toDate().toISOString().slice(0,10);
+
   events.push({
     ...d.data(),
-   date: d.data().date.toDate().toISOString().slice(0,10)
+    date: formattedDate
   });
 });
+
 
 
   // メンバー

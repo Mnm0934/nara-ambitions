@@ -65,7 +65,17 @@ tr:nth-child(even){
 </style>
 </head>
 
-<body>
+<body style="display:none;">
+<script>
+const loggedIn = localStorage.getItem("loggedIn");
+
+if(loggedIn !== "true"){
+  alert("ログインしてください");
+  location.href = "index.html";
+}else{
+  document.body.style.display = "block";
+}
+</script>
 
 <button onclick="location.href='member-only.html'" style="
   background:#666;
