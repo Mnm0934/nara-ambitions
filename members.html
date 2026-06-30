@@ -78,32 +78,55 @@ body{
 <script>
 const saved = localStorage.getItem("userLogin");
 
-if(!saved){
-  alert("ログインしてください");
-  location.href = "index.html";
-}else{
+if(saved){
   const user = JSON.parse(saved);
 
-  if(Date.now() > user.expire){
-    alert("期限切れ");
+  if(Date.now() < user.expire){
+
+    // ✅ 管理者チェック
+    if(user.id !== "admin"){
+      alert("管理者のみ");
+      location.href = "member-only.html";
+    }
+
+  }else{
     localStorage.removeItem("userLogin");
+    location.reload();
+  }
+
+}else{
+
+  // ✅ ←ここが正しいログイン位置！！
+
+  const USERS = {
+    nakano: "1996",
+    admin: "0725"
+  };
+
+  const inputId = prompt("🔐 IDを入力してください");
+  if(!inputId) location.href = "index.html";
+
+  const inputPass = prompt("🔒 パスワードを入力してください");
+  if(!inputPass) location.href = "index.html";
+
+  const id = inputId.trim();
+  const pass = inputPass.trim();
+
+  if(USERS[id] && USERS[id] === pass){
+
+    localStorage.setItem("userLogin", JSON.stringify({
+      id: id,
+      expire: Date.now() + 1000 * 60 * 60 * 5
+    }));
+
+    location.reload();
+
+  }else{
+    alert("IDまたはパスワードが違います");
     location.href = "index.html";
   }
-
-  // ✅ 管理者チェック
-  if(user.id !== "admin"){
-    alert("管理者のみ");
-    location.href = "member-only.html";
-  }
-
-  document.body.style.display = "block";
-
-  // ✅ 延長
-  localStorage.setItem("userLogin", JSON.stringify({
-    ...user,
-    expire: Date.now() + 3600000
-  }));
 }
+
 </script>
 
 <script type="module">

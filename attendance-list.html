@@ -418,6 +418,8 @@ async function loadAll(){
   // イベント
 events = [];
 
+const evSnap = await getDocs(collection(db, "events")); // ←これ追加！！！🔥
+
 evSnap.forEach(d => {
 
   let rawDate = d.data().date;
