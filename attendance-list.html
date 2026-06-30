@@ -422,17 +422,21 @@ const evSnap = await getDocs(collection(db, "events")); // ←これ追加！！
 
 evSnap.forEach(d => {
 
-  let rawDate = d.data().date;
+  const data = d.data();
+
+
+if(!data.date) return;
+
+  let rawDate = data.date;
 
   const formattedDate = typeof rawDate === "string"
     ? rawDate.replaceAll("/", "-")
     : rawDate.toDate().toISOString().slice(0,10);
 
   events.push({
-    ...d.data(),
+    ...data,
     date: formattedDate
   });
-
 });
 
 // ✅ ここに移動！！🔥
