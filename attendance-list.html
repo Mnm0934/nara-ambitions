@@ -269,7 +269,7 @@ const notAnswered = members.filter(m => {
   if(m.active === false) return false; // ✅ 休部除外
 
   const id = m.name;
-  return !data.some(d => d.name === id && d.date === date);
+  const rec = data.find(d => d.name.includes(id) && d.date === date);
 });
 
 // ✅ 未回答まとめを作る（←ここが別！）
@@ -328,7 +328,7 @@ if(ev){
 
   if(selectedDate){
 
-  const rec = data.find(d => d.name === id && d.date === selectedDate);
+  const rec = data.find(d => d.name.includes(id) && d.date === selectedDate);
 
   if(!rec || rec.status !== "出席"){
     return;
@@ -340,7 +340,7 @@ if(ev){
     html += `<td class="name">${displayName}</td>`;
 
 targetDates.forEach(date => {
-      const rec = data.find(d => d.name === id && d.date === date);
+      const rec = data.find(d => d.name.includes(id) && d.date === date);
 
       let mark = "";
 const isActive = m.active !== false; // ←休部判定
@@ -409,11 +409,28 @@ async function loadAll(){
   data = [];
   const attSnap = await getDocs(collection(db, "attendance"));
   attSnap.forEach(d => {
-    data.push({
-  id: d.id,
-  ...d.data()
-});
+
+  const item = d.data();
+
+  if(!item.date) return;
+
+  let formattedDate = "";
+
+  if(typeof item.date === "string"){
+    formattedDate = item.date.replaceAll("/", "-");
+
+  }else if(item.date.toDate){
+    formattedDate = item.date.toDate().toISOString().slice(0,10);
+
+  }else{
+    return;
+  }
+
+  data.push({
+    ...item,
+    date: formattedDate
   });
+});
 
   // イベント
 events = [];
