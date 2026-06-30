@@ -1568,7 +1568,7 @@ renderNews();
     <a href="member.html">選手・スタッフ</a>
     <a href="schedule.html">スケジュール</a>
     <a href="index.html#sns">SNS</a>
-    <a href="#" onclick="goMember()">部員専用</a>
+    <a href="#" onclick="goMember(event)">部員専用</a>
    </nav>
 </header>
 
@@ -2113,18 +2113,6 @@ renderNews();
   <a href="#" class="login-btn" onclick="goMember()">
     LOGIN
   </a>
-<div id="loginBox" style="
-  display:none;
-  text-align:center;
-  margin-top:20px;
-">
-
-  <input id="id" placeholder="ID"><br><br>
-  <input id="pass" type="password" placeholder="パスワード"><br><br>
-
-  <button onclick="login()">ログイン</button>
-
-</div>
 
 </section>
 
@@ -2237,21 +2225,36 @@ menuBtn.addEventListener("click", () => {
 function goMember(){
 
   const saved = localStorage.getItem("userLogin");
-
+  // ✅ すでにログイン済みならそのままGO
   if(saved){
     const user = JSON.parse(saved);
 
-    // ✅ ログイン有効ならそのまま入る
     if(Date.now() < user.expire){
       location.href = "member-only.html";
       return;
     }
   }
 
-  // ✅ 未ログインならフォーム出す
-  document.getElementById("loginBox").style.display = "block";
-}
+  // ✅ ←ここが今回のメイン🔥
+  const id = prompt("IDを入力してください");
+  const pass = prompt("パスワードを入力してください");
 
+  if(id === "admin" && pass === "1234"){
+
+    const data = {
+      id,
+      expire: Date.now() + 86400000
+    };
+
+    localStorage.setItem("userLogin", JSON.stringify(data));
+
+    alert("ログイン成功");
+    location.href = "member-only.html";
+
+  }else{
+    alert("IDまたはパスワードが違います");
+  }
+}
 			
 </script>
 </body>
