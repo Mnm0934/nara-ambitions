@@ -1568,7 +1568,7 @@ renderNews();
     <a href="member.html">選手・スタッフ</a>
     <a href="schedule.html">スケジュール</a>
     <a href="index.html#sns">SNS</a>
-    <a href="member-only.html">部員専用</a>
+    <a href="#" onclick="goMember()">部員専用</a>
    </nav>
 </header>
 
@@ -2142,7 +2142,7 @@ renderNews();
 
 <script>
 // ✅ ログイン表示制御
-window.addEventListener("load", () => {
+document.addEventListener("DOMContentLoaded", () => {
 
   const params = new URLSearchParams(window.location.search); // ←これ追加！
 
