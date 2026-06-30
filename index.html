@@ -2110,9 +2110,22 @@ renderNews();
 <section id="member" class="fade">
   <h2>部員専用ページ</h2>
 
-  <a href="member-only.html" class="login-btn">
+  <a href="#" class="login-btn" onclick="goMember()">
     LOGIN
   </a>
+<div id="loginBox" style="
+  display:none;
+  text-align:center;
+  margin-top:20px;
+">
+
+  <input id="id" placeholder="ID"><br><br>
+  <input id="pass" type="password" placeholder="パスワード"><br><br>
+
+  <button onclick="login()">ログイン</button>
+
+</div>
+
 </section>
 
 <footer>
@@ -2128,6 +2141,39 @@ renderNews();
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
 <script>
+// ✅ ログイン表示制御
+window.addEventListener("load", () => {
+
+  const params = new URLSearchParams(window.location.search); // ←これ追加！
+
+  if(params.get("login") === "1"){
+    document.getElementById("loginBox").style.display = "block";
+  }
+
+});
+
+function login(){
+
+  const id = document.getElementById("id").value;
+  const pass = document.getElementById("pass").value;
+
+  if(id === "admin" && pass === "1234"){
+
+    const data = {
+      id,
+      expire: Date.now() + 86400000
+    };
+
+    localStorage.setItem("userLogin", JSON.stringify(data));
+
+    alert("ログイン成功");
+
+    location.href = "member-only.html";
+
+  }else{
+    alert("IDまたはパスワード違う");
+  }
+}
 /* ===== Swiper ===== */
 new Swiper(".mainSwiper",{
   loop:true,
@@ -2187,6 +2233,25 @@ menuBtn.addEventListener("click", () => {
   menuBtn.classList.toggle("active");
   nav.classList.toggle("active");
 });
+
+function goMember(){
+
+  const saved = localStorage.getItem("userLogin");
+
+  if(saved){
+    const user = JSON.parse(saved);
+
+    // ✅ ログイン有効ならそのまま入る
+    if(Date.now() < user.expire){
+      location.href = "member-only.html";
+      return;
+    }
+  }
+
+  // ✅ 未ログインならフォーム出す
+  document.getElementById("loginBox").style.display = "block";
+}
+
 			
 </script>
 </body>

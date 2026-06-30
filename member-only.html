@@ -61,20 +61,17 @@ const saved = localStorage.getItem("userLogin");
 if(saved){
   const user = JSON.parse(saved);
 
-  // ✅ 期限OKなら何もせずそのまま表示
-  if(Date.now() < user.expire){
-    // スキップ（ここが重要）
-  }else{
-    // ❌ 期限切れ
+  if(Date.now() > user.expire){
     localStorage.removeItem("userLogin");
-    location.href = "index.html";
+
+    // ✅ ログインフォーム出して戻す
+    location.href = "index.html?login=1";
   }
 
 }else{
-  // ✅ 未ログインならログイン画面へ
-  alert("ログインしてください");
-  location.href = "index.html";
+  location.href = "index.html?login=1";
 }
+
 
 </script>
 
