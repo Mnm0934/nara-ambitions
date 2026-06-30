@@ -76,25 +76,34 @@ body{
 
 <!-- ✅ ログイン -->
 <script>
-const loggedIn = localStorage.getItem("loggedIn");
+const saved = localStorage.getItem("userLogin");
 
-if(!loggedIn){
+if(!saved){
   alert("ログインしてください");
   location.href = "index.html";
 }else{
+  const user = JSON.parse(saved);
+
+  if(Date.now() > user.expire){
+    alert("期限切れ");
+    localStorage.removeItem("userLogin");
+    location.href = "index.html";
+  }
+
+  // ✅ 管理者チェック
+  if(user.id !== "admin"){
+    alert("管理者のみ");
+    location.href = "member-only.html";
+  }
+
   document.body.style.display = "block";
+
+  // ✅ 延長
+  localStorage.setItem("userLogin", JSON.stringify({
+    ...user,
+    expire: Date.now() + 3600000
+  }));
 }
-</script>
-
-<!-- ✅ 管理者だけ -->
-<script>
-const role = localStorage.getItem("role");
-
-if(role !== "admin"){
-  alert("管理者のみアクセスできます");
-  location.href = "member-only.html";
-}
-
 </script>
 
 <script type="module">
@@ -292,9 +301,8 @@ async function resetAll(){
 // ✅ ログアウト
 function logout(){
   if(confirm("ログアウトしますか？")){
-    localStorage.removeItem("loggedIn");
-localStorage.removeItem("role");
-    window.location.href = "member-only.html";
+    localStorage.removeItem("userLogin");  // ✅ これだけでOK
+    location.href = "index.html";          // ✅ ログイン画面へ
   }
 }
 

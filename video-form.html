@@ -32,13 +32,34 @@ button{
 
 <body style="display:none;">
 <script>
-const loggedIn = localStorage.getItem("loggedIn");
+const saved = localStorage.getItem("userLogin");
 
-if(!loggedIn){
+if(!saved){
   alert("ログインしてください");
   location.href = "index.html";
 }else{
-  document.body.style.display = "block";
+  const user = JSON.parse(saved);
+
+  if(Date.now() > user.expire){
+    alert("期限切れ");
+    localStorage.removeItem("userLogin");
+    location.href = "index.html";
+  }else{
+
+    // ✅ 管理者チェック
+    if(user.id !== "admin"){
+      alert("管理者のみ登録できます");
+      location.href = "member-only.html";
+    }
+
+    document.body.style.display = "block";
+
+    // ✅ 延長
+    localStorage.setItem("userLogin", JSON.stringify({
+      ...user,
+      expire: Date.now() + 3600000
+    }));
+  }
 }
 </script>
 
@@ -75,32 +96,7 @@ window.doc = doc;
 window.updateDoc = updateDoc;
 </script>
 
-<script>
-const ADMIN_PASSWORD = "19980725";
 
-function checkAuth(){
-
-  if(sessionStorage.getItem("adminAuth") === "true"){
-    return;
-  }
-
-  const input = prompt("管理者パスワードを入力してください");
-
-  if(input === null){
-    location.href = "index.html";
-    return;
-  }
-
-  if(input === ADMIN_PASSWORD){
-    sessionStorage.setItem("adminAuth", "true");
-  }else{
-    alert("パスワードが違います");
-    location.href = "member-only.html"; // ←戻り先は合わせる
-  }
-}
-
-checkAuth();
-</script>
 
 <div class="container">
 <h1>動画登録</h1>

@@ -416,23 +416,25 @@ async function loadAll(){
   });
 
   // イベント
-  events = [];
-  const evSnap = await getDocs(collection(db, "events"));
+events = [];
+
 evSnap.forEach(d => {
 
   let rawDate = d.data().date;
 
   const formattedDate = typeof rawDate === "string"
-    ? rawDate
+    ? rawDate.replaceAll("/", "-")
     : rawDate.toDate().toISOString().slice(0,10);
 
   events.push({
     ...d.data(),
     date: formattedDate
   });
+
 });
 
-
+// ✅ ここに移動！！🔥
+window.events = events;
 
   // メンバー
   members = [];

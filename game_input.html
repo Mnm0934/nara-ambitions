@@ -74,7 +74,7 @@ button{
 </style>
 </head>
 
-<body>
+<body style="display:none;">
 <script>
 const saved = localStorage.getItem("userLogin");
 
@@ -84,28 +84,29 @@ if(!saved){
 }else{
   const user = JSON.parse(saved);
 
-  // ✅ 期限チェック
+  // ✅ 期限切れチェック
   if(Date.now() > user.expire){
     alert("ログインの有効期限が切れました");
     localStorage.removeItem("userLogin");
     location.href = "index.html";
+  }else{
+
+    // ✅ 管理者だけ
+    if(user.id !== "admin"){
+      alert("管理者のみアクセスできます");
+      location.href = "member-only.html";
+    }
+
+    document.body.style.display = "block";
+
+    // ✅ 延長
+    localStorage.setItem("userLogin", JSON.stringify({
+      ...user,
+      expire: Date.now() + 3600000
+    }));
   }
+}
 
-  // ✅ 管理者判定
-  if(user.id !== "admin"){
-    alert("管理者のみアクセスできます");
-    location.href = "member-only.html";
-  }
-
-  window.isAdmin = true;
-
-  // ✅ 延長
-  localStorage.setItem("userLogin", JSON.stringify({
-    id: "admin",
-    expire: Date.now() + 3600000
-  }));
-
-} // ← ✅ これを追加（超重要）
 </script>
 
 <script type="module">
@@ -552,11 +553,12 @@ async function loadEdit(){
 
 window.addEventListener("load", () => {
 
-  // ✅ これ追加（削除ボタン制御）
+  const btn = document.querySelector("button[onclick='deleteGame()']");
+  const user = JSON.parse(localStorage.getItem("userLogin"));
   const id = new URLSearchParams(location.search).get("id");
 
-  if(!id){
-    const btn = document.querySelector("button[onclick='deleteGame()']");
+  // 管理者じゃない or 新規作成なら非表示
+  if(!user || user.id !== "admin" || !id){
     if(btn) btn.style.display = "none";
   }
 
@@ -572,6 +574,7 @@ window.addEventListener("load", () => {
   }, 50);
 
 });
+
 
 
 
