@@ -149,10 +149,10 @@ window.deleteDoc = deleteDoc;
 window.doc = doc;
 
 // ✅ 出欠登録（ここが重要）
-async function add(status){
+window.add = async function(status){
 
   const raw = document.getElementById("name").value;
-  const name = raw.split(" ")[0];
+  const name = raw.split(" ").slice(1).join(" ").trim();
   const date = document.getElementById("date").value;
   const comment = document.getElementById("comment").value;
 
@@ -213,12 +213,12 @@ members.forEach(m=>{
 
 
 // ✅ 自分の回答表示
-function render(){
+window.render = function(){
   const list = document.getElementById("list");
   list.innerHTML = "";
 
   const raw = document.getElementById("name").value;
-  const name = raw.split(" ")[0]; // ←これ追加
+  const name = raw.split(" ").slice(1).join(" ").trim(); // ←これ追加
 
   if(!name){
     list.innerHTML = "<p>名前を選択してください</p>";
@@ -280,7 +280,7 @@ function getEventLabel(type){
 
 
 // ✅ 詳細表示
-function showDetail(date){
+window.showDetail = function(date){
   const ev = events.find(e => e.date === date);
 
   if(!ev){
@@ -317,7 +317,7 @@ dayElem.style.position = "relative";
   const date = `${y}-${m}-${d}`;
 
   const raw = document.getElementById("name").value;
-const name = raw.split(" ")[0];
+const name = raw.split(" ").slice(1).join(" ").trim();
 
   const ev = events.find(e => e.date === date);
   const myAnswer = data.find(e => e.date === date && e.name === name);
@@ -472,7 +472,7 @@ events.push({
 // ✅ これを最後に追加
 loadAll();
 
-async function deleteRecord(id){
+window.deleteRecord = async function(id){
 
   if(!confirm("削除しますか？")) return;
 

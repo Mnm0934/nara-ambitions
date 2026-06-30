@@ -100,9 +100,12 @@ if(!saved){
   window.isAdmin = true;
 
   // ✅ 延長
-  user.expire = Date.now() + (1 * 60 * 60 * 1000);
-  localStorage.setItem("userLogin", JSON.stringify(user));
-}
+  localStorage.setItem("userLogin", JSON.stringify({
+    id: "admin",
+    expire: Date.now() + 3600000
+  }));
+
+} // ← ✅ これを追加（超重要）
 </script>
 
 <script type="module">

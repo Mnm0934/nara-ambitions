@@ -568,54 +568,53 @@ function makeRanking(data){
 
   data.forEach(game=>{
 
-    // ---- 打者 ----
-    for(const p of (game.batters || [])){
-      const cleanName = p.name.replace(/^#\d+\s*/, "");
-      const member = window.members.find(m => normalize(m.name) === normalize(cleanName));
-      if(!member || member.role !== "選手"){
-  continue;
-}
+  // ---- 打者 ----
+  for(const p of (game.batters || [])){
+    const cleanName = p.name.replace(/^#\d+\s*/, "");
+    const member = window.members.find(m => normalize(m.name) === normalize(cleanName));
+    if(!member || member.role !== "選手"){
+      continue;
+    }
 
-      if(!batterStats[cleanName]){
-        batterStats[cleanName] = {pa:0, ab:0, hit:0};
-        batterGames[cleanName] = new Set();
-      }
+    if(!batterStats[cleanName]){
+      batterStats[cleanName] = {pa:0, ab:0, hit:0};
+      batterGames[cleanName] = new Set();
+    }
 
-      batterStats[cleanName].pa += p.pa||0;
-      batterStats[cleanName].ab += p.ab||0;
-      batterStats[cleanName].hit += p.hit||0;
+    batterStats[cleanName].pa += p.pa||0;
+    batterStats[cleanName].ab += p.ab||0;
+    batterStats[cleanName].hit += p.hit||0;
+    batterGames[cleanName].add(game.date + game.opponent);
+  } // ✅ ← これを追加！！！！！！
 
-      batterGames[cleanName].add(game.date + game.opponent);
-    });
+  // ---- 投手 ----
+  for(const p of (game.pitchers || [])){
+    const cleanName = p.name.replace(/^#\d+\s*/, "");
+    const member = window.members.find(m => normalize(m.name) === normalize(cleanName));
+    if(!member || member.role !== "選手"){
+      continue;
+    }
 
-    // ---- 投手 ----
-    for(const p of (game.pitchers || [])){
-      const cleanName = p.name.replace(/^#\d+\s*/, "");
-      const member = window.members.find(m => normalize(m.name) === normalize(cleanName));
-      if(!member || member.role !== "選手"){
-  continue;
-}
+    if(!pitcherStats[cleanName]){
+      pitcherStats[cleanName] = {inningOut:0, er:0};
+      pitcherGames[cleanName] = new Set();
+    }
 
-      if(!pitcherStats[cleanName]){
-        pitcherStats[cleanName] = {inningOut:0, er:0};
-        pitcherGames[cleanName] = new Set();
-      }
+    const ip = p.inning || 0;
+    const whole = Math.floor(ip);
+    const decimal = Number((ip - whole).toFixed(1));
 
-      const ip = p.inning || 0;
-      const whole = Math.floor(ip);
-      const decimal = Number((ip - whole).toFixed(1));
+    let outs = whole * 3;
+    if(decimal === 0.1) outs += 1;
+    if(decimal === 0.2) outs += 2;
 
-      let outs = whole * 3;
-      if(decimal === 0.1) outs += 1;
-      if(decimal === 0.2) outs += 2;
+    pitcherStats[cleanName].inningOut += outs;
+    pitcherStats[cleanName].er += p.er||0;
 
-      pitcherStats[cleanName].inningOut += outs;
-      pitcherStats[cleanName].er += p.er||0;
+    pitcherGames[cleanName].add(game.date + game.opponent);
+  }
 
-      pitcherGames[cleanName].add(game.date + game.opponent);
-    });
-
-  });
+}); // ← これはそのままでOK
 
   // ---- 打率ランキング ----
   const hitters = Object.keys(batterStats).map(name=>{
