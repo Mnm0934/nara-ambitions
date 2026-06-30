@@ -56,32 +56,23 @@ button{
 <body>
 
 <script>
-const USERS = {
-  nakano: "1996",
-  admin: "0725"
-};
+const saved = localStorage.getItem("userLogin");
 
-// ID入力
-const inputId = prompt("🔐 IDを入力してください");
-if(!inputId){ location.href = "index.html"; }
+if(saved){
+  const user = JSON.parse(saved);
 
-const inputPass = prompt("🔒 パスワードを入力してください");
-if(!inputPass){ location.href = "index.html"; }
-
-const id = inputId.trim();
-const pass = inputPass.trim();
-
-if(USERS[id] && USERS[id] === pass){
-
-  localStorage.setItem("userLogin", JSON.stringify({
-    id: id,   // ✅ ここだけでOK
-    expire: Date.now() + 1000 * 60 * 60 * 5
-  }));
-
-  location.href = "member-only.html";
+  // ✅ 期限OKなら何もせずそのまま表示
+  if(Date.now() < user.expire){
+    // スキップ（ここが重要）
+  }else{
+    // ❌ 期限切れ
+    localStorage.removeItem("userLogin");
+    location.href = "index.html";
+  }
 
 }else{
-  alert("IDまたはパスワードが違います");
+  // ✅ 未ログインならログイン画面へ
+  alert("ログインしてください");
   location.href = "index.html";
 }
 
@@ -136,7 +127,8 @@ function logout(){
 }
 window.onload = function(){
 
-  const user = JSON.parse(localStorage.getItem("userLogin"));
+  const saved = localStorage.getItem("userLogin");
+  const user = saved ? JSON.parse(saved) : null;
 
   const isAdmin = user && user.id === "admin";
 
