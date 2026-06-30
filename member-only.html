@@ -73,23 +73,18 @@ const pass = inputPass.trim();
 
 if(USERS[id] && USERS[id] === pass){
 
-  localStorage.setItem("loggedIn", "true");
-
-  // ✅ 有効期限も付ける
   localStorage.setItem("userLogin", JSON.stringify({
-    expire: Date.now() + 1000 * 60 * 60 * 5 // 5時間
+    id: id,   // ✅ ここだけでOK
+    expire: Date.now() + 1000 * 60 * 60 * 5
   }));
 
-  if(id === "admin"){
-  localStorage.setItem("role", "admin");
-}else{
-  localStorage.setItem("role", "member");
-}
+  location.href = "member-only.html";
 
 }else{
   alert("IDまたはパスワードが違います");
   location.href = "index.html";
 }
+
 </script>
 
 
@@ -136,21 +131,21 @@ if(USERS[id] && USERS[id] === pass){
 <script>
 function logout(){
   alert("ログアウトしました");
-  localStorage.removeItem("loggedIn");
-  localStorage.removeItem("role");
+  localStorage.removeItem("userLogin");
   location.href = "index.html";
 }
-
 window.onload = function(){
-  const role = localStorage.getItem("role");
-  const isAdmin = role === "admin";
+
+  const user = JSON.parse(localStorage.getItem("userLogin"));
+
+  const isAdmin = user && user.id === "admin";
 
   if(!isAdmin){
     document.querySelectorAll(".admin-only").forEach(el=>{
       el.style.display = "none";
     });
   }
-}
+};
 </script>
 
 </body>
