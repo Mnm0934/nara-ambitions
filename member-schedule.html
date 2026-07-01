@@ -39,10 +39,8 @@ body{
   font-size:18px; /* ←日付大きく */
 }
 
-.week:nth-child(7),
-.week:nth-child(1){
-  color:#ff9800;
-}
+.week:nth-child(1){ color:#ff9800; } /* 日曜 */
+.week:nth-child(7){ color:#ff9800; } /* 土曜 */
 
 .day:hover{
   background:#1b3c75;
@@ -144,7 +142,7 @@ body{
 
   /* 出欠一覧ボタン */
   button[onclick*="attendance-list"]{
-    bottom:90px;
+    bottom:80px;
     right:15px;
     padding:14px 8px;
     font-size:16px;
@@ -213,6 +211,8 @@ body{
   border-radius:10px;
   width:90%;
   max-width:400px;
+  max-height:80vh;   /* ✅追加 */
+  overflow:auto;     /* ✅追加 */
 }
 
 </style>
@@ -221,13 +221,22 @@ body{
 <body style="display:none;">
 
 <script>
-const loggedIn = localStorage.getItem("loggedIn");
+const saved = localStorage.getItem("userLogin");
 
-if(!loggedIn){
+if(saved){
+  const user = JSON.parse(saved);
+
+  if(Date.now() < user.expire){
+    document.body.style.display = "block";
+  }else{
+    alert("ログイン期限切れ");
+    localStorage.removeItem("userLogin");
+    location.href = "index.html";
+  }
+
+}else{
   alert("ログインしてください");
   location.href = "index.html";
-}else{
-  document.body.style.display = "block";
 }
 </script>
 
@@ -338,6 +347,7 @@ window.startApp = function(){
 // ✅ 予定データ取得（これが超重要）
 let events = [];
 let attendance = [];
+let members = []; // ✅追加
 
 // ✅ 今日
 const today = new Date();
@@ -377,16 +387,29 @@ weeks.forEach(w => {
 
     const event = events.find(e => e.date === fullDate);
 
-// ✅ 出欠集計
-const membersCount = 33; // メンバー数（あなたの人数）
-
+// ✅ 出欠データ
 const dayData = attendance.filter(a => a.date === fullDate);
 
-let present = dayData.filter(a => a.status === "出席").length;
-let absent = dayData.filter(a => a.status === "欠席").length;
-let undecided = dayData.filter(a => a.status === "未定").length;
-let noAnswer = membersCount - dayData.length;
+// ✅ 名前ごとに上書きして重複排除🔥
+const unique = {};
 
+dayData.forEach(a => {
+  unique[a.name] = a;  // 同じ名前は上書きされる
+});
+
+// ✅ 重複のない配列
+const uniqueList = Object.values(unique);
+
+// ✅ カウント
+let present = uniqueList.filter(a => a.status === "出席").length;
+let absent = uniqueList.filter(a => a.status === "欠席").length;
+let undecided = uniqueList.filter(a => a.status === "未定").length;
+
+// ✅ 人数（休部除外）
+const membersCount = members.filter(m => m.active !== false).length;
+
+// ✅ 未回答
+let noAnswer = Math.max(0, membersCount - uniqueList.length);
 
     if(event){
       if(event.type === "試合"){
@@ -517,26 +540,25 @@ function handleClick(date){
 
 async function loadData(){
 
-  // ✅ events取得
+  // ✅ events
   const eventSnap = await getDocs(collection(db, "events"));
   events = [];
-
   eventSnap.forEach(docSnap => {
-    events.push({
-      id: docSnap.id,
-      ...docSnap.data()
-    });
+    events.push({ id: docSnap.id, ...docSnap.data() });
   });
 
-  // ✅ attendance取得
+  // ✅ attendance
   const attSnap = await getDocs(collection(db, "attendance"));
   attendance = [];
-
   attSnap.forEach(docSnap => {
-    attendance.push({
-      id: docSnap.id,
-      ...docSnap.data()
-    });
+    attendance.push({ id: docSnap.id, ...docSnap.data() });
+  });
+
+  // ✅ 👇これ追加（選手取得🔥）
+  const memberSnap = await getDocs(collection(db, "members"));
+  members = [];
+  memberSnap.forEach(docSnap => {
+    members.push({ id: docSnap.id, ...docSnap.data() });
   });
 
   renderCalendar();

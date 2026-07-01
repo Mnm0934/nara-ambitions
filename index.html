@@ -24,7 +24,7 @@ body{
   background:#02142c;   /* ←これだけにする🔥 */
   color:white;
   overflow-x:hidden;
-  padding-top:120px;
+  padding-top:100px;
 }
 
 
@@ -244,10 +244,23 @@ background:rgba(0,0,0,0.6);
 }
 
 .overlay{
-position:relative;
-border-left:4px solid #d6002a;
-padding-left:30px;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  opacity:0;
+  pointer-events:none;
+  transition:0.3s;
+  z-index:900;
 }
+
+.overlay.active{
+  opacity:1;
+  pointer-events:auto;
+}
+
 
 /* ===== SECTION ===== */
 section{
@@ -403,8 +416,8 @@ transform:translateX(-5px);
   padding:0;
 
   background:rgba(0,0,0,0.95);
-
-  max-height:300px;   /* ←ここ統合 */
+  flex-wrap:nowrap;
+  max-height:0;        /* ←これに変える🔥 */
   overflow:hidden;
   transition:0.3s;
 }
@@ -421,6 +434,7 @@ transform:translateX(-5px);
 }
 
 }
+
 
 .menu-btn{
   display:none; /* ←基本非表示 */
@@ -1250,7 +1264,7 @@ p{
 
 /* ===== NEWSスライド ===== */
 .newsSwiper .swiper-slide{
-  width:440px !important;
+  width:clamp(260px, 85vw, 440px);
   display:flex;
   justify-content:center;
 }
@@ -1478,7 +1492,16 @@ header.small .title img{
 }
 
 }
-
+@media (min-width:1025px){
+  .nav{
+    display:flex;
+    flex-direction:row;
+    max-height:none;
+    overflow:visible;
+    padding:10px 20px;
+    background:rgba(0,0,0,0.3);
+  }
+}
 
 </style>
 </head>
@@ -1520,7 +1543,9 @@ async function renderNews(){
 
     snap.forEach(d => items.push(d.data()));
 
-    items.sort((a,b)=> b.date.localeCompare(a.date));
+items = items.filter(n => n.approved === true); // ✅ここ追加🔥
+
+items.sort((a,b)=> b.date.localeCompare(a.date));
 
     if(items.length === 0){
       list.innerHTML = "<p>ニュースはありません</p>";
@@ -1532,7 +1557,7 @@ async function renderNews(){
       html += `
         <div class="news-item">
           <div class="news-text">
-            <div class="tag ${n.type}">${n.type}</div>
+            <div class="tag ${n.tag}">${n.tag}</div>
             <h3>${n.title}</h3>
             <div class="date">${n.date}</div>
           </div>
@@ -2219,14 +2244,48 @@ window.addEventListener("scroll", () => {
 /* ===== ハンバーガー ===== */
 const menuBtn = document.querySelector(".menu-btn");
 const nav = document.querySelector(".nav");
+const overlay = document.querySelector(".overlay");
 
+// ✅ メニュー開閉
 menuBtn.addEventListener("click", () => {
   menuBtn.classList.toggle("active");
-
-  // ✅ ナビの表示切り替えじゃなく「高さだけ変える」
   nav.classList.toggle("open");
+
+  if(nav.classList.contains("open")){
+    document.body.style.overflow = "hidden";
+    overlay.classList.add("active");
+  }else{
+    document.body.style.overflow = "auto";
+    overlay.classList.remove("active");
+  }
 });
 
+// ✅ ナビ押したら閉じる
+document.querySelectorAll(".nav a").forEach(link => {
+  link.addEventListener("click", () => {
+    nav.classList.remove("open");
+    menuBtn.classList.remove("active");
+    document.body.style.overflow = "auto";
+    overlay.classList.remove("active");
+  });
+});
+
+// ✅ 外クリックで閉じる
+overlay.addEventListener("click", () => {
+  nav.classList.remove("open");
+  menuBtn.classList.remove("active");
+  document.body.style.overflow = "auto";
+  overlay.classList.remove("active");
+});
+
+window.addEventListener("resize", () => {
+  if(window.innerWidth > 1024){
+    nav.classList.remove("open");
+    menuBtn.classList.remove("active");
+    overlay.classList.remove("active");
+    document.body.style.overflow = "auto";
+  }
+});
 
 function goMember(){
 

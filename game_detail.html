@@ -18,10 +18,25 @@ table{
   table-layout:auto;  /* ← 追加 */
 }
 
+@media (max-width:600px){
+  table{
+    font-size:11px;
+  }
+}
+
+@media (max-width:600px){
+  button{
+    width:90%;
+    display:block;
+    margin:10px auto;
+  }
+}
 
 td,th{
   border:1px solid #333;
   padding:5px;
+  width:50px;      /* ← 追加 */
+  text-align:center;
 }
 
 .header{
@@ -40,12 +55,6 @@ td,th{
   margin:10px;
 }
 
-th, td{
-  border:1px solid #333;
-  padding:5px;
-  width:50px;      /* ← 追加 */
-  text-align:center;
-}
 
 td:first-child, th:first-child{
   min-width:120px;   /* ← ここがポイント */
@@ -71,13 +80,22 @@ button{
 <body style="display:none;">
 
 <script>
-const loggedIn = localStorage.getItem("loggedIn");
+const saved = localStorage.getItem("userLogin");
 
-if(!loggedIn){
+if(saved){
+  const user = JSON.parse(saved);
+
+  if(Date.now() < user.expire){
+    document.body.style.display = "block";
+  }else{
+    alert("ログイン期限切れ");
+    localStorage.removeItem("userLogin");
+    location.href = "index.html";
+  }
+
+}else{
   alert("ログインしてください");
   location.href = "index.html";
-}else{
-  document.body.style.display = "block";
 }
 </script>
 
@@ -87,13 +105,19 @@ if(!loggedIn){
 
 <div id="info"></div>
 
-<div id="score"></div>
+<div style="overflow-x:auto;">
+  <div id="score"></div>
+</div>
 
 <h3>打撃成績</h3>
-<div id="bat"></div>
+<div style="overflow-x:auto; -webkit-overflow-scrolling: touch;">
+  <div id="bat"></div>
+</div>
 
 <h3>投手成績</h3>
-<div id="pitch"></div>
+<div style="overflow-x:auto; -webkit-overflow-scrolling: touch;">
+  <div id="pitch"></div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";

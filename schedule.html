@@ -437,10 +437,9 @@ footer{
     transition:0.3s;
   }
 
-  .nav.active{
-    max-height:500px;
-  }
-
+.nav.open{
+  max-height:1000px;
+}
   .title{
     height:80px;
   }
@@ -451,6 +450,23 @@ footer{
 
 }
 
+.overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  opacity:0;
+  pointer-events:none;
+  transition:0.3s;
+  backdrop-filter: blur(5px);
+}
+
+.overlay.active{
+  opacity:1;
+  pointer-events:auto;
+}
 
 
 .finished{
@@ -749,7 +765,7 @@ window.collection = collection;
     <a href="member.html">選手・スタッフ</a>
 <a href="schedule.html" class="active">スケジュール</a>
     <a href="index.html#sns">SNS</a>
-    <a href="member-only.html">部員専用</a>
+    <a href="#" onclick="goMember()">部員専用</a>
    </nav>
 </header>
 
@@ -852,9 +868,9 @@ function renderNext(){
   today.setHours(0,0,0,0);
 
   let next = events
-  .filter(e => e.public === true)
-  .sort((a,b) => new Date(a.date) - new Date(b.date))
-  .find(e => new Date(e.date) >= today);
+    .filter(e => e.public)
+    .sort((a,b) => new Date(a.date) - new Date(b.date))
+    .find(e => new Date(e.date) >= today);
 
   if(next){
     nextBox.innerHTML = `
@@ -897,11 +913,7 @@ function renderCalendar(){
 
     let className = "day";
 
-    const dayEvents = events.filter(e =>
-  e.date === fullDate && e.public === true
-);
-
-const event = dayEvents[0];
+    const event = events.find(e => e.date === fullDate && e.public);
 
 // ✅ マッチ日
 if(event){
@@ -1035,6 +1047,41 @@ function filterMatch(e, type){
 
 loadEvents();
 
+function goMember(){
+
+  const saved = localStorage.getItem("userLogin");
+
+  if(saved){
+    const user = JSON.parse(saved);
+
+    if(Date.now() < user.expire){
+      location.href = "member-only.html";
+      return;
+    }
+  }
+
+  const id = prompt("IDを入力してください");
+  const pass = prompt("パスワードを入力してください");
+
+  if(
+    (id === "admin" && pass === "0725") ||
+    (id === "nakano" && pass === "1996")
+  ){
+    const data = {
+      id,
+      expire: Date.now() + 86400000
+    };
+
+    localStorage.setItem("userLogin", JSON.stringify(data));
+
+    alert("ログイン成功");
+    location.href = "member-only.html";
+
+  }else{
+    alert("IDまたはパスワードが違います");
+  }
+}
+
 </script>
 
 <script>
@@ -1060,10 +1107,38 @@ window.addEventListener("scroll", () => {
 
 const menuBtn = document.querySelector(".menu-btn");
 const nav = document.querySelector(".nav");
+const overlay = document.querySelector(".overlay");
 
+// ✅ 開閉
 menuBtn.addEventListener("click", () => {
   menuBtn.classList.toggle("active");
-  nav.classList.toggle("active");
+  nav.classList.toggle("open");
+
+  if(nav.classList.contains("open")){
+    document.body.style.overflow = "hidden";
+    overlay.classList.add("active");
+  }else{
+    document.body.style.overflow = "auto";
+    overlay.classList.remove("active");
+  }
+});
+
+// ✅ ナビ押したら閉じる
+document.querySelectorAll(".nav a").forEach(link => {
+  link.addEventListener("click", () => {
+    nav.classList.remove("open");
+    menuBtn.classList.remove("active");
+    document.body.style.overflow = "auto";
+    overlay.classList.remove("active");
+  });
+});
+
+// ✅ 外クリックで閉じる
+overlay.addEventListener("click", () => {
+  nav.classList.remove("open");
+  menuBtn.classList.remove("active");
+  document.body.style.overflow = "auto";
+  overlay.classList.remove("active");
 });
 </script>
 

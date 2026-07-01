@@ -44,10 +44,18 @@ td,th{
 td:nth-child(2), th:nth-child(2){
   min-width:80px;
   text-align:left;
+  position: sticky;
+  left: 40px;
+  background:#02142c;
+  z-index:2;
 }
 
 td:nth-child(1), th:nth-child(1){
   width:40px;
+  position: sticky;
+  left: 0;
+  background:#02142c;
+  z-index:2;
 }
 
 td:not(:nth-child(2)){
@@ -62,18 +70,43 @@ tr:nth-child(even){
 #pitcherTable th:nth-child(2){
   width: 80px;
 }
+
+
+@media (max-width:600px){
+  table{
+    font-size:10px;
+  }
+}
+
+@media (max-width:600px){
+  button{
+    width:90%;
+    margin:5px auto;
+    display:block;
+  }
+}
+
 </style>
 </head>
 
 <body style="display:none;">
 <script>
-const loggedIn = localStorage.getItem("loggedIn");
+const saved = localStorage.getItem("userLogin");
 
-if(loggedIn !== "true"){
+if(saved){
+  const user = JSON.parse(saved);
+
+  if(Date.now() < user.expire){
+    document.body.style.display = "block";
+  }else{
+    alert("ログイン期限切れ");
+    localStorage.removeItem("userLogin");
+    location.href = "index.html";
+  }
+
+}else{
   alert("ログインしてください");
   location.href = "index.html";
-}else{
-  document.body.style.display = "block";
 }
 </script>
 
@@ -96,12 +129,14 @@ if(loggedIn !== "true"){
 </div>
 
 <h2>打者成績一覧</h2>
-<div style="overflow:auto; max-height:500px;">
+<div style="overflow:auto; max-height:500px; -webkit-overflow-scrolling: touch;">
+
   <table id="batterTable"></table>
 </div>
 
 <h2>投手成績一覧</h2>
-<div style="overflow:auto; max-height:400px;">
+<div style="overflow:auto; max-height:400px; -webkit-overflow-scrolling: touch;">
+
   <table id="pitcherTable"></table>
 </div>
 

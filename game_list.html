@@ -17,7 +17,9 @@ body{
   padding:20px;
   width:80%;
   background:white;
+  overflow-x:auto;
 }
+
 
 .win{ background:#4caf50; color:white; }
 .lose{ background:#e53935; color:white; }
@@ -32,6 +34,29 @@ button{
   color:black;
   font-weight:bold;
 }
+
+@media (max-width:600px){
+
+  .scoreboard{
+    font-size:13px;
+    min-width:600px;
+}
+
+
+  .scoreboard th,
+  .scoreboard td{
+    padding:4px;
+  }
+
+  h3{
+    font-size:18px;
+  }
+
+  select{
+    font-size:18px;
+  }
+}
+
 
 h2{
   color:red;
@@ -112,15 +137,38 @@ h3:hover{
   background:#ffb300;
 }
 
-.box button {
-  display: inline-block !important;
-}
-
-
 </style>
 </head>
 
 <body>
+<script>
+const saved = localStorage.getItem("userLogin");
+
+if(!saved){
+  alert("ログインしてください");
+  location.href = "index.html";
+}else{
+  const user = JSON.parse(saved);
+
+  // ✅ 有効期限チェック
+  if(Date.now() > user.expire){
+    alert("ログインの有効期限が切れました");
+
+    localStorage.removeItem("userLogin");
+
+    location.href = "index.html";
+    return;
+  }
+
+  // ✅ 管理者判定
+  window.isAdmin = user.id === "admin";
+
+  // ✅ セッション延長（1時間再セット）
+  user.expire = Date.now() + (1 * 60 * 60 * 1000);
+  localStorage.setItem("userLogin", JSON.stringify(user));
+}
+
+</script>
 
 <h2>NARA Ambitions club 試合一覧</h2>
 
@@ -228,8 +276,12 @@ function renderList(){
     const firstMonth = Object.keys(groups[year]).sort((a,b)=>b-a)[0];
 
     setTimeout(()=>{
-      changeMonth({value:firstMonth}, year);
-    },0);
+  const select = document.querySelector(`#month-${year}`).previousElementSibling;
+  if(select){
+    changeMonth(select, year);
+  }
+}, 50);
+
 
     html += `</div>`;
   });
@@ -313,7 +365,7 @@ for(let i=0;i<maxInning;i++){
 }
 
   // ✅ ヒット合計（バッターから）
-const gameData = (window.data || []).find(g =>
+const gameData = data.find(g =>
   g.date === game.date &&
   g.game === game.game &&
   g.opponent === game.opponent
@@ -449,21 +501,24 @@ function changeMonth(select, year){
       cls = "draw"; result = "引分";
     }
 
-    html += `
-    <div class="box ${cls}">
-      ${game.date} ${game.game}<br>
-      vs ${game.opponent}<br>
-      <b>${myTotal} - ${opTotal}</b>
+html += `
+<div class="box ${cls}">
+  ${game.date} ${game.game}<br>
+  vs ${game.opponent}<br>
+  <b>${myTotal} - ${opTotal}</b>
 
-      ${createScoreBoard(my, op, cls, game)}
+  ${createScoreBoard(my, op, cls, game)}
 
-      <b>${result}</b><br>
+  <b>${result}</b><br>
 
-      <button onclick="goDetail('${game.id}')">詳細</button>
-      <button onclick="editGame('${game.id}')">編集</button>
-      <button onclick="deleteGame('${game.id}')">削除</button>
-    </div>
-    `;
+  <button onclick="goDetail('${game.id}')">詳細</button>
+
+  ${window.isAdmin ? `
+    <button onclick="editGame('${game.id}')">編集</button>
+    <button onclick="deleteGame('${game.id}')">削除</button>
+  ` : ``}
+</div>
+`;
   });
 
   target.innerHTML = html;

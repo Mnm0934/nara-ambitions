@@ -44,7 +44,7 @@ font-weight:bold;
   flex-wrap:nowrap;
   white-space:nowrap;
   position:sticky;
-  top:140px; /* ←ここがポイント🔥 */
+  top:110px; /* ←ここがポイント🔥 */
   z-index:300;
   background:#02142c;
 }
@@ -512,7 +512,7 @@ footer{
 }
 
 /* スマホ用 */
-@media (max-width:768px){
+@media (max-width:1024px){
 
   .menu-btn{
     display:flex;
@@ -532,9 +532,10 @@ footer{
     transition:0.3s;
   }
 
-  .nav.active{
-    max-height:500px;
-  }
+  .nav.open{
+  max-height:1000px;
+}
+
 
   .nav a{
     padding:15px;
@@ -654,7 +655,7 @@ footer{
 .search-box{
   text-align:center;
   position:sticky;
-  top:200px;
+  top:160px;
   z-index:250;
   background:#02142c;
   padding:20px 0;
@@ -828,7 +829,7 @@ header.small .title img{
 <a href="member.html" class="active">選手・スタッフ</a>
     <a href="schedule.html">スケジュール</a>
     <a href="index.html#sns">SNS</a>
-    <a href="member-only.html">部員専用</a>
+<a href="#" onclick="goMember()">部員専用</a>
    </nav>
 </header>
 
@@ -1676,7 +1677,25 @@ const nav = document.querySelector(".nav");
 
 menuBtn.addEventListener("click", () => {
   menuBtn.classList.toggle("active");
-  nav.classList.toggle("active");
+  nav.classList.toggle("open");
+
+  // ✅ 追加ここ
+  if(nav.classList.contains("open")){
+    document.body.style.overflow = "hidden";  // スクロール禁止
+  }else{
+    document.body.style.overflow = "auto";    // 元に戻す
+  }
+});
+
+// ✅ ナビリンク押したら閉じる
+document.querySelectorAll(".nav a").forEach(link => {
+  link.addEventListener("click", () => {
+    nav.classList.remove("open");
+    menuBtn.classList.remove("active");
+
+    // ✅ スクロールも戻す
+    document.body.style.overflow = "auto";
+  });
 });
 
 // ✅ URLから名前取得

@@ -21,6 +21,24 @@ table{
   font-size:13px;
 }
 
+#table{
+  overflow-x: auto;
+}
+
+table{
+  min-width: 800px;
+}
+
+@media (max-width:600px){
+  table{
+    font-size:12px;
+  }
+
+  th, td{
+    padding:4px;
+  }
+}
+
 th, td{
   border:1px solid #555;
   padding:6px;
@@ -271,7 +289,7 @@ const notAnswered = members.filter(m => {
   const id = m.name;
 
   // ✅ return追加
-  return !data.some(d => d.name.includes(id) && d.date === date);
+  return !data.some(d => d.name === id && d.date === date);
 });
 
 // ✅ 未回答まとめを作る（←ここが別！）
@@ -330,7 +348,7 @@ if(ev){
 
   if(selectedDate){
 
-  const rec = data.find(d => d.name.includes(id) && d.date === selectedDate);
+  const rec = data.find(d => d.name === id && d.date === selectedDate);
 
   if(!rec || rec.status !== "出席"){
     return;
@@ -342,7 +360,7 @@ if(ev){
     html += `<td class="name">${displayName}</td>`;
 
 targetDates.forEach(date => {
-      const rec = data.find(d => d.name.includes(id) && d.date === date);
+      const rec = data.find(d => d.name === id && d.date === date);
 
       let mark = "";
 const isActive = m.active !== false; // ←休部判定

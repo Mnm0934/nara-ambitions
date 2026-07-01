@@ -67,13 +67,22 @@ button{
 
 <body style="display:none;">
 <script>
-const loggedIn = localStorage.getItem("loggedIn");
+const saved = localStorage.getItem("userLogin");
 
-if(!loggedIn){
+if(saved){
+  const user = JSON.parse(saved);
+
+  if(Date.now() < user.expire){
+    document.body.style.display = "block";
+  }else{
+    alert("ログイン期限切れ");
+    localStorage.removeItem("userLogin");
+    location.href = "index.html";
+  }
+
+}else{
   alert("ログインしてください");
   location.href = "index.html";
-}else{
-  document.body.style.display = "block";
 }
 </script>
 
@@ -215,10 +224,25 @@ async function saveNews(){
     approved: false
   };
 
-  await addDoc(collection(db, "news"), data);
+  if(!data.title || !data.date){
+    alert("タイトルと日付は必須です");
+    return;
+  }
+
+  // 🔥 編集モードなら更新
+  if(editIndex !== null){
+    await updateDoc(doc(db, "news", news[editIndex].id), data);
+    editIndex = null;
+    document.getElementById("saveBtn").innerText = "💾 保存";
+  }
+
+  // 🔥 新規なら追加
+  else{
+    await addDoc(collection(db, "news"), data);
+  }
 
   clearForm();
-loadNews(); // ←これだけでOK
+  loadNews();
 
   alert("保存しました！");
 }
@@ -252,13 +276,14 @@ function renderList(){
 
   news.forEach((n, i) => {
     box.innerHTML += `
-      <div style="border:1px solid #fff; margin:10px; padding:10px;">
-        ${n.img ? `<img src="${n.img}" width="100">` : ""}
-        <br>
-        <strong>${n.title}</strong><br>
-        ${n.date}<br>
+  <div style="border:1px solid #fff; margin:10px; padding:10px;">
+    ${n.img ? `<img src="${n.img}" width="100">` : ""}
+    <br>
+    <strong>${n.title}</strong><br>
+    ${n.date}<br>
 
-        <button onclick="deleteNews(${i})">削除</button>
+    <button onclick="editNews(${i})">編集</button>
+    <button onclick="deleteNews(${i})">削除</button>
 
         ${
           n.approved
@@ -321,12 +346,16 @@ function clearForm(){
   document.getElementById("date").value = "";
   document.getElementById("link").value = "";
   document.getElementById("content").value = "";
-  document.getElementById("tag").value = "result"; // 初期値戻す
+  document.getElementById("tag").value = "result";
+
   imgData = "";
+  editIndex = null; // 🔥これ重要
 
   const preview = document.getElementById("preview");
   preview.src = "";
   preview.style.display = "none";
+
+  document.getElementById("saveBtn").innerText = "💾 保存"; // 🔥戻す
 }
 
 async function approveNews(i){

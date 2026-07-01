@@ -140,6 +140,7 @@ window.updateDoc = updateDoc;
 window.doc = doc;
 window.getDoc = getDoc;
 window.getDocs = getDocs;
+window.deleteDoc = deleteDoc; // ←これ追加🔥
 
 
 let members = [];
@@ -270,7 +271,7 @@ function addPitcher(){
     背番号：<input type="number" id="p_num_${pitcherCount}" oninput="autoFillPitcher(${pitcherCount})"><br><br>
     名前：<input type="text" id="p_name_${pitcherCount}" readonly><br><br>
 
-    投球回：<input type="number" id="p_inning_${pitcherCount}">
+    投球回：<input type="text" id="p_inning_${pitcherCount}">
     打者数：<input type="number" id="p_bf_${pitcherCount}">
     打数：<input type="number" id="p_ab_${pitcherCount}">
     投球数：<input type="number" id="p_pitch_${pitcherCount}"><br>
@@ -320,7 +321,7 @@ function calcTB(i){
   const t = Number(document.getElementById("triple_"+i).value)||0;
   const hr = Number(document.getElementById("hr_"+i).value)||0;
 
-  const single = hit - d - t - hr;
+  const single = Math.max(0, hit - d - t - hr);
   const tb = single + d*2 + t*3 + hr*4;
 
   document.getElementById("tb_"+i).value = tb;
@@ -443,7 +444,9 @@ async function save(){
   alert("保存しました");
 }
 
-  document.querySelectorAll("input").forEach(i => i.value="");
+  document.getElementById("date").value = "";
+document.getElementById("game").value = "";
+document.getElementById("opponent").value = "";
 }
 
 /* ============================

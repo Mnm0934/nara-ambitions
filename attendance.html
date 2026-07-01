@@ -46,13 +46,22 @@ button{
 
 <body style="display:none;">
 <script>
-const loggedIn = localStorage.getItem("loggedIn");
+const saved = localStorage.getItem("userLogin");
 
-if(!loggedIn){
+if(saved){
+  const user = JSON.parse(saved);
+
+  if(Date.now() < user.expire){
+    document.body.style.display = "block";
+  }else{
+    alert("ログイン期限切れ");
+    localStorage.removeItem("userLogin");
+    location.href = "index.html";
+  }
+
+}else{
   alert("ログインしてください");
   location.href = "index.html";
-}else{
-  document.body.style.display = "block";
 }
 </script>
 
