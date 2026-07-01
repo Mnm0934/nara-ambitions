@@ -2145,7 +2145,10 @@ function login(){
   const id = document.getElementById("id").value;
   const pass = document.getElementById("pass").value;
 
-  if(id === "admin" && pass === "1234"){
+  if(
+  (id === "admin" && pass === "0725") ||
+  (id === "nakano" && pass === "1996")
+){
 
     const data = {
       id,
@@ -2239,7 +2242,10 @@ function goMember(){
   const id = prompt("IDを入力してください");
   const pass = prompt("パスワードを入力してください");
 
-  if(id === "admin" && pass === "1234"){
+  if(
+  (id === "admin" && pass === "0725") ||
+  (id === "nakano" && pass === "1996")
+){
 
     const data = {
       id,
