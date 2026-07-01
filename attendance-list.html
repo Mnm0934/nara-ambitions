@@ -167,7 +167,7 @@ window.collection = collection;
 window.getDocs = getDocs;
 // ✅ 追加（ここが一番重要🔥）
 window.startApp = function(){
-  if(window.loadAll){
+  if(typeof loadAll === "function"){
     loadAll();
   }
 };
