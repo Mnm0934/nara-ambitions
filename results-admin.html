@@ -164,6 +164,23 @@ function normalize(name){
 // ================= Firestore results 読み込み =================
 
 let resultsData = [];
+let eventsData = [];
+
+async function loadEvents(){
+  const snap = await window.getDocs(window.collection(window.db, "events"));
+
+  eventsData = [];
+
+  snap.forEach(docSnap => {
+    eventsData.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  console.log("events:", eventsData); // 確認用
+}
+
 
 let batterSortKey = "num";
 let batterSortOrder = "asc";
@@ -343,9 +360,9 @@ function render(){
   if(played) games++;
 });
 
-    const avg = ab ? hit/ab : 0;
-    const obp = (ab+bb+sf) ? (hit+bb)/(ab+bb+sf) : 0;
-    const ops = avg + obp;
+    const avg = ab ? Number(hit/ab) : 0;
+const obp = (ab+bb+sf) ? Number((hit+bb)/(ab+bb+sf)) : 0;
+const ops = avg + obp;
 
     const regulation = games * 3.1;
     const isQualified = games > 0 && pa >= regulation;
@@ -365,12 +382,16 @@ function render(){
 
   // ソート
   list.sort((a,b)=>{
-    if(batterSortOrder === "desc"){
-      return b[batterSortKey] - a[batterSortKey];
-    }else{
-      return a[batterSortKey] - b[batterSortKey];
-    }
-  });
+  const A = Number(a[batterSortKey]) || 0;
+  const B = Number(b[batterSortKey]) || 0;
+
+  if(batterSortOrder === "desc"){
+    return B - A;
+  }else{
+    return A - B;
+  }
+});
+
 
   // 表示
   tbody.innerHTML = "";
@@ -554,8 +575,17 @@ function renderPitcher(data){
 function renderGameList(data){
   const gameList = document.getElementById("gameList");
 
-  gameList.innerHTML = data.map(g=>{
-    const label = `${g.date} ${g.game} vs ${g.opponent}`;
+  gameList.innerHTML = data.map(g => {
+
+    // ✅ 同じ日付の予定を探す
+    const event = eventsData.find(e => e.date === g.date);
+
+    // ✅ 予定があれば種類をつける（試合・練習など）
+    const type = event ? `（${event.type}）` : "";
+
+    // ✅ 表示文字
+    const label = `${g.date} ${g.game} vs ${g.opponent} ${type}`;
+
     return `
       <div onclick="location.href='game_input.html?id=${g.firestoreId}'"
            style="cursor:pointer; color:yellow; margin:5px 0;">
@@ -698,9 +728,10 @@ window.addEventListener("load", () => {
       clearInterval(wait);
 
       // members → results の順で読み込む
-      loadMembers().then(() => {
-        loadResults();
-      });
+      loadMembers().then(async () => {
+  await loadEvents();   // ←追加🔥
+  loadResults();
+});
     }
 
   }, 50);
