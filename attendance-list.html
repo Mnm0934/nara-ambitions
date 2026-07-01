@@ -389,21 +389,25 @@ if(rec){
   `<div style="margin-bottom:20px;">${summaryHtml}</div>` + html;
 }
 
-function changeMonth(month){
-  currentMonth = month; // ✅ 追加
+window.changeMonth = function(month){
+  currentMonth = month;
   renderTable(month);
   renderTitle(month);
-}
+};
 
-function filterDate(date){
+window.filterDate = function(date){
+
   if(selectedDate === date){
-    selectedDate = null; // ✅ もう一回押すと解除
+    selectedDate = null;
   } else {
     selectedDate = date;
   }
 
-  renderTable(currentMonth);
-}
+  // ✅ これ追加（安全）
+  const target = currentMonth || monthKeys[0];
+
+  renderTable(target);
+};
 
 async function loadAll(){
 
@@ -473,21 +477,24 @@ window.events = events;
 
   // メンバー
   members = [];
-  const memSnap = await getDocs(collection(db, "members"));
-  memSnap.forEach(d => {
-    members.push({
-  id: d.id,
-  ...d.data()
-});
+const memSnap = await getDocs(collection(db, "members"));
+memSnap.forEach(d => {
+  members.push({
+    id: d.id,
+    ...d.data()
   });
+});
+
+// ✅ これ追加
+members.sort((a, b) => a.number - b.number);
 
   init();
 renderTabs();
 
 if(monthKeys.length > 0){
+  currentMonth = monthKeys[0]; // ←追加
   changeMonth(monthKeys[0]);
 } else {
-  // ✅ データなしでも表示
   renderTable();
 }
 }
