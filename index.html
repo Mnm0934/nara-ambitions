@@ -2182,9 +2182,9 @@ function login(){
 ){
 
     const data = {
-      id,
-      expire: Date.now() + 86400000
-    };
+  id,
+  expire: Date.now() + (30 * 60 * 1000)
+};
 
     localStorage.setItem("userLogin", JSON.stringify(data));
 
@@ -2310,9 +2310,9 @@ function goMember(){
 ){
 
     const data = {
-      id,
-      expire: Date.now() + 86400000
-    };
+  id,
+  expire: Date.now() + (30 * 60 * 1000)
+};
 
     localStorage.setItem("userLogin", JSON.stringify(data));
 

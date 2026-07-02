@@ -528,30 +528,53 @@ footer{
     position:absolute;
     right:20px;
     top:20px;
+    z-index:1000;
   }
 
   .nav{
     display:flex;
     flex-direction:row;
     flex-wrap:nowrap;
-    overflow-x:auto;
-    gap:20px;
-    justify-content:flex-start;
+
+    overflow-x:visible;
+
+    width:100%;
+    gap:10px;
+
+    justify-content:center;
+
+    padding:10px 5px;
+    text-align:center;
+  }
+
+  .nav a{
+    padding:8px 4px;
+    font-size:12px;
+    letter-spacing:0;
+    border-top:1px solid #333;
+  }
+
+  .nav::-webkit-scrollbar{
+    display:none;
   }
 
   .nav.open{
+    display:flex;
     flex-direction:column;
-    width:100%;
+    flex-wrap:nowrap;
 
     overflow-x:hidden;
     overflow-y:auto;
 
+    width:100%;
     gap:0;
+
+    padding-right:0;
   }
 
-  .nav a{
-    padding:15px;
-    border-top:1px solid #333;
+  .nav.open a{
+    width:100%;
+    box-sizing:border-box;
   }
 
   .title{
@@ -561,7 +584,6 @@ footer{
   .title img{
     height:50px;
   }
-
 }
 
 .menu-btn span{

@@ -690,45 +690,38 @@ header.small .title img{
   }
 
   .nav{
-  display:flex;
-  flex-direction:row;
-  flex-wrap:nowrap;
+    display:flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    overflow-x:visible;
+    gap:10px;
+    width:100%;
+    justify-content:flex-start;
+    white-space:nowrap;
+    padding:10px 5px;
+  }
 
-  overflow-x:visible;
-
-  gap:10px;
-  width:100%;
-
-  justify-content:center;
-
-  white-space:nowrap;
-  padding:10px 5px;
-}
-
-.nav a{
-  padding:8px 4px;
-  font-size:12px;
-  letter-spacing:0;
-}
+  .nav a{
+    padding:8px 4px;
+    font-size:12px;
+    letter-spacing:0;
+  }
 
   .nav::-webkit-scrollbar{
     display:none;
   }
 
   .nav.open{
-  flex-direction:column;
-  flex-wrap:nowrap;
+    flex-direction:column;
+    width:100%;
+    gap:0;
+  }
 
-  overflow-x:hidden;
-  overflow-y:auto;
-
-  width:100%;
-  gap:0;
-}
-
-  .nav a{
+  .nav.open a{
     padding:15px;
     border-top:1px solid #333;
+    width:100%;
+    box-sizing:border-box;
   }
 
   .title{
