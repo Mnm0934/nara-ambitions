@@ -194,10 +194,15 @@ window.startApp = function(){
     メンバー全削除（注意）
   </button>
 
-  <!-- ✅ ログアウト -->
-  <button onclick="logout()" style="background:#ff9800;color:black;">
-    ログアウト
-  </button>
+  <!-- ✅ 部員専用ページへ -->
+<button onclick="goMemberPage()" style="background:#999;color:white;">
+  ← 部員専用ページ
+</button>
+
+<!-- ✅ ログアウト -->
+<button onclick="logout()" style="background:#ff9800;color:black;">
+  ログアウト
+</button>
 
 </div> <!-- ✅ ←これ超重要（閉じる） -->
 
@@ -292,6 +297,9 @@ async function resetAll(){
   }
 }
 
+function goMemberPage(){
+  location.href = "member-only.html";
+}
 
 // ✅ ログアウト
 function logout(){
@@ -360,6 +368,7 @@ function render(){
 /* ✅ これを追加 */
 window.resetAll = resetAll;
 window.logout = logout;
+window.goMemberPage = goMemberPage;
 window.startEdit = startEdit;
 window.saveEdit = saveEdit;
 window.cancelEdit = cancelEdit;

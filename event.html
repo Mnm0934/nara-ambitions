@@ -283,7 +283,35 @@ await addDoc(collection(db, "events"), {
   public: isPublic
 });
 
-alert("保存しました");
+const lineText = `【NARA Ambitions Club】
+
+日付：${date}
+種別：${type}
+時間：${time || "-"}
+場所：${place || "-"}
+対戦相手：${opponent || "-"}
+
+その他：
+${note || "なし"}
+
+試合結果：
+${result || "未定"}
+`;
+
+try{
+  await navigator.clipboard.writeText(lineText);
+
+  alert(
+    `保存しました\n\nLINE用文章をコピーしました`
+  );
+
+}catch(e){
+
+  prompt(
+    "コピーしてください",
+    lineText
+  );
+}
 
 loadEvents();
 

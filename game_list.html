@@ -223,6 +223,8 @@ async function loadData(){
 });
   });
 
+data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
   console.log(data);  // ←これ追加！！！
 
   renderList();
@@ -496,7 +498,9 @@ function changeMonth(select, year){
 
   let html = "";
 
-  groups[year][month].forEach(game=>{
+  groups[year][month]
+  .sort((a,b) => new Date(b.date) - new Date(a.date))
+  .forEach(game=>{
 
     const my = game.myInnings || [];
     const op = game.opInnings || [];

@@ -198,6 +198,14 @@ window.loadMembers = async function() {
 </button>
 
 <button onclick="goList()">一覧へ</button>
+
+<button onclick="goMemberPage()" style="
+  background:#999;
+  color:white;
+">
+  ← 部員専用ページ
+</button>
+
 <button onclick="logout()">ログアウト</button>
 
 <script>
@@ -277,7 +285,17 @@ function addPitcher(){
     背番号：<input type="number" id="p_num_${pitcherCount}" oninput="autoFillPitcher(${pitcherCount})"><br><br>
     名前：<input type="text" id="p_name_${pitcherCount}" readonly><br><br>
 
-    投球回：<input type="text" id="p_inning_${pitcherCount}">
+    投球回：
+<input
+  type="text"
+  id="p_inning_${pitcherCount}"
+  placeholder="7.2"
+><br>
+
+<small>
+※ .1＝1/3回、.2＝2/3回
+</small><br><br>
+
     打者数：<input type="number" id="p_bf_${pitcherCount}">
     打数：<input type="number" id="p_ab_${pitcherCount}">
     投球数：<input type="number" id="p_pitch_${pitcherCount}"><br>
@@ -396,7 +414,7 @@ function collectData(){
     pitchers.push({
       number,
       name,
-      inning: Number(document.getElementById("p_inning_"+i).value)||0,
+      inning: document.getElementById("p_inning_"+i).value || "",
       bf: Number(document.getElementById("p_bf_"+i).value)||0,
       ab: Number(document.getElementById("p_ab_"+i).value)||0,
       pitch: Number(document.getElementById("p_pitch_"+i).value)||0,
@@ -593,6 +611,10 @@ window.addEventListener("load", () => {
 ============================ */
 function goList(){
   location.href = "game_list.html";
+}
+
+function goMemberPage(){
+  location.href = "member-only.html";
 }
 
 function logout(){

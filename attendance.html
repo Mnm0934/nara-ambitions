@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>出欠入力</title>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -40,6 +41,46 @@ button{
 .list{
   margin-top:20px;
   text-align:left;
+}
+
+@media (max-width:600px){
+
+  body{
+    padding:10px;
+  }
+
+  .box{
+    width:95%;
+    padding:15px;
+  }
+
+  h2{
+    font-size:24px;
+  }
+
+  input,
+  select{
+    width:95%;
+    font-size:18px;
+    padding:12px;
+  }
+
+  button{
+    font-size:18px;
+    padding:12px 15px;
+    width:95%;
+    margin:6px auto;
+    display:block;
+  }
+
+  .list{
+    font-size:16px;
+  }
+
+  p{
+    font-size:14px !important;
+  }
+
 }
 </style>
 </head>

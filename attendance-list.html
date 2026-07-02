@@ -156,6 +156,15 @@ if(!saved){
     border-radius:20px;">
 　出欠入力へ</button>
  
+
+<button onclick="copyAttendanceNames()" style="
+  background:#ff9800;
+  color:black;
+  padding:10px 15px;
+  border-radius:20px;
+">
+出席者コピー
+</button>
 </div>
 
 <div id="tabs"></div>
@@ -515,6 +524,46 @@ if(monthKeys.length > 0){
 } else {
   renderTable();
 }
+}
+
+window.copyAttendanceNames = async function(){
+
+  if(!selectedDate){
+    alert("先に日付をクリックして選択してください");
+    return;
+  }
+
+  const names = members
+    .filter(m => {
+
+      const rec = data.find(d =>
+        d.name === m.name &&
+        d.date === selectedDate
+      );
+
+      return rec && rec.status === "出席";
+    })
+    .map(m => m.name);
+
+  const text = names.join("\n");
+
+  try{
+    await navigator.clipboard.writeText(text);
+
+    alert(
+      selectedDate +
+      " の出席者をコピーしました\n\n" +
+      names.join("、")
+    );
+
+  }catch(e){
+
+    prompt(
+      "コピーしてください",
+      text
+    );
+
+  }
 }
 
 window.onload = function(){
