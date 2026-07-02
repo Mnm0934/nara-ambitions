@@ -374,16 +374,23 @@ transform:translateX(5px);
     display:flex;
     flex-direction:row;
     flex-wrap:nowrap;
-    overflow-x:auto;
+
+    overflow-x:visible;  /*変更*/
 
     width:100%;
-    gap:20px;
+    gap:10px;            /*20→10*/
 
-    white-space:nowrap;
-    justify-content:flex-start;
+    justify-content:center; /*変更*/
 
-    padding-right:90px;
-    text-align:left;
+    padding:10px 5px;    /*変更*/
+    text-align:center;
+  }
+
+  .nav a{
+    padding:8px 4px;
+    font-size:12px;
+    letter-spacing:0;
+    border-top:1px solid #333;
   }
 
   .nav::-webkit-scrollbar{
@@ -408,11 +415,6 @@ transform:translateX(5px);
   width:100%;
   box-sizing:border-box;
 }
-
-  .nav a{
-    padding:15px;
-    border-top:1px solid #333;
-  }
 
   .title{
     height:80px;

@@ -377,10 +377,7 @@ header{
 
 .nav{
   display:flex;
-  flex-wrap:wrap;
   gap:40px;
-  justify-content:center;
-
   margin-top:10px;
   background:rgba(0,0,0,0.3);
   backdrop-filter:blur(10px);
@@ -392,6 +389,13 @@ header{
   margin-right:auto;
 
   box-sizing:border-box;
+  overflow-x:auto;
+  flex-wrap:nowrap;
+  justify-content:flex-start;
+}
+
+.nav::-webkit-scrollbar{
+  display:none;
 }
 
 .nav a{
@@ -809,6 +813,16 @@ header.small .title img{
   flex-shrink: 0;              /* ✅ これ重要（潰れ防止） */
 }
 
+@media (min-width:1025px){
+
+  .nav{
+    display:flex;
+    flex-direction:row;
+    max-height:none;
+    overflow:visible;
+  }
+
+}
 
 
 </style>
@@ -837,7 +851,7 @@ header.small .title img{
 <a href="member.html" class="active">選手・スタッフ</a>
     <a href="schedule.html">スケジュール</a>
     <a href="index.html#sns">SNS</a>
-<a href="#" onclick="goMember()">部員専用</a>
+<a href="#" onclick="goMember(); return false;">部員専用</a>
    </nav>
 </header>
 
@@ -1734,6 +1748,49 @@ window.addEventListener("load", () => {
     });
   }
 });
+
+function goMember(){
+
+  const saved = localStorage.getItem("userLogin");
+
+  // ログイン済み確認
+  if(saved){
+
+    const user = JSON.parse(saved);
+
+    if(Date.now() < user.expire){
+      location.href = "member-only.html";
+      return;
+    }
+  }
+
+  const id = prompt("IDを入力してください");
+  const pass = prompt("パスワードを入力してください");
+
+  if(
+    (id === "admin" && pass === "0725") ||
+    (id === "nakano" && pass === "1996")
+  ){
+
+    const data = {
+  id,
+  expire: Date.now() + (30 * 60 * 1000)
+};
+
+    localStorage.setItem(
+      "userLogin",
+      JSON.stringify(data)
+    );
+
+    alert("ログイン成功");
+    location.href = "member-only.html";
+
+  }else{
+
+    alert("IDまたはパスワードが違います");
+
+  }
+}
 
 </script>
 
