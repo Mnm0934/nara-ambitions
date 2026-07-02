@@ -352,7 +352,21 @@ function render(videos){
 
   list.innerHTML = "";
 // 日付で新しい順に並び替え🔥
-videos.sort((a, b) => new Date(b.date) - new Date(a.date));
+videos.sort((a,b)=>{
+
+  // 日付優先
+  const dateDiff =
+    new Date(b.date) - new Date(a.date);
+
+  if(dateDiff !== 0){
+    return dateDiff;
+  }
+
+  // 同じ日付なら順番
+  return (a.order || 999)
+       - (b.order || 999);
+
+});
 
   const categories = {
     "公式戦": [],
@@ -389,9 +403,11 @@ videos.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     div.innerHTML = `
       <h3>
-        ${v.date} ${v.title}
-        ${isNew(v.date) ? '<span class="new">NEW</span>' : ''}
-      </h3>
+  ${v.date}
+  [順番:${v.order}]
+  ${v.title}
+  ${isNew(v.date) ? '<span class="new">NEW</span>' : ''}
+</h3>
 
       <div class="thumb-wrap"
  onclick="playVideo('${v.id}', this.querySelector('img'), '${v.docId}')">
