@@ -115,10 +115,7 @@ rgba(0,0,0,0.8)
 /* ===== 縦並びナビ ===== */
 .nav{
   display:flex;
-  flex-wrap:wrap; /* ←これ追加すると神安定🔥 */
   gap:40px;
-  justify-content:center;
-
   margin-top:10px;
   background:rgba(0,0,0,0.3);
   backdrop-filter: blur(10px);
@@ -130,8 +127,10 @@ rgba(0,0,0,0.8)
   margin-right:auto;
 
   box-sizing:border-box;
+  overflow-x:auto;
+  flex-wrap:nowrap;
+  justify-content:flex-start;
 }
-
 .nav::-webkit-scrollbar{
   display:none;
 }
@@ -323,6 +322,10 @@ text-decoration:none;
 background:#d6002a;
 }
 
+#news-feature{
+  scroll-margin-top:140px;
+}
+
 html{
 scroll-behavior:smooth;
 }
@@ -368,19 +371,43 @@ transform:translateX(5px);
   }
 
   .nav{
-    max-height:0;
-    overflow:hidden;
-    flex-direction:column;
+    display:flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+
     width:100%;
-    text-align:center;
-    background:rgba(0,0,0,0.3);
-    backdrop-filter: blur(10px);
-    transition:0.3s;
+    gap:20px;
+
+    white-space:nowrap;
+    justify-content:flex-start;
+
+    padding-right:90px;
+    text-align:left;
+  }
+
+  .nav::-webkit-scrollbar{
+    display:none;
   }
 
   .nav.open{
-    max-height:1000px;
-  }
+  display:flex;
+  flex-direction:column;
+  flex-wrap:nowrap;
+
+  overflow-x:hidden;
+  overflow-y:auto;
+
+  width:100%;
+  gap:0;
+
+  padding-right:0;
+}
+
+.nav.open a{
+  width:100%;
+  box-sizing:border-box;
+}
 
   .nav a{
     padding:15px;
@@ -1585,7 +1612,7 @@ renderNews();
     <a href="member.html">選手・スタッフ</a>
     <a href="schedule.html">スケジュール</a>
     <a href="index.html#sns">SNS</a>
-    <a href="#" onclick="goMember(event)">部員専用</a>
+    <a href="#" onclick="goMember()">部員専用</a>
    </nav>
 </header>
 

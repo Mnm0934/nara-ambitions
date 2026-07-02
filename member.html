@@ -380,15 +380,20 @@ header{
   flex-wrap:wrap;
   gap:40px;
   justify-content:center;
+
   margin-top:10px;
   background:rgba(0,0,0,0.3);
-  backdrop-filter: blur(10px);
+  backdrop-filter:blur(10px);
+
   padding:10px 20px;
+
   max-width:1200px;
   margin-left:auto;
   margin-right:auto;
+
   box-sizing:border-box;
 }
+
 .nav a{
   color:white;
   text-decoration:none;
@@ -522,20 +527,23 @@ footer{
   }
 
   .nav{
-    max-height:0;
-    overflow:hidden;
-    flex-direction:column;
-    width:100%;
-    text-align:center;
-    background:rgba(0,0,0,0.3);
-    backdrop-filter: blur(10px);
-    transition:0.3s;
+    display:flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    gap:20px;
+    justify-content:flex-start;
   }
 
   .nav.open{
-  max-height:1000px;
-}
+    flex-direction:column;
+    width:100%;
 
+    overflow-x:hidden;
+    overflow-y:auto;
+
+    gap:0;
+  }
 
   .nav a{
     padding:15px;
