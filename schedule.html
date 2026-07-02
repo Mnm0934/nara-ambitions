@@ -696,26 +696,36 @@ header.small .title img{
     overflow-x:visible;
     gap:10px;
     width:100%;
-    justify-content:flex-start;
+    justify-content:center;
     white-space:nowrap;
     padding:10px 5px;
+    text-align:center;
   }
 
   .nav a{
-    padding:8px 4px;
-    font-size:12px;
-    letter-spacing:0;
-  }
+  padding:8px 2px;
+  font-size:11px;
+  letter-spacing:0;
+  border-top:1px solid #333;
+}
 
   .nav::-webkit-scrollbar{
     display:none;
   }
 
   .nav.open{
-    flex-direction:column;
-    width:100%;
-    gap:0;
-  }
+  display:flex;
+  flex-direction:column;
+  flex-wrap:nowrap;
+
+  overflow-x:hidden;
+  overflow-y:auto;
+
+  width:100%;
+  gap:0;
+
+  padding-right:0;
+}
 
   .nav.open a{
     padding:15px;
@@ -746,11 +756,15 @@ header.small .title img{
 
 /* ===== HERO（タイトル） ===== */
 .hero{
-  padding:50px 5%;
+  height:250px;
+
   background:url("main.jpeg") center/cover;
+
   display:flex;
-  align-items:center;
-  padding-left:5%;
+  align-items:flex-end;
+
+  padding:0 5% 40px;
+
   color:white;
   font-size:64px;
   font-weight:bold;
