@@ -11,6 +11,8 @@
 <style>
 
 body{
+  margin:0;
+  padding-top:140px;
   font-family:'Noto Sans JP', 'Oswald', sans-serif;
   background:#02142c;
   color:white;
@@ -400,7 +402,10 @@ footer{
   transform:translateY(-2px);
 }
 
-
+html,
+body{
+  overflow-x:hidden;
+}
 
 @media(max-width:1024px){
 
@@ -420,8 +425,7 @@ footer{
     font-size:22px;
   }
 
-
- .match,
+  .match,
   .next-match{
     width:100%;
   }
@@ -437,9 +441,15 @@ footer{
     transition:0.3s;
   }
 
-.nav.open{
-  max-height:1000px;
-}
+  .nav.open{
+    max-height:1000px;
+  }
+
+  .nav a{
+    padding:15px;
+    border-top:1px solid #333;
+  }
+
   .title{
     height:80px;
   }
@@ -634,6 +644,8 @@ header.small .title img{
   transform-origin: center;
 }
 
+
+
 .menu-btn.active span:nth-child(1){
   transform: rotate(45deg) translate(5px, 5px);
 }
@@ -652,9 +664,18 @@ header.small .title img{
   flex-direction:column;
   cursor:pointer;
   gap:5px;
+  z-index:2000;
   position:absolute;
   right:20px;
   top:20px;
+}
+
+.menu-btn span{
+  width:25px;
+  height:3px;
+  background:white;
+  display:block;
+  transition:0.3s;
 }
 
 @media (max-width:1024px){
@@ -663,9 +684,17 @@ header.small .title img{
   }
 }
 
+@media (max-width:1024px){
+
+  body{
+    padding-top:100px;
+  }
+
+}
+
 /* ===== HERO（タイトル） ===== */
 .hero{
-  padding:30px 5% 8px;
+  padding:50px 5%;
   background:url("main.jpeg") center/cover;
   display:flex;
   align-items:center;
@@ -1097,15 +1126,6 @@ function goMember(){
 <script>
 const header = document.querySelector("header");
 
-/* ✅ ここから追加 */
-function adjustPadding(){
-  document.body.style.paddingTop = header.offsetHeight + "px";
-}
-
-window.addEventListener("load", adjustPadding);
-window.addEventListener("resize", adjustPadding);
-/* ✅ ここまで */
-
 /* ↓元のコード */
 window.addEventListener("scroll", () => {
 
@@ -1114,8 +1134,6 @@ window.addEventListener("scroll", () => {
   }else{
     header.classList.remove("small");
   }
-
-  adjustPadding();
 
 });
 
