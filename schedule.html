@@ -402,10 +402,10 @@ footer{
 
 
 
-@media(max-width:768px){
+@media(max-width:1024px){
 
   main{
-    padding:150px 5%;
+    padding:20px 5%;
   }
 
   h2{
@@ -657,8 +657,7 @@ header.small .title img{
   top:20px;
 }
 
-/* スマホの時だけ表示 */
-@media (max-width:768px){
+@media (max-width:1024px){
   .menu-btn{
     display:flex;
   }
@@ -717,6 +716,17 @@ header.small .title img{
   font-weight:700;
   border-radius:5px;
   box-shadow:0 0 10px #00ff88;
+}
+
+@media (min-width:1025px){
+
+  .nav{
+    display:flex;
+    flex-direction:row;
+    max-height:none;
+    overflow:visible;
+  }
+
 }
 
 </style>
@@ -1098,11 +1108,15 @@ window.addEventListener("resize", adjustPadding);
 
 /* ↓元のコード */
 window.addEventListener("scroll", () => {
+
   if(window.scrollY > 100){
     header.classList.add("small");
   }else{
     header.classList.remove("small");
   }
+
+  adjustPadding();
+
 });
 
 const menuBtn = document.querySelector(".menu-btn");
@@ -1140,6 +1154,22 @@ overlay.addEventListener("click", () => {
   document.body.style.overflow = "auto";
   overlay.classList.remove("active");
 });
+
+// ✅ PCサイズに戻ったらメニュー強制リセット
+window.addEventListener("resize", () => {
+
+  if(window.innerWidth > 1024){
+
+    nav.classList.remove("open");
+    menuBtn.classList.remove("active");
+    overlay.classList.remove("active");
+    document.body.style.overflow = "auto";
+
+  }
+
+});
+
+
 </script>
 
 </body>

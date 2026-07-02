@@ -24,9 +24,8 @@ body{
   background:#02142c;   /* ←これだけにする🔥 */
   color:white;
   overflow-x:hidden;
-  padding-top:100px;
+  padding-top:0;
 }
-
 
 img{
   max-width:100%;
@@ -442,6 +441,7 @@ transform:translateX(-5px);
 
 /* スマホだけ表示 */
 @media (max-width:1024px){
+
   .menu-btn{
     display:flex;
     position:absolute;
@@ -449,18 +449,15 @@ transform:translateX(-5px);
     top:20px;
     z-index:1000;
   }
-}
 
-.title{
-  height:80px;
-}
+  .title{
+    height:80px;
+  }
 
-.title img{
-  height:50px;
-}
+  .title img{
+    height:50px;
+  }
 
-.slider{
-margin-top:120px;
 }
 
 .mainSwiper{
@@ -1272,7 +1269,7 @@ p{
 /* ===== NEWSボタン位置 ===== */
 .newsSwiper{
   position:relative;
-  padding-left:20px;
+  padding-left:0;
 }
 
 .newsSwiper .swiper-button-next{
@@ -1726,7 +1723,7 @@ renderNews();
         <div class="img-box">
           <img src="orihashi.JPG">
         </div>
-        <h3>折橋 完 <span>#6</span></h3>
+        <h3>折橋 哲 <span>#6</span></h3>
         <p>Infielder</p>
       </a>
     </div>
@@ -2230,15 +2227,28 @@ window.addEventListener("scroll", () => {
 /* ===== header縮小 ===== */
 const header = document.querySelector("header");
 
+function adjustPadding(){
+  document.body.style.paddingTop =
+    header.offsetHeight + "px";
+}
+
+window.addEventListener("load", adjustPadding);
+window.addEventListener("resize", adjustPadding);
+
 window.addEventListener("scroll", () => {
-  if(header){
-    if(window.scrollY > 100){
-      header.classList.add("small");
-    }else{
-      header.classList.remove("small");
-    }
+
+  const isSmall = window.scrollY > 100;
+
+  if(isSmall){
+    header.classList.add("small");
+  }else{
+    header.classList.remove("small");
   }
+
 });
+
+header.addEventListener("transitionend", adjustPadding);
+
 
 
 /* ===== ハンバーガー ===== */
