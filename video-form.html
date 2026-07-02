@@ -102,7 +102,18 @@ window.updateDoc = updateDoc;
 <h1>動画登録</h1>
 
 <input type="date" id="date">
-<input type="text" id="title" placeholder="試合名（例: vs ○○高校）">
+
+<input
+  type="text"
+  id="title"
+  placeholder="試合名（例: vs ○○高校）"
+>
+
+<input
+  type="number"
+  id="order"
+  placeholder="順番（①なら1、②なら2）"
+>
 
 <select id="category">
   <option value="公式戦">公式戦</option>
@@ -127,9 +138,10 @@ window.updateDoc = updateDoc;
 async function saveVideo(){
 
   const date = document.getElementById("date").value;
-  const title = document.getElementById("title").value;
-  const url = document.getElementById("url").value;
-  const category = document.getElementById("category").value;
+const title = document.getElementById("title").value;
+const order = Number(document.getElementById("order").value) || 0;
+const url = document.getElementById("url").value;
+const category = document.getElementById("category").value;
 
   if(!date || !title || !url){
     alert("入力してください");
@@ -152,11 +164,12 @@ if(url.includes("v=")){
 
     // ✅ 更新（Firestore）
     await updateDoc(doc(db, "videos", edit.docId), {
-      date,
-      title,
-      id: videoId,
-      category
-    });
+  date,
+  title,
+  order,
+  id: videoId,
+  category
+});
 
     localStorage.removeItem("editVideo");
 
@@ -167,17 +180,19 @@ if(url.includes("v=")){
 
     // ✅ 新規登録（Firestore）
     await addDoc(collection(db, "videos"), {
-      date,
-      title,
-      id: videoId,
-      category
-    });
+  date,
+  title,
+  order,
+  id: videoId,
+  category
+});
 
     alert("登録しました");
 
     document.getElementById("date").value = "";
-    document.getElementById("title").value = "";
-    document.getElementById("url").value = "";
+document.getElementById("title").value = "";
+document.getElementById("order").value = "";
+document.getElementById("url").value = "";
   }
 }
 
@@ -196,6 +211,7 @@ window.onload = function(){
   // 編集モード
   document.getElementById("date").value = edit.date;
   document.getElementById("title").value = edit.title;
+document.getElementById("order").value = edit.order || "";
   document.getElementById("url").value = "https://www.youtube.com/watch?v=" + edit.id;
   document.getElementById("category").value = edit.category;
 
