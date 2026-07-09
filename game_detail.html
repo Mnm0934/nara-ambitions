@@ -6,7 +6,8 @@
 
 <style>
 body{
-  background:#e5d58a;
+  background:#02142c;
+  color:white;
   text-align:center;
   font-family:sans-serif;
 }
@@ -40,19 +41,21 @@ td,th{
 }
 
 .header{
-  background:#99ccff;
+  background:#d6002a;
+  color:white;
 }
 
 .green{
-  background:#008000;
+  background:#02142c;
   color:white;
 }
 
 .title{
-  font-size:20px;
+  font-size:32px;
   font-weight:bold;
-  color:red;
-  margin:10px;
+  color:#d6002a;
+  margin:20px 0;
+  text-shadow:0 0 10px rgba(214,0,42,.5);
 }
 
 
@@ -66,14 +69,59 @@ td:first-child, th:first-child{
 
 button{
   margin:10px;
-  padding:10px 20px;
-  font-size:14px;
+  padding:12px 24px;
+
   border:none;
-  border-radius:8px;
-  background:#00c3ff;
-  color:black;
+  border-radius:30px;
+
+  background:#d6002a;
+  color:white;
+
+  font-weight:bold;
+  font-size:16px;
+
+  cursor:pointer;
+
+  box-shadow:
+    0 5px 15px rgba(0,0,0,.4);
 }
 
+#info{
+  max-width:700px;
+
+  margin:20px auto;
+  padding:20px;
+
+  background:white;
+  color:black;
+
+  border-radius:15px;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.4);
+}
+
+h3{
+  color:#fff;
+  font-size:28px;
+
+  margin-top:40px;
+  margin-bottom:20px;
+
+  position:relative;
+}
+
+h3::after{
+  content:"";
+  display:block;
+
+  width:120px;
+  height:4px;
+
+  background:#d6002a;
+
+  margin:10px auto 0;
+}
 
 </style>
 </head>
