@@ -227,6 +227,12 @@ body{
   font-weight:bold;
 }
 
+.event-time{
+  color:#80d8ff;
+  font-size:10px;
+  font-weight:bold;
+}
+
 .event-place,
 .event-opponent{
   white-space:nowrap;
@@ -431,14 +437,21 @@ const membersCount = members.filter(m => m.active !== false).length;
 let noAnswer = Math.max(0, membersCount - uniqueList.length);
 
     if(event){
-      if(event.type === "試合"){
-        className += " match";
-      }else if(event.type === "練習"){
-        className += " practice";
-      }else{
-        className += " party";
-      }
-    }
+
+  if(
+    event.type === "公式戦" ||
+    event.type === "OP戦"
+  ){
+    className += " match";
+
+  }else if(event.type === "練習"){
+    className += " practice";
+
+  }else if(event.type === "飲み会"){
+    className += " party";
+  }
+
+}
 
     if(
       today.getFullYear() === currentYear &&
@@ -458,6 +471,12 @@ ${event ? `
     ${event.type || ""}
   </div>
 
+  ${event.time ? `
+    <div class="event-time">
+      ⏰ ${event.time}
+    </div>
+  ` : ""}
+
   ${event.opponent ? `
     <div class="event-opponent">
       vs ${event.opponent}
@@ -466,7 +485,7 @@ ${event ? `
 
   ${event.place ? `
     <div class="event-place">
-      ${event.place}
+      📍${event.place}
     </div>
   ` : ""}
 

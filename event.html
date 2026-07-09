@@ -137,7 +137,8 @@ import {
   addDoc,
   getDocs,
   deleteDoc,
-  doc
+  doc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -160,6 +161,7 @@ window.addDoc = addDoc;
 window.getDocs = getDocs;   // ←これ追加🔥
 window.deleteDoc = deleteDoc;
 window.doc = doc;
+window.updateDoc = updateDoc;
 
 // ✅ 追加（重要🔥）
 window.startApp = function(){
@@ -233,6 +235,7 @@ color:white;">
 
 let events = [];
 let current = new Date();
+let editingId = null;
 
 // ✅ これ追加
 function convertDate(d){
@@ -272,16 +275,50 @@ const date = `${parts[0]}-${parts[1].padStart(2,"0")}-${parts[2].padStart(2,"0")
   }
 
   // ✅ Firestore保存
-await addDoc(collection(db, "events"), {
-  date, // ←フォーマット済み
-  type,
-  place,
-  time,
-  opponent,
-  note,
-  result,
-  public: isPublic
-});
+if(editingId){
+
+  await updateDoc(
+    doc(db, "events", editingId),
+    {
+      date,
+      type,
+      place,
+      time,
+      opponent,
+      note,
+      result,
+      public:isPublic
+    }
+  );
+
+  alert("更新しました");
+
+localStorage.setItem(
+  "savedDate",
+  date
+);
+
+location.href =
+  "member-schedule.html";
+
+return;
+
+}else{
+
+  await addDoc(collection(db, "events"), {
+    date,
+    type,
+    place,
+    time,
+    opponent,
+    note,
+    result,
+    public:isPublic
+  });
+
+  alert("新規登録しました");
+
+}
 
 const lineText = `【NARA Ambitions Club】
 
@@ -323,6 +360,7 @@ loadEvents();
   document.getElementById("opponent").value = "";
   document.getElementById("note").value = "";
   document.getElementById("result").value = "";
+editingId = null;
 }
 
 async function loadEvents(){
@@ -348,6 +386,10 @@ async function loadEvents(){
     const ev = events.find(e => e.date === editDate);
 
     if(ev){
+editingId = ev.id;
+document.querySelector(
+  'h2'
+).innerText = "予定編集";
       document.getElementById("date").value = ev.date;
       document.getElementById("type").value = ev.type;
       document.getElementById("place").value = ev.place;

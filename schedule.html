@@ -491,8 +491,8 @@ body{
 
 #calendar{
   display:grid;
-  grid-template-columns: repeat(7,1fr);
-  gap:10px;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:4px;
   margin-bottom:50px;
 }
 
@@ -549,10 +549,11 @@ body{
 
 .weekdays{
   display:grid;
-  grid-template-columns: repeat(7,1fr);
+  grid-template-columns:repeat(7,minmax(0,1fr));
   margin-bottom:10px;
   text-align:center;
   font-weight:bold;
+  gap:4px;
 }
 
 .weekdays div{
@@ -569,20 +570,14 @@ body{
   color:#4da6ff;
 }
 
-/* 日曜 */
-#calendar .day:nth-child(7n+1){
-  background:#7a2c3b; /* 明るめ赤 */
-}
-
-/* 土曜 */
-#calendar .day:nth-child(7n){
-  background:#2c4a7a; /* 明るめ青 */
-}
-
-.weekdays, #calendar{
+.weekdays,
+#calendar{
+  width:100%;
   max-width:800px;
-  margin:0 auto;
+  margin-left:auto;
+  margin-right:auto;
 }
+
 
 .calendar-header{
   max-width:800px;
@@ -613,6 +608,11 @@ body{
   background:#d6002a;
 }
 
+.empty{
+  visibility:hidden;
+  min-height:0 !important;
+  padding:0 !important;
+}
 
 /* SNSボタン色（TOPと同じ） */
 
@@ -847,6 +847,68 @@ header.small .title img{
 
 }
 
+@media(max-width:768px){
+
+  .day{
+    min-height:55px;
+    padding:6px 2px;
+    font-size:14px;
+  }
+
+}
+
+@media (max-width:768px){
+
+  .weekdays,
+  #calendar{
+    width:100%;
+    max-width:100%;
+    display:grid;
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    gap:4px;
+  }
+
+  #calendar{
+    gap:4px;
+    display:grid;
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    gap:4px;
+  }
+
+}
+
+@media(max-width:768px){
+
+  main{
+    padding:15px;
+  }
+
+}
+
+@media(max-width:768px){
+
+  .day{
+    min-height:45px;
+    padding:8px 2px;
+    font-size:14px;
+  }
+
+  .day span{
+    font-size:9px;
+  }
+
+}
+
+@media(max-width:768px){
+
+  #calendar,
+  .weekdays{
+    width:auto;
+    max-width:100%;
+  }
+
+}
+
 </style>
 </head>
 
@@ -1032,8 +1094,10 @@ function renderCalendar(){
   const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
 
   for(let i=0; i<firstDay; i++){
-    calendarEl.innerHTML += `<div></div>`;
-  }
+  calendarEl.innerHTML += `
+    <div class="empty"></div>
+  `;
+}
 
   for(let d=1; d<=lastDate; d++){
 
