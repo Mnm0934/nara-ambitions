@@ -6,17 +6,19 @@
 
 <style>
 body{
-  background:#e5d58a;
+  background:#02142c;
+  color:white;
   text-align:center;
   font-family:sans-serif;
 }
 
 .box{
+  background:white;
+  color:black;
   border:1px solid #333;
   margin:10px auto;
   padding:20px;
-  width:80%;
-  background:white;
+  width:min(900px,95%);
   overflow-x:auto;
 }
 
@@ -46,10 +48,6 @@ button{
   .scoreboard th,
   .scoreboard td{
     padding:4px;
-  }
-
-  h3{
-    font-size:18px;
   }
 
   select{
@@ -111,30 +109,49 @@ h2{
 }
 
 select{
-  font-size:26px;
-  padding:12px 20px;
-  border-radius:12px;
-  border:2px solid #333;
-  background:#fff8cc;
-  font-weight:bold;
-  cursor:pointer;
-}
+  min-width:220px;
+  text-align:center;
 
-h3{
-  display:inline-block;
-  padding:12px 20px;
-  margin:15px 0;
-  background:#ffcc00;
-  border-radius:12px;
-  cursor:pointer;
   font-size:24px;
   font-weight:bold;
-  border:2px solid #333;
-  box-shadow:2px 2px 5px rgba(0,0,0,0.3);
+
+  padding:12px 20px;
+
+  border-radius:15px;
+  border:3px solid #333;
+
+  background:white;
+  cursor:pointer;
+
+  margin-bottom:15px;
 }
 
-h3:hover{
-  background:#ffb300;
+.filter-area{
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  gap:30px;
+  flex-wrap:wrap;
+
+  margin-bottom:30px;
+}
+
+.select-title{
+  font-size:20px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.top-btn{
+  background:#d6002a;
+  color:white;
+  padding:12px 24px;
+  font-size:18px;
+
+  border:none;
+  border-radius:30px;
+
+  box-shadow:0 5px 15px rgba(0,0,0,.4);
 }
 
 </style>
@@ -172,7 +189,9 @@ if(!saved){
 
 <h2>NARA Ambitions club 試合一覧</h2>
 
-<button onclick="goTop()">TOPへ戻る</button>
+<button class="top-btn" onclick="goTop()">
+  TOPへ戻る
+</button>
 
 <div id="list"></div>
 
@@ -230,17 +249,17 @@ data.sort((a, b) => new Date(b.date) - new Date(a.date));
   renderList();
 }
 
-// ✅ 年月ごとにグループ化
 function renderList(){
 
   const groups = {};
 
-  data.forEach(game=>{
+  data.forEach(game => {
 
-    if (!game.date) return;
+    if(!game.date) return;
+
     const date = new Date(game.date);
 
-    if (isNaN(date)) return;
+    if(isNaN(date)) return;
 
     const y = date.getFullYear();
     const m = date.getMonth() + 1;
@@ -249,51 +268,58 @@ function renderList(){
     if(!groups[y][m]) groups[y][m] = [];
 
     groups[y][m].push(game);
+
   });
 
-  // ✅ これ追加！！！！！
-  if (Object.keys(groups).length === 0){
-    document.getElementById("list").innerHTML = "試合データなし";
+  if(Object.keys(groups).length === 0){
+    document.getElementById("list").innerHTML =
+      "試合データなし";
     return;
   }
 
-  let html = "";
+  let html = `
 
-  Object.keys(groups).sort((a,b)=>b-a).forEach(year=>{
+    <div class="filter-area">
 
-    html += `<h3 onclick="toggleYear(this)">▼ ${year}年</h3>`;
-    html += `<div class="year" style="display:block">`;
+  <div>
 
-    html += `
-    <select onchange="changeMonth(this, '${year}')">
-      ${Object.keys(groups[year])
-        .sort((a,b)=>b-a)
-        .map(m => `<option value="${m}">${m}月</option>`)
-        .join("")}
-    </select>
+    <div class="select-title">
+      シーズン
+    </div>
 
-    <div id="month-${year}"></div>
-    `;
+    <select
+      id="yearSelect"
+      onchange="changeYear(this.value)">
 
-    const firstMonth = Object.keys(groups[year]).sort((a,b)=>b-a)[0];
+        ${Object.keys(groups)
+          .sort((a,b)=>b-a)
+          .map(year=>`
+            <option value="${year}">
+              ${year}年
+            </option>
+          `).join("")}
 
-    setTimeout(()=>{
-  const select = document.querySelector(`#month-${year}`).previousElementSibling;
-  if(select){
-    changeMonth(select, year);
-  }
-}, 50);
+   </select>
 
+  </div>
 
-    html += `</div>`;
-  });
+  <div id="yearArea"></div>
+
+</div>
+<div id="gamesArea"></div>
+
+  `;
 
   document.getElementById("list").innerHTML = html;
 
-  // グローバルに持たせる
   window.groups = groups;
-}
 
+  const firstYear =
+    Object.keys(groups)
+      .sort((a,b)=>b-a)[0];
+
+  changeYear(firstYear);
+}
 
 
 
@@ -455,22 +481,6 @@ async function deleteGame(id){
   loadData(); // ← 再読み込み
 }
 
-function toggleYear(el){
-  const next = el.nextElementSibling;
-
-  if(next.style.display === "none"){
-    next.style.display = "block";
-    el.innerHTML = el.innerHTML.replace("▶","▼");
-  }else{
-    next.style.display = "none";
-    el.innerHTML = el.innerHTML.replace("▼","▶");
-  }
-}
-
-function toggleMonth(el){
-  const next = el.nextElementSibling;
-  next.style.display = next.style.display === "none" ? "block" : "none";
-}
 
 function isAdminUser(){
   try{
@@ -486,6 +496,47 @@ function isAdminUser(){
   }
 }
 
+function changeYear(year){
+
+  const groups = window.groups;
+
+  const area =
+    document.getElementById("yearArea");
+
+  area.innerHTML = `
+
+  <div>
+
+    <div class="select-title">
+      月
+    </div>
+
+    <select
+      id="monthSelect"
+      onchange="changeMonth(this,'${year}')">
+
+      ${Object.keys(groups[year])
+        .sort((a,b)=>b-a)
+        .map(month=>`
+          <option value="${month}">
+            ${month}月
+          </option>
+        `).join("")}
+
+    </select>
+
+  </div>
+
+`;
+
+  const monthSelect =
+    document.getElementById("monthSelect");
+
+  changeMonth(monthSelect, year);
+
+}
+
+
 function changeMonth(select, year){
 
   const groups = window.groups;
@@ -494,7 +545,8 @@ function changeMonth(select, year){
   const month = select.value;
   if (!groups[year][month]) return;
 
-  const target = document.getElementById(`month-${year}`);
+  const target =
+  document.getElementById("gamesArea");
 
   let html = "";
 
