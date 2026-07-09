@@ -206,8 +206,12 @@ function getMemberNames(){
 let data = [];
 let events = [];
 let members = [];
-let selectedDate = null;  // ✅ これ追加
-let currentMonth = null;  // ✅ これも追加
+let selectedDate = null;
+let currentMonth = null;
+
+const params = new URLSearchParams(location.search);
+const targetDate = params.get("date");
+
 let dates = [];
 let months = {};
 let monthKeys = [];
@@ -268,6 +272,10 @@ function renderTabs(){
 }
 
 function renderTable(selectedMonth){
+if(targetDate){
+  renderAttendanceDetail(targetDate);
+  return;
+}
 let summaryHtml = "";
 
   const todayStr = new Date().toISOString().slice(0,10);
@@ -518,11 +526,23 @@ members.sort((a, b) => a.number - b.number);
   init();
 renderTabs();
 
-if(monthKeys.length > 0){
-  currentMonth = monthKeys[0]; // ←追加
+if(targetDate){
+
+  selectedDate = targetDate;
+
+  renderAttendanceDetail(targetDate);
+
+}
+else if(monthKeys.length > 0){
+
+  currentMonth = monthKeys[0];
   changeMonth(monthKeys[0]);
-} else {
+
+}
+else{
+
   renderTable();
+
 }
 }
 
@@ -564,6 +584,55 @@ window.copyAttendanceNames = async function(){
     );
 
   }
+}
+
+function renderAttendanceDetail(date){
+
+  let html = `
+  <table>
+    <tr>
+      <th>背番号</th>
+      <th>選手名</th>
+      <th>出欠</th>
+      <th>一言</th>
+      <th>更新時間</th>
+    </tr>
+  `;
+
+  members.forEach(m => {
+
+    const rec = data.find(d =>
+      d.name === m.name &&
+      d.date === date
+    );
+
+    if(!rec) return;
+
+    let mark = rec.status;
+
+    if(mark === "出席") mark = "○";
+    if(mark === "欠席") mark = "×";
+    if(mark === "未定") mark = "△";
+
+    html += `
+      <tr>
+        <td>${m.number}</td>
+        <td>${m.name}</td>
+        <td>${mark}</td>
+        <td>${rec.comment || rec.message || rec.note || ""}</td>
+        <td>${rec.updatedAt || ""}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("title").innerText =
+    `${date} 出欠一覧`;
+
+  document.getElementById("tabs").style.display = "none";
+
+  document.getElementById("table").innerHTML = html;
 }
 
 window.onload = function(){

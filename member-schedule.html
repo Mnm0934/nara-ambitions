@@ -28,8 +28,8 @@ body{
   border-radius:8px;
   cursor:pointer;
   text-align:center;
-
-  aspect-ratio:1/1;
+  min-height:120px;
+  aspect-ratio:auto;
 
   display:flex;
   flex-direction:column;
@@ -213,6 +213,25 @@ body{
   max-width:400px;
   max-height:80vh;   /* ✅追加 */
   overflow:auto;     /* ✅追加 */
+}
+
+.event-info{
+  margin-top:4px;
+  font-size:10px;
+  line-height:1.2;
+  width:100%;
+  overflow:hidden;
+}
+
+.event-type{
+  font-weight:bold;
+}
+
+.event-place,
+.event-opponent{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
 </style>
@@ -432,13 +451,25 @@ let noAnswer = Math.max(0, membersCount - uniqueList.length);
     cal.innerHTML += `
       <div id="day-${fullDate}" class="${className}" onclick="handleClick('${fullDate}')">
         ${d}
-${event ? "<br>📌" : ""}
 ${event ? `
-<div class="count">
-  <span class="present">●${present}</span>
-  <span class="absent">×${absent}</span><br>
-  <span class="undecided">△${undecided}</span>
-  <span class="noanswer">－${noAnswer}</span>
+<div class="event-info">
+
+  <div class="event-type">
+    ${event.type || ""}
+  </div>
+
+  ${event.opponent ? `
+    <div class="event-opponent">
+      vs ${event.opponent}
+    </div>
+  ` : ""}
+
+  ${event.place ? `
+    <div class="event-place">
+      ${event.place}
+    </div>
+  ` : ""}
+
 </div>
 ` : ""}
       </div>

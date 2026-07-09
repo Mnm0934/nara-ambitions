@@ -9,6 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
 <style>
+*{
+  box-sizing:border-box;
+}
 
 body{
   margin:0;
@@ -757,7 +760,6 @@ header.small .title img{
 /* ===== HERO（タイトル） ===== */
 .hero{
   height:250px;
-
   background:url("main.jpeg") center/cover;
 
   display:flex;
@@ -765,10 +767,13 @@ header.small .title img{
 
   padding:0 5% 40px;
 
+  box-sizing:border-box;
+
   color:white;
   font-size:64px;
   font-weight:bold;
 }
+
 
 .win-match{
   border:2px solid #00ff88;
@@ -811,6 +816,24 @@ header.small .title img{
   font-weight:700;
   border-radius:5px;
   box-shadow:0 0 10px #00ff88;
+}
+
+@media (max-width:768px){
+
+  .filter{
+    overflow-x:auto;
+    justify-content:flex-start;
+    padding-bottom:10px;
+  }
+
+  .filter::-webkit-scrollbar{
+    display:none;
+  }
+
+  .filter button{
+    flex-shrink:0;
+  }
+
 }
 
 @media (min-width:1025px){
