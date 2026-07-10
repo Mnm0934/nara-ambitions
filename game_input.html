@@ -192,6 +192,14 @@ window.loadMembers = async function() {
 
 <button onclick="tempSave()">途中保存</button>
 <button onclick="save()">保存</button>
+<button onclick="loadTempGame()">途中保存を復元</button>
+
+<button
+  onclick="clearInput()"
+  style="background:#ff9900; color:white;"
+>
+  入力クリア
+</button>
 
 <button onclick="deleteGame()" style="background:#ff6666; color:white;">
   削除
@@ -460,17 +468,64 @@ async function save(){
   const id = params.get("id");
 
   if(id){
+
   const ref = window.doc(window.db, "results", id);
   await window.updateDoc(ref, data);
+
+  localStorage.removeItem("tempGame");
+
   alert("更新しました");
+
 }else{
-  await window.addDoc(window.collection(window.db, "results"), data);
+
+  // 新規登録
+  await window.addDoc(
+    window.collection(window.db, "results"),
+    data
+  );
+
   alert("保存しました");
+
+localStorage.removeItem("tempGame");
+
+// 新規保存だけリセット
+resetForm();
+}
 }
 
+function resetForm(){
+
+  // 基本情報
   document.getElementById("date").value = "";
-document.getElementById("game").value = "";
-document.getElementById("opponent").value = "";
+  document.getElementById("game").value = "";
+  document.getElementById("opponent").value = "";
+  document.getElementById("batFirst").value = "home";
+
+  // スコア
+  for(let i=1; i<=12; i++){
+    document.getElementById("my"+i).value = "";
+    document.getElementById("op"+i).value = "";
+  }
+
+  // 打者
+  document.getElementById("batters").innerHTML = "";
+  batterCount = 0;
+
+  // 投手
+  document.getElementById("pitchers").innerHTML = "";
+  pitcherCount = 0;
+}
+
+function clearInput(){
+
+  if(!confirm(
+    "現在入力中の内容を全て削除しますか？\n途中保存していない内容は元に戻せません。"
+  )){
+    return;
+  }
+
+  resetForm();
+
 }
 
 /* ============================
@@ -480,6 +535,111 @@ function tempSave(){
   const data = collectData();
   localStorage.setItem("tempGame", JSON.stringify(data));
   alert("途中保存しました");
+}
+
+
+function loadTempGame(){
+
+  const saved =
+    localStorage.getItem("tempGame");
+
+  if(!saved){
+    alert("途中保存データはありません");
+    return;
+  }
+
+  if(!confirm(
+    "現在入力中の内容を破棄して途中保存データを復元しますか？"
+  )){
+    return;
+  }
+
+  resetForm();
+
+  const data = JSON.parse(saved);
+
+  document.getElementById("date").value =
+    data.date || "";
+
+  document.getElementById("game").value =
+    data.game || "";
+
+  document.getElementById("opponent").value =
+    data.opponent || "";
+
+  document.getElementById("batFirst").value =
+    data.batFirst || "home";
+
+  // スコア
+  (data.myInnings || []).forEach((v,i)=>{
+    document.getElementById("my"+(i+1)).value =
+      v ?? "";
+  });
+
+  (data.opInnings || []).forEach((v,i)=>{
+    document.getElementById("op"+(i+1)).value =
+      v ?? "";
+  });
+
+  // 打者
+  (data.batters || []).forEach(p=>{
+
+    addBatter();
+
+    const i = batterCount;
+
+    document.getElementById("num_"+i).value = p.number;
+    document.getElementById("name_"+i).value = p.name;
+
+    document.getElementById("pa_"+i).value = p.pa;
+    document.getElementById("ab_"+i).value = p.ab;
+    document.getElementById("hit_"+i).value = p.hit;
+    document.getElementById("bb_"+i).value = p.bb;
+    document.getElementById("sh_"+i).value = p.sh;
+    document.getElementById("sf_"+i).value = p.sf;
+    document.getElementById("so_"+i).value = p.so;
+    document.getElementById("lob_"+i).value = p.lob;
+    document.getElementById("run_"+i).value = p.run;
+    document.getElementById("rbi_"+i).value = p.rbi;
+    document.getElementById("sb_"+i).value = p.sb;
+    document.getElementById("cs_"+i).value = p.cs;
+    document.getElementById("double_"+i).value = p.double;
+    document.getElementById("triple_"+i).value = p.triple;
+    document.getElementById("hr_"+i).value = p.hr;
+    document.getElementById("tb_"+i).value = p.tb;
+    document.getElementById("risp_ab_"+i).value = p.risp_ab;
+    document.getElementById("risp_hit_"+i).value = p.risp_hit;
+
+  });
+
+  // 投手
+  (data.pitchers || []).forEach(p=>{
+
+    addPitcher();
+
+    const i = pitcherCount;
+
+    document.getElementById("p_num_"+i).value = p.number;
+    document.getElementById("p_name_"+i).value = p.name;
+    document.getElementById("p_inning_"+i).value = p.inning;
+    document.getElementById("p_bf_"+i).value = p.bf;
+    document.getElementById("p_ab_"+i).value = p.ab;
+    document.getElementById("p_pitch_"+i).value = p.pitch;
+    document.getElementById("p_hit_"+i).value = p.hit;
+    document.getElementById("p_hr_"+i).value = p.hr;
+    document.getElementById("p_sh_"+i).value = p.sh;
+    document.getElementById("p_sf_"+i).value = p.sf;
+    document.getElementById("p_bb_"+i).value = p.bb;
+    document.getElementById("p_hbp_"+i).value = p.hbp;
+    document.getElementById("p_k_"+i).value = p.k;
+    document.getElementById("p_wp_"+i).value = p.wp;
+    document.getElementById("p_bk_"+i).value = p.bk;
+    document.getElementById("p_runs_"+i).value = p.runs;
+    document.getElementById("p_er_"+i).value = p.er;
+
+  });
+
+  alert("途中保存データを復元しました");
 }
 
 /* ============================

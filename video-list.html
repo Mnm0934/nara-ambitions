@@ -113,6 +113,16 @@ iframe{
   margin-left:0;         /* 念のため */
 }
 
+h2{
+  border-left:6px solid #d6002a;
+  padding-left:12px;
+
+  margin-top:50px;
+  margin-bottom:20px;
+
+  color:#fff;
+}
+
 /* サムネ枠 */
 .thumb-wrap{
   position:relative;
@@ -206,6 +216,16 @@ iframe{
   font-weight:700;
 }
 
+.more-btn{
+  background:#d6002a;
+  color:white;
+  border:none;
+  border-radius:30px;
+  padding:12px 24px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
 </style>
 </head>
 
@@ -291,6 +311,11 @@ window.startApp = function(){
 
 <script>
 let allVideos = [];
+let displayCounts = {
+  "公式戦": 20,
+  "OP戦": 20,
+  "その他": 20
+};
 
 async function loadVideos(){
 
@@ -389,7 +414,24 @@ videos.sort((a,b)=>{
 
   // タイトル
   const title = document.createElement("h2");
-  title.textContent = key;
+
+title.innerHTML = `
+${key}
+（${categories[key].length}件）
+
+<div style="
+  font-size:14px;
+  color:#ccc;
+  margin-top:5px;
+">
+  最新
+  ${Math.min(
+    displayCounts[key],
+    categories[key].length
+  )}
+件表示中
+</div>
+`;
   section.appendChild(title);
 
   // グリッド
@@ -397,7 +439,10 @@ videos.sort((a,b)=>{
   grid.className = "video-list";
 
   // カード追加
-  categories[key].forEach(v=>{
+  const visibleVideos =
+  categories[key].slice(0, displayCounts[key]);
+
+visibleVideos.forEach(v=>{
     const div = document.createElement("div");
     div.className = "video";
 
@@ -422,6 +467,30 @@ videos.sort((a,b)=>{
 
   // ✅ ここはforEachの外🔥
   section.appendChild(grid);
+if(
+  categories[key].length >
+  displayCounts[key]
+){
+
+  const moreBtn =
+    document.createElement("button");
+moreBtn.className = "more-btn";
+
+  moreBtn.textContent =
+    "さらに20件表示";
+
+  moreBtn.style.marginTop = "20px";
+
+  moreBtn.onclick = ()=>{
+
+    displayCounts[key] += 20;
+
+    render(videos);
+
+  };
+
+  section.appendChild(moreBtn);
+}
   list.appendChild(section);
   }
 }
@@ -429,10 +498,16 @@ videos.sort((a,b)=>{
 // ✅ 共通フィルター
 function applyFilter(category){
 
+  // ✅ 件数リセット
+  displayCounts = {
+    "公式戦": 20,
+    "OP戦": 20,
+    "その他": 20
+  };
+
   const keyword = document.getElementById("search").value.toLowerCase();
   const year = document.getElementById("yearFilter").value;
-const month = document.getElementById("monthFilter").value;
-
+  const month = document.getElementById("monthFilter").value;
 
   let filtered = allVideos.filter(v=>{
 

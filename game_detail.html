@@ -21,7 +21,17 @@ table{
 
 @media (max-width:600px){
   table{
-    font-size:11px;
+    font-size:10px;
+  }
+
+  td,th{
+    padding:4px;
+  }
+
+  td:first-child,
+  th:first-child{
+    min-width:100px;
+    padding-left:6px;
   }
 }
 
@@ -55,17 +65,38 @@ td,th{
   font-weight:bold;
   color:#d6002a;
   margin:20px 0;
-  text-shadow:0 0 10px rgba(214,0,42,.5);
+  text-shadow:0 0 15px currentColor;
+
+  white-space:pre-line;
 }
 
+td:first-child,
+th:first-child{
 
-td:first-child, th:first-child{
-  min-width:120px;   /* ← ここがポイント */
+  min-width:120px;
   width:auto;
+
   text-align:left;
   white-space:nowrap;
   padding-left:10px;
+
+  position:sticky;
+  left:0;
+
+  z-index:2;
+
+  background:#02142c;
+
+  box-shadow:3px 0 8px rgba(0,0,0,.3);
+
+  border-right:2px solid #d6002a;
 }
+
+th:first-child{
+  background:#d6002a;
+  z-index:3;
+}
+
 
 button{
   margin:10px;
@@ -100,6 +131,42 @@ button{
   box-shadow:
     0 10px 30px rgba(0,0,0,.4);
 }
+
+#mvp{
+  max-width:500px;
+  margin:20px auto;
+  padding:20px;
+
+  background:#ffd700;
+  color:black;
+
+  border-radius:15px;
+
+  font-size:18px;
+  font-weight:bold;
+}
+
+#summary{
+  max-width:700px;
+  margin:20px auto;
+  padding:20px;
+
+  background:white;
+  color:black;
+
+  border-radius:15px;
+}
+
+#teamTotal{
+  max-width:700px;
+  margin:20px auto;
+  padding:20px;
+
+  background:#0a2a4a;
+
+  border-radius:15px;
+}
+
 
 h3{
   color:#fff;
@@ -153,9 +220,18 @@ if(saved){
 
 <div id="info"></div>
 
-<div style="overflow-x:auto;">
+<h3>📊 スコアボード</h3>
+
+<div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
   <div id="score"></div>
 </div>
+
+<div id="mvp"></div>
+
+<div id="summary"></div>
+
+<div id="teamTotal"></div>
+
 
 <h3>打撃成績</h3>
 <div style="overflow-x:auto; -webkit-overflow-scrolling: touch;">
@@ -235,14 +311,140 @@ if(myTotal > opponentTotal) result = "勝ち";
 else if(myTotal < opponentTotal) result = "負け";
 else result = "引分";
 
-document.querySelector(".title").innerText =
-  `${match.game} vs ${match.opponent}（${result}）`;
+const title = document.querySelector(".title");
+
+if(result === "勝ち"){
+
+  title.innerText =
+    `🟢 WIN\nAmbitions ${myTotal}-${opponentTotal} ${match.opponent}`;
+
+  title.style.color = "#00ff66";
+
+}
+else if(result === "負け"){
+
+  title.innerText =
+    `🔴 LOSE\nAmbitions ${myTotal}-${opponentTotal} ${match.opponent}`;
+
+  title.style.color = "#ff4444";
+
+}
+else{
+
+  title.innerText =
+    `⚪ DRAW\nAmbitions ${myTotal}-${opponentTotal} ${match.opponent}`;
+
+  title.style.color = "#ffffff";
+
+}
 
   // ✅ 基本情報
   document.getElementById("info").innerHTML = `
   <b>${match.date}</b><br>
   ${match.game}<br>
   vs ${match.opponent}
+`;
+
+let mvp = null;
+let maxPoint = -1;
+
+(match.batters || []).forEach(p=>{
+
+  const point =
+  (p.hit || 0)
+  + (p.rbi || 0) * 2
+  + (p.hr || 0) * 4
+  + (p.run || 0)
+  + (p.sb || 0);
+
+  if(point > maxPoint){
+    maxPoint = point;
+    mvp = p;
+  }
+
+});
+
+if(mvp){
+
+  document.getElementById("mvp").innerHTML = `
+  <div style="font-size:24px;margin-bottom:10px;">
+    🏆 MVP
+  </div>
+
+  ${mvp.name}<br>
+  ${mvp.ab || 0}打数 ${mvp.hit || 0}安打<br>
+  ${mvp.hr || 0}本塁打 ${mvp.rbi || 0}打点<br>
+  OPS ${calcOPS(mvp)}
+`;
+
+}
+
+const teamHits =
+  (match.batters || [])
+  .reduce((a,b)=>a+(b.hit||0),0);
+
+const teamRbi =
+  (match.batters || [])
+  .reduce((a,b)=>a+(b.rbi||0),0);
+
+const strikeouts =
+  (match.pitchers || [])
+  .reduce((a,b)=>a+(b.k||0),0);
+
+document.getElementById("summary").innerHTML = `
+<h3 style="color:black;margin-top:0;">
+📝 試合サマリー
+</h3>
+
+結果：${result}<br><br>
+
+対戦相手：${match.opponent}<br>
+
+チーム安打：${teamHits}<br>
+チーム打点：${teamRbi}<br>
+投手陣奪三振：${strikeouts}<br>
+
+MVP：${mvp ? mvp.name : "-"}
+`;
+
+let teamPA = 0;
+let teamAB = 0;
+let teamH = 0;
+let teamBB = 0;
+let teamR = 0;
+let teamRBI = 0;
+let teamSB = 0;
+
+(match.batters || []).forEach(p=>{
+
+  teamPA += p.pa || 0;
+  teamAB += p.ab || 0;
+  teamH += p.hit || 0;
+  teamBB += p.bb || 0;
+  teamR += p.run || 0;
+  teamRBI += p.rbi || 0;
+  teamSB += p.sb || 0;
+
+});
+
+const teamAVG =
+  teamAB
+  ? (teamH / teamAB).toFixed(3)
+  : ".000";
+
+document.getElementById("teamTotal").innerHTML = `
+<h3 style="margin-top:0;color:white;">
+📊 チーム合計成績
+</h3>
+
+打席：${teamPA}<br>
+打数：${teamAB}<br>
+安打：${teamH}<br>
+四死球：${teamBB}<br>
+得点：${teamR}<br>
+打点：${teamRBI}<br>
+盗塁：${teamSB}<br>
+打率：${teamAVG}
 `;
 
 // ================= スコア =================

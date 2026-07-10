@@ -110,16 +110,16 @@ body{
   /* カレンダー幅いっぱい */
   #calendar{
     max-width:100%;
-    gap:6px;
+    gap:3px;
   }
 
   /* マス小さく */
   .day{
-    height:auto;
-    aspect-ratio:1/1;
-    font-size:14px;
-    padding:5px;
-  }
+  height:auto;
+  aspect-ratio:1/1.4;
+  font-size:15px;
+  padding:6px;
+}
 
   /* 出欠さらに小さく */
   .count{
@@ -131,6 +131,20 @@ body{
     font-size:12px;
     padding:6px 10px;
   }
+
+.event-info{
+  font-size:13px;
+  line-height:1.4;
+}
+
+.event-time{
+  font-size:13px;
+}
+
+.event-type{
+  font-size:14px;
+  font-weight:bold;
+}
 
   /* ＋ボタン */
   button[onclick="goToEvent()"]{
@@ -217,8 +231,8 @@ body{
 
 .event-info{
   margin-top:4px;
-  font-size:10px;
-  line-height:1.2;
+  font-size:12px;
+  line-height:1.3;
   width:100%;
   overflow:hidden;
 }
@@ -229,7 +243,7 @@ body{
 
 .event-time{
   color:#80d8ff;
-  font-size:10px;
+  font-size:12px;
   font-weight:bold;
 }
 

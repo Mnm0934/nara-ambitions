@@ -154,6 +154,84 @@ select{
   box-shadow:0 5px 15px rgba(0,0,0,.4);
 }
 
+#seasonStats{
+transition:0.3s;
+  max-width:500px;
+  margin:20px auto;
+
+  padding:20px;
+
+  background:#ffffff;
+  color:black;
+
+  border-radius:15px;
+
+  font-size:24px;
+  font-weight:bold;
+
+  box-shadow:0 5px 15px rgba(0,0,0,.4);
+}
+
+.game-card{
+  background:white;
+  color:black;
+
+  border-radius:20px;
+
+  overflow:hidden;
+
+  margin:20px auto;
+
+  max-width:900px;
+
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+
+.win-header{
+  background:#00c853;
+}
+
+.lose-header{
+  background:#e53935;
+}
+
+.draw-header{
+  background:#757575;
+}
+
+.card-header{
+  color:white;
+
+  padding:15px;
+
+  font-size:24px;
+  font-weight:bold;
+}
+
+.card-body{
+  padding:20px;
+}
+
+.main-score{
+  font-size:32px;
+  font-weight:bold;
+
+  margin:15px 0;
+}
+
+.game-date{
+  color:#666;
+  margin:10px 0;
+}
+
+.mvp-line{
+  color:#ff6600;
+  font-weight:bold;
+  font-size:20px;
+
+  margin:20px 0;
+}
+
 </style>
 </head>
 
@@ -306,6 +384,7 @@ function renderList(){
   <div id="yearArea"></div>
 
 </div>
+<div id="seasonStats"></div>
 <div id="gamesArea"></div>
 
   `;
@@ -532,10 +611,81 @@ function changeYear(year){
   const monthSelect =
     document.getElementById("monthSelect");
 
-  changeMonth(monthSelect, year);
+let win = 0;
+let lose = 0;
+let draw = 0;
 
+Object.values(groups[year]).forEach(monthGames=>{
+
+  monthGames.forEach(game=>{
+
+    const my =
+      (game.myInnings || [])
+      .reduce((a,b)=>a+(b||0),0);
+
+    const op =
+      (game.opInnings || [])
+      .reduce((a,b)=>a+(b||0),0);
+
+    if(my > op){
+      win++;
+    }
+    else if(my < op){
+      lose++;
+    }
+    else{
+      draw++;
+    }
+
+  });
+
+});
+
+const totalGames =
+  win + lose + draw;
+
+const pct =
+  (win + lose)
+  ? (win / (win + lose)).toFixed(3)
+  : ".000";
+
+document.getElementById("seasonStats").innerHTML = `
+🏆 ${year}シーズン<br><br>
+
+${totalGames}試合<br>
+
+${win}勝 ${lose}敗 ${draw}分<br>
+
+勝率 ${pct}
+`;
+
+// ↓ここから追加
+let color = "#333";
+
+if(Number(pct) >= 0.700){
+  color = "#00c853";
+}
+else if(Number(pct) >= 0.500){
+  color = "#2196f3";
+}
+else{
+  color = "#e53935";
 }
 
+const stats =
+  document.getElementById("seasonStats");
+
+stats.style.color = color;
+
+stats.style.border =
+  `4px solid ${color}`;
+
+stats.style.boxShadow =
+  `0 0 20px ${color}`;
+
+changeMonth(monthSelect, year);
+
+}
 
 function changeMonth(select, year){
 
@@ -564,29 +714,105 @@ function changeMonth(select, year){
     let result = "";
 
     if(myTotal > opTotal){
-      cls = "win"; result = "勝利";
-    }else if(myTotal < opTotal){
-      cls = "lose"; result = "敗北";
-    }else{
-      cls = "draw"; result = "引分";
+  cls = "win";
+  result = "🟢 勝利";
+}
+else if(myTotal < opTotal){
+  cls = "lose";
+  result = "🔴 敗北";
+}
+else{
+  cls = "draw";
+  result = "⚪ 引分";
+}
+
+let headerClass = "";
+let titleText = "";
+
+if(myTotal > opTotal){
+  headerClass = "win-header";
+  titleText = "🟢 WIN";
+}
+else if(myTotal < opTotal){
+  headerClass = "lose-header";
+  titleText = "🔴 LOSE";
+}
+else{
+  headerClass = "draw-header";
+  titleText = "⚪ DRAW";
+}
+let mvpName = "-";
+
+if(game.batters?.length){
+
+  let maxPoint = -1;
+
+  game.batters.forEach(p=>{
+
+    const point =
+      (p.hit || 0)
+      + (p.rbi || 0) * 2
+      + (p.hr || 0) * 4
+      + (p.run || 0)
+      + (p.sb || 0);
+
+    if(point > maxPoint){
+      maxPoint = point;
+      mvpName = p.name;
     }
 
+  });
+}
 html += `
-<div class="box ${cls}">
-  ${game.date} ${game.game}<br>
-  vs ${game.opponent}<br>
-  <b>${myTotal} - ${opTotal}</b>
+<div class="game-card">
 
-  ${createScoreBoard(my, op, cls, game)}
+  <div class="card-header ${headerClass}">
+    ${titleText}
+  </div>
 
-  <b>${result}</b><br>
+  <div class="card-body">
 
-  <button onclick="goDetail('${game.id}')">詳細</button>
+    <div class="main-score">
+      Ambitions ${myTotal}-${opTotal}
+      ${game.opponent}
+    </div>
 
-  ${isAdminUser() ? `
-    <button onclick="editGame('${game.id}')">編集</button>
-    <button onclick="deleteGame('${game.id}')">削除</button>
-  ` : ``}
+    <div class="game-date">
+      ${game.date}<br>
+      ${game.game}
+    </div>
+
+    ${mvpName !== "-"
+  ? `
+  <div class="mvp-line">
+    🔥 MVP ${mvpName}
+  </div>
+  `
+  : ""
+}
+
+    ${createScoreBoard(my, op, cls, game)}
+
+    <button onclick="goDetail('${game.id}')">
+      詳細
+    </button>
+
+    ${
+      isAdminUser()
+      ? `
+      <button onclick="editGame('${game.id}')">
+        編集
+      </button>
+
+      <button onclick="deleteGame('${game.id}')">
+        削除
+      </button>
+      `
+      : ""
+    }
+
+  </div>
+
 </div>
 `;
   });
