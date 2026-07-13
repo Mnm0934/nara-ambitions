@@ -86,6 +86,40 @@ tr:nth-child(even){
   }
 }
 
+.rank-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:15px;
+  max-width:1200px;
+  margin:auto;
+}
+
+.rank-card{
+  background:linear-gradient(
+    135deg,
+    #0a2a4a,
+    #123b66
+  );
+  border:1px solid #3d6fa3;
+  border-radius:12px;
+  padding:12px;
+  text-align:left;
+  box-shadow:0 4px 10px rgba(0,0,0,.4);
+  transition:0.3s;
+}
+
+.rank-title{
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:10px;
+  color:#ffd700;
+  text-align:center;
+}
+
+.rank-card:hover{
+  transform:translateY(-3px);
+}
+
 </style>
 </head>
 
@@ -143,11 +177,11 @@ if(saved){
   <table id="pitcherTable"></table>
 </div>
 
-<h3>対象試合</h3>
-<div id="gameList"></div>
-
 <h2>ランキング</h2>
 <div id="ranking"></div>
+
+<h3>対象試合</h3>
+<div id="gameList"></div>
 
 <button onclick="deleteBrokenData()">バグデータ削除</button>
 
@@ -252,7 +286,7 @@ async function loadResults(){
   render();
 }
 
-let mode = "all";
+let mode = "year";
 
 function changeMode(m){
   mode = m;
@@ -405,8 +439,11 @@ run += row.run || 0;
 const obp = (ab+bb+sf) ? Number((hit+bb)/(ab+bb+sf)) : 0;
 const ops = avg + obp;
 
-    const regulation = games * 3.1;
-    const isQualified = games > 0 && pa >= regulation;
+    const regulation = games * 3.0;
+
+const isQualified =
+  games >= data.length * 0.5 &&
+  pa >= regulation;
 
     list.push({
   num,name,
@@ -502,12 +539,24 @@ function renderPitcher(data){
       <th>規定</th>
       <th>投球回</th>
       <th>被安打</th>
+      <th>被本塁打</th>
       <th>四球</th>
       <th>三振</th>
       <th>自責点</th>
       <th onclick="changePitcherSort('era')">防御率 ${sortArrow('era', pitcherSortKey, pitcherSortOrder)}</th>
       <th>WHIP</th>
-      <th>K/BB</th>
+<th>K/BB</th>
+<th onclick="changePitcherSort('k9')">
+K/9 ${sortArrow('k9', pitcherSortKey, pitcherSortOrder)}
+</th>
+
+<th onclick="changePitcherSort('hr9')">
+HR/9 ${sortArrow('hr9', pitcherSortKey, pitcherSortOrder)}
+</th>
+
+<th onclick="changePitcherSort('baa')">
+被打率 ${sortArrow('baa', pitcherSortKey, pitcherSortOrder)}
+</th>
     </tr>
   </thead>
   <tbody id="pitcherBody"></tbody>
@@ -522,7 +571,14 @@ function renderPitcher(data){
     const name = p.name;
 
     let games = 0;
-    let inningOut = 0, hit=0, bb=0, so=0, er=0;
+
+let inningOut = 0;
+let hit = 0;
+let hr = 0;
+let ab = 0;
+let bb = 0;
+let so = 0;
+let er = 0;
 
     data.forEach(game=>{
   let played = false;
@@ -542,9 +598,11 @@ function renderPitcher(data){
 
       inningOut += outs;
       hit += row.hit || 0;
-      bb += row.bb || 0;
-      so += row.k || 0;
-      er += row.er || 0;
+hr += row.hr || 0;
+ab += row.ab || 0;
+bb += row.bb || 0;
+so += row.k || 0;
+er += row.er || 0;
     }
   });
 
@@ -558,19 +616,40 @@ function renderPitcher(data){
     const isQualified = games > 0 && realInning >= games * 1.2;
 
     list.push({
-      num,
-      name,
-      games,
-      isQualified,
-      inning: displayInning,
-      hit,
-      bb,
-      so,
-      er,
-      era: realInning ? er / realInning * 9 : 999,
-      whip: realInning ? (hit + bb) / realInning : 999,
-      kbb: bb ? so / bb : 0
-    });
+  num,
+  name,
+  games,
+  isQualified,
+  inning: displayInning,
+  hit,
+  hr,
+  ab,
+  bb,
+  so,
+  er,
+
+  era: realInning ? er / realInning * 9 : 999,
+
+  whip: realInning
+    ? (hit + bb) / realInning
+    : 999,
+
+  kbb: bb
+    ? so / bb
+    : 0,
+
+  k9: realInning
+    ? so / realInning * 9
+    : 0,
+
+  hr9: realInning
+    ? hr / realInning * 9
+    : 0,
+
+  baa: ab
+    ? hit / ab
+    : 0
+});
   });
 
   // 投球回 0 の選手は除外
@@ -599,12 +678,20 @@ function renderPitcher(data){
       <td>${p.isQualified ? "○" : "-"}</td>
       <td>${p.inning}</td>
       <td>${p.hit}</td>
-      <td>${p.bb}</td>
-      <td>${p.so}</td>
+<td>${p.hr}</td>
+<td>${p.bb}</td>
+<td>${p.so}</td>
       <td>${p.er}</td>
       <td>${p.era !== 999 ? p.era.toFixed(2) : "-"}</td>
       <td>${p.whip !== 999 ? p.whip.toFixed(2) : "-"}</td>
-      <td>${p.kbb ? p.kbb.toFixed(2) : "-"}</td>
+
+<td>${p.kbb ? p.kbb.toFixed(2) : "-"}</td>
+
+<td>${p.k9.toFixed(2)}</td>
+
+<td>${p.hr9.toFixed(2)}</td>
+
+<td>${p.ab ? p.baa.toFixed(3) : "-"}</td>
     </tr>
     `;
   });
@@ -816,12 +903,13 @@ batterStats[cleanName].sb += p.sb||0;
 
     if(!pitcherStats[cleanName]){
   pitcherStats[cleanName] = {
-    inningOut:0,
-    er:0,
-    hit:0,
-    bb:0,
-    so:0
-  };
+  inningOut:0,
+  er:0,
+  hit:0,
+  hr:0,
+  bb:0,
+  so:0
+};
       pitcherGames[cleanName] = new Set();
     }
 
@@ -836,6 +924,7 @@ batterStats[cleanName].sb += p.sb||0;
     pitcherStats[cleanName].inningOut += outs;
 pitcherStats[cleanName].er += p.er||0;
 pitcherStats[cleanName].hit += p.hit||0;
+pitcherStats[cleanName].hr += p.hr||0;
 pitcherStats[cleanName].bb += p.bb||0;
 pitcherStats[cleanName].so += p.k||0;
 
@@ -846,15 +935,18 @@ pitcherStats[cleanName].so += p.k||0;
 
   // ---- 打率ランキング ----
   const hitters = Object.keys(batterStats).map(name=>{
-    const p = batterStats[name];
-    const games = batterGames[name].size;
-    const avg = p.ab ? p.hit/p.ab : 0;
+  const p = batterStats[name];
+  const games = batterGames[name].size;
+  const avg = p.ab ? p.hit / p.ab : 0;
 
-    const regulation = games * 3.1;
-    const isQualified = p.pa >= regulation;
+  const regulation = games * 3.0;
 
-    return {name, avg, isQualified};
-  })
+  const isQualified =
+    games >= data.length * 0.5 &&
+    p.pa >= regulation;
+
+  return {name, avg, isQualified};
+})
   .filter(p => p.isQualified)
   .sort((a,b)=>b.avg - a.avg);
 
@@ -899,7 +991,6 @@ const soRank = Object.keys(pitcherStats)
 
 })
 .filter(p => p.so > 0)
-.filter(p => p.qualified)
 .sort((a,b)=>b.so-a.so);
 
 // ---- WHIPランキング ----
@@ -941,9 +1032,10 @@ const opsRank = Object.keys(batterStats)
     batterGames[name].size;
 
   const regulation =
-    games * 3.1;
+    games * 3.0;
 
   const qualified =
+    games >= data.length * 0.5 &&
     p.pa >= regulation;
 
   const avg =
@@ -1021,60 +1113,141 @@ const sbRank = Object.keys(batterStats)
 .sort((a,b)=>b.sb-a.sb);
 
 
-  // ---- 表示 ----
-  let html = "<h3>打率ランキング（規定）</h3>";
-  hitters.slice(0,5).forEach((p,i)=>{
-    html += `${i+1}位 ${p.name} (${p.avg.toFixed(3)})<br>`;
-  });
+  const medal = ["🥇","🥈","🥉"];
 
-  html += "<h3>防御率ランキング（規定）</h3>";
-  pitchers.slice(0,5).forEach((p,i)=>{
-    html += `${i+1}位 ${p.name} (${p.era.toFixed(2)})<br>`;
-  });
+let html = '<div class="rank-grid">';
 
-html += "<h3>OPSランキング</h3>";
+html += `
+<h2 style="
+  grid-column:1/-1;
+  color:#ffd700;
+  text-align:center;
+  margin:5px 0;
+">
+⚾ 打者ランキング
+</h2>
+`;
 
-opsRank.slice(0,5).forEach((p,i)=>{
-  html += `${i+1}位 ${p.name} (${p.ops.toFixed(3)})<br>`;
+function makeCard(title, list, formatter){
+
+  html += `
+    <div class="rank-card">
+      <div class="rank-title">${title}</div>
+  `;
+
+  list.slice(0,5).forEach((p,i)=>{
+
+  // 1位だけ特別表示
+  if(i === 0){
+
+    html += `
+    <div style="
+      background:#ffd70022;
+      border:1px solid #ffd70055;
+      padding:8px;
+      border-radius:8px;
+      margin-bottom:8px;
+      font-weight:bold;
+      text-align:center;
+    ">
+      🥇 ${p.name}<br>
+      ${formatter(p)}
+    </div>
+    `;
+
+    return;
+  }
+
+  html += `
+  <div style="
+    display:flex;
+    justify-content:space-between;
+    padding:4px 0;
+    border-bottom:1px solid rgba(255,255,255,.1);
+  ">
+    <span>
+      ${medal[i] || `${i+1}位`}
+      ${p.name}
+    </span>
+
+    <span>
+      ${formatter(p)}
+    </span>
+  </div>
+  `;
 });
 
-html += "<h3>本塁打ランキング</h3>";
+  html += `</div>`;
+}
 
-hrRank.slice(0,5).forEach((p,i)=>{
-  html += `${i+1}位 ${p.name} (${p.hr}本)<br>`;
-});
+makeCard(
+  "打率",
+  hitters,
+  p => p.avg.toFixed(3)
+);
 
-html += "<h3>打点ランキング</h3>";
+makeCard(
+  "OPS",
+  opsRank,
+  p => p.ops.toFixed(3)
+);
 
-rbiRank.slice(0,5).forEach((p,i)=>{
-  html += `${i+1}位 ${p.name} (${p.rbi}打点)<br>`;
-});
+makeCard(
+  "本塁打",
+  hrRank,
+  p => `${p.hr}本`
+);
 
-html += "<h3>盗塁ランキング</h3>";
+makeCard(
+  "打点",
+  rbiRank,
+  p => `${p.rbi}打点`
+);
 
-sbRank.slice(0,5).forEach((p,i)=>{
-  html += `${i+1}位 ${p.name} (${p.sb}盗塁)<br>`;
-});
+makeCard(
+  "盗塁",
+  sbRank,
+  p => `${p.sb}盗塁`
+);
 
-html += "<h3>奪三振ランキング（規定）</h3>";
-soRank.slice(0,5).forEach((p,i)=>{
-  html += `${i+1}位 ${p.name} (${p.so}奪三振)<br>`;
-});
+html += `
+<h2 style="
+  grid-column:1/-1;
+  color:#66ccff;
+  text-align:center;
+  margin:15px 0 5px;
+">
+⚾ 投手ランキング
+</h2>
+`;
 
-html += "<h3>WHIPランキング（規定）</h3>";
+makeCard(
+  "防御率",
+  pitchers,
+  p => p.era.toFixed(2)
+);
 
-whipRank.slice(0,5).forEach((p,i)=>{
-  html += `${i+1}位 ${p.name} (${p.whip.toFixed(2)})<br>`;
-});
+makeCard(
+  "奪三振",
+  soRank,
+  p => `${p.so}個`
+);
 
-html += "<h3>K/BBランキング（規定）</h3>";
+makeCard(
+  "WHIP",
+  whipRank,
+  p => p.whip.toFixed(2)
+);
 
-kbbRank.slice(0,5).forEach((p,i)=>{
-  html += `${i+1}位 ${p.name} (${p.kbb.toFixed(2)})<br>`;
-});
+makeCard(
+  "K/BB",
+  kbbRank,
+  p => p.kbb.toFixed(2)
+);
 
+html += "</div>";
 
-  box.innerHTML = html;
+box.innerHTML = html;
 }
 
 // ================= バグデータ削除 =================

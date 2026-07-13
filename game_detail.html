@@ -366,17 +366,41 @@ let maxPoint = -1;
 
 if(mvp){
 
-  document.getElementById("mvp").innerHTML = `
+  const awardTitle =
+  result === "負け"
+    ? "🥈 敢闘賞"
+    : result === "引分"
+      ? "⭐ 活躍選手"
+      : "🏆 MVP";
+
+  const awardBox =
+    document.getElementById("mvp");
+
+  // 背景色変更
+  if(result === "負け"){
+
+    awardBox.style.background = "#c0c0c0"; // 銀色
+
+  }else if(result === "引分"){
+
+    awardBox.style.background = "#87ceeb"; // 水色
+
+  }else{
+
+    awardBox.style.background = "#ffd700"; // 金色
+
+  }
+
+  awardBox.innerHTML = `
   <div style="font-size:24px;margin-bottom:10px;">
-    🏆 MVP
+    ${awardTitle}
   </div>
 
   ${mvp.name}<br>
   ${mvp.ab || 0}打数 ${mvp.hit || 0}安打<br>
   ${mvp.hr || 0}本塁打 ${mvp.rbi || 0}打点<br>
   OPS ${calcOPS(mvp)}
-`;
-
+  `;
 }
 
 const teamHits =
@@ -404,7 +428,8 @@ document.getElementById("summary").innerHTML = `
 チーム打点：${teamRbi}<br>
 投手陣奪三振：${strikeouts}<br>
 
-MVP：${mvp ? mvp.name : "-"}
+${result === "負け" ? "敢闘賞" : "MVP"}：
+${mvp ? mvp.name : "-"}
 `;
 
 let teamPA = 0;

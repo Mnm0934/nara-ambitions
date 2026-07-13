@@ -13,31 +13,58 @@ body{
 }
 .container{
   max-width:900px;
-  margin:100px auto;
+  margin:30px auto;
+  padding:15px;
+
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:20px;
 }
+
 h1{
   text-align:center;
-  margin-bottom:40px;
+  margin-bottom:25px;
+  font-size:28px;
 }
-.menu{
+
+.folder{
+  background:rgba(255,255,255,.08);
+  backdrop-filter:blur(10px);
+  border-radius:25px;
+  padding:20px;
+  box-shadow:0 6px 20px rgba(0,0,0,.3);
+
   display:flex;
   flex-direction:column;
-  gap:15px;
 }
-.menu a{
+
+.folder a{
   display:block;
-  padding:15px;
-  background:#0a1f3f;
-  border-left:5px solid #d6002a;
-  text-decoration:none;
+  margin-top:10px;
+  padding:16px;
+  background:#112b55;
+  border-radius:12px;
   color:white;
-  font-size:18px;
-  transition:0.2s;
+  text-decoration:none;
+  transition:.2s;
+  font-size:16px;
+  font-weight:bold;
 }
-.menu a:hover{
+
+.folder a:hover{
   background:#d6002a;
   transform:translateX(5px);
 }
+
+.folder h3{
+  font-size:20px;
+  margin-top:0;
+  color:#ffd600;
+  border-bottom:1px solid rgba(255,255,255,0.2);
+  padding-bottom:10px;
+  text-align:center;
+}
+
 .logout{
   margin-top:40px;
   text-align:center;
@@ -76,45 +103,82 @@ if(saved){
 </script>
 
 
+<h1>⚾ 奈良Ambitions 部員専用ページ</h1>
+
 <div class="container">
 
-  <h1>部員専用ページ</h1>
+  <div class="folder">
+  <h3>📅 出欠・スケジュール</h3>
 
-  <div class="menu">
+  <a href="attendance.html">出欠入力</a>
+<a href="member-schedule.html">活動日程スケジュール</a>
+</div>
 
-    <a href="attendance.html">出欠入力</a>
-    <a href="attendance-list.html">出欠一覧</a>
 
-    <a href="member-schedule.html">活動日程スケジュール</a>
+<div class="folder">
+  <h3>⚾ 試合・成績</h3>
+<a href="game_list.html">試合結果一覧</a>
 
-    <a href="news-admin.html">NEWS登録</a>
+<a href="results-admin.html">選手成績一覧</a>
 
-    <a href="game_list.html">試合結果一覧</a>
-    <a href="results-admin.html">選手成績一覧</a>
+<a href="game_input.html" class="admin-only">
+  成績入力（管理者限定）
+</a>
+</div>
 
-    <a href="video-list.html">試合動画一覧</a>
-    <a href="video-form.html" class="admin-only">試合動画登録(管理者限定)</a>
+<div class="folder">
+  <h3>🎥 動画</h3>
 
-    <a href="game_input.html" class="admin-only">成績入力(管理者限定)</a>
+  <a href="video-list.html">試合動画一覧</a>
 
-    <a href="event.html" class="admin-only">予定登録(管理者限定)</a>
+  <a href="video-form.html" class="admin-only">
+    試合動画登録（管理者限定）
+  </a>
+</div>
 
-    <a href="members.html" class="admin-only">選手登録(管理者限定)</a>
+<div class="folder admin-folder">
+  <h3>👥 管理者メニュー</h3>
 
-    <a href="rules.pdf" target="_blank">部則（PDF）</a>
-    <a href="nyuubu.pdf" target="_blank">入部届（PDF）</a>
-    <a href="kyubu.pdf" target="_blank">休部届（PDF）</a>
-    <a href="taibu.pdf" target="_blank">退部届（PDF）</a>
+  <a href="news-admin.html" class="admin-only">
+    NEWS登録
+  </a>
 
-    <a href="https://www.ambitions1996.com/">旧ホームページを見る</a>
+  <a href="event.html" class="admin-only">
+    予定登録
+  </a>
 
-  </div>
+  <a href="members.html" class="admin-only">
+    選手登録
+  </a>
+</div>
+
+
+<div class="folder">
+  <h3>📄 各種書類</h3>
+
+  <a href="rules.pdf" target="_blank">部則（PDF）</a>
+
+<a href="nyuubu.pdf" target="_blank">入部届（PDF）</a>
+
+<a href="kyubu.pdf" target="_blank">休部届（PDF）</a>
+
+<a href="taibu.pdf" target="_blank">退部届（PDF）</a>
+</div>
+
+<div class="folder">
+  <h3>🌐 その他</h3>
+
+  <a href="https://www.ambitions1996.com/" target="_blank">
+  旧ホームページを見る
+</a>
+</div>
+
+</div>
 
   <div class="logout">
     <button onclick="logout()">ログアウト</button>
   </div>
 
-</div>
 
 <script>
 function logout(){
@@ -130,9 +194,16 @@ window.onload = function(){
   const isAdmin = user && user.id === "admin";
 
   if(!isAdmin){
+
     document.querySelectorAll(".admin-only").forEach(el=>{
       el.style.display = "none";
     });
+
+    const folder = document.querySelector(".admin-folder");
+
+    if(folder){
+      folder.style.display = "none";
+    }
   }
 };
 </script>

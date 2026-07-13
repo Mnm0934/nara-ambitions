@@ -21,7 +21,8 @@ body{
   text-align:center;
 }
 
-div{
+#inning_my,
+#inning_op{
   overflow-x:auto;
 }
 
@@ -75,6 +76,48 @@ button{
 
 input[id^="p_inning"]{
   width:60px;
+}
+
+.stat-grid{
+  display:grid;
+  grid-template-columns: repeat(2, 220px);
+  gap:8px 20px;
+  justify-content:center;
+  margin:10px auto;
+  max-width:500px;
+  margin:10px auto;
+}
+
+.stat-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:5px;
+}
+
+.stat-item input{
+  width:60px;
+}
+
+@media(max-width:600px){
+
+  .stat-grid{
+    grid-template-columns: 1fr 1fr;
+    gap:8px 12px;  
+}
+
+  .stat-item{
+    font-size:14px;
+  }
+
+  .stat-item input{
+    width:50px;
+  }
+}
+
+.stat-item span{
+  min-width:70px;
+  text-align:left;
 }
 
 </style>
@@ -190,6 +233,8 @@ window.loadMembers = async function() {
 <div id="pitchers"></div>
 <button onclick="addPitcher()">＋投手追加</button>
 
+<br>
+
 <button onclick="tempSave()">途中保存</button>
 <button onclick="save()">保存</button>
 <button onclick="loadTempGame()">途中保存を復元</button>
@@ -249,30 +294,109 @@ function addBatter(){
     背番号：<input type="number" id="num_${batterCount}" oninput="autoFill(${batterCount})"><br><br>
     名前：<input type="text" id="name_${batterCount}" readonly><br><br>
 
-    打席：<input type="number" id="pa_${batterCount}">
-    打数：<input type="number" id="ab_${batterCount}">
-    安打：<input type="number" id="hit_${batterCount}" oninput="calcTB(${batterCount})">
-    四死球：<input type="number" id="bb_${batterCount}"><br>
+<div class="stat-grid">
 
-    犠打：<input type="number" id="sh_${batterCount}">
-    犠飛：<input type="number" id="sf_${batterCount}">
-    三振：<input type="number" id="so_${batterCount}">
-    残塁：<input type="number" id="lob_${batterCount}"><br>
+<div class="stat-item">
+  <span>打席</span>
+  <input type="number" id="pa_${batterCount}">
+</div>
 
-    得点圏打数：<input type="number" id="risp_ab_${batterCount}">
-    得点圏安打：<input type="number" id="risp_hit_${batterCount}"><br>
+<div class="stat-item">
+  <span>打数</span>
+  <input type="number" id="ab_${batterCount}">
+</div>
 
-    得点：<input type="number" id="run_${batterCount}">
-    打点：<input type="number" id="rbi_${batterCount}"><br>
+<div class="stat-item">
+  <span>安打</span>
+  <input type="number"
+         id="hit_${batterCount}"
+         oninput="calcTB(${batterCount})">
+</div>
 
-    盗塁：<input type="number" id="sb_${batterCount}">
-    盗塁死：<input type="number" id="cs_${batterCount}"><br>
+<div class="stat-item">
+  <span>四死球</span>
+  <input type="number" id="bb_${batterCount}">
+</div>
 
-    二塁打：<input type="number" id="double_${batterCount}" oninput="calcTB(${batterCount})">
-    三塁打：<input type="number" id="triple_${batterCount}" oninput="calcTB(${batterCount})">
-    本塁打：<input type="number" id="hr_${batterCount}" oninput="calcTB(${batterCount})">
-    塁打：<input type="number" id="tb_${batterCount}" readonly><br><br>
+<div class="stat-item">
+  <span>犠打</span>
+  <input type="number" id="sh_${batterCount}">
+</div>
 
+<div class="stat-item">
+  <span>犠飛</span>
+  <input type="number" id="sf_${batterCount}">
+</div>
+
+<div class="stat-item">
+  <span>三振</span>
+  <input type="number" id="so_${batterCount}">
+</div>
+
+<div class="stat-item">
+  <span>残塁</span>
+  <input type="number" id="lob_${batterCount}">
+</div>
+
+<div class="stat-item">
+  <span>得点圏打数</span>
+  <input type="number" id="risp_ab_${batterCount}">
+</div>
+
+<div class="stat-item">
+  <span>得点圏安打</span>
+  <input type="number" id="risp_hit_${batterCount}">
+</div>
+
+<div class="stat-item">
+  <span>得点</span>
+  <input type="number" id="run_${batterCount}">
+</div>
+
+<div class="stat-item">
+  <span>打点</span>
+  <input type="number" id="rbi_${batterCount}">
+</div>
+
+<div class="stat-item">
+  <span>盗塁</span>
+  <input type="number" id="sb_${batterCount}">
+</div>
+
+<div class="stat-item">
+  <span>盗塁死</span>
+  <input type="number" id="cs_${batterCount}">
+</div>
+
+<div class="stat-item">
+  <span>二塁打</span>
+  <input type="number"
+         id="double_${batterCount}"
+         oninput="calcTB(${batterCount})">
+</div>
+
+<div class="stat-item">
+  <span>三塁打</span>
+  <input type="number"
+         id="triple_${batterCount}"
+         oninput="calcTB(${batterCount})">
+</div>
+
+<div class="stat-item">
+  <span>本塁打</span>
+  <input type="number"
+         id="hr_${batterCount}"
+         oninput="calcTB(${batterCount})">
+</div>
+
+<div class="stat-item">
+  <span>塁打</span>
+  <input type="number"
+         id="tb_${batterCount}"
+         readonly>
+</div>
+
+</div>
     <button onclick="this.parentElement.remove()">削除</button>
   </div>
   `;

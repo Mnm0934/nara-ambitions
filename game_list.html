@@ -785,11 +785,18 @@ html += `
     ${mvpName !== "-"
   ? `
   <div class="mvp-line">
-    🔥 MVP ${mvpName}
+    ${
+      myTotal > opTotal
+        ? `🔥 MVP ${mvpName}`
+        : myTotal < opTotal
+          ? `⭐ 敢闘賞 ${mvpName}`
+          : ``
+    }
   </div>
   `
   : ""
 }
+
 
     ${createScoreBoard(my, op, cls, game)}
 
