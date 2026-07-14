@@ -206,8 +206,11 @@ window.doc = doc;
 window.add = async function(status){
 
   const raw = document.getElementById("name").value;
-  const name = raw.split(" ").slice(1).join(" ").trim();
-  const date = document.getElementById("date").value;
+  const name = raw.replace(/^#\d+\s*/, "");
+  const date =
+  document.getElementById("date")
+    .value
+    .replace(/\//g, "-");
   const comment = document.getElementById("comment").value;
 
   if(name === "" || date === ""){
@@ -215,11 +218,21 @@ window.add = async function(status){
     return;
   }
 
-  const hasEvent = events.some(e => e.date === date);
-  if(!hasEvent){
-    alert("予定なし");
-    return;
-  }
+  const hasEvent = events.some(e => {
+
+  console.log("event=", e.date);
+  console.log("date =", date);
+
+  const eventDate =
+    String(e.date).replace(/\//g, "-");
+
+  return eventDate === date;
+});
+
+if(!hasEvent){
+  alert("予定なし");
+  return;
+}
 
   await addDoc(collection(db, "attendance"), {
     name,
@@ -277,6 +290,8 @@ members.forEach(m=>{
 });
 
   select.innerHTML = html;
+
+picker.redraw();
 }
 
 
@@ -285,8 +300,10 @@ window.changeMember = function(){
 
   render();
 
-  // カレンダー再描画
-  picker.redraw();
+  const selectedDate =
+    document.getElementById("date").value;
+
+  picker.setDate(selectedDate, true);
 
 }
 
@@ -296,7 +313,7 @@ window.render = function(){
   list.innerHTML = "";
 
   const raw = document.getElementById("name").value;
-  const name = raw.split(" ").slice(1).join(" ").trim(); // ←これ追加
+  const name = raw.replace(/^#\d+\s*/, ""); // ←これ追加
 
   if(!name){
     list.innerHTML = "<p>名前を選択してください</p>";
@@ -376,7 +393,8 @@ alert(
 
 // ✅ カレンダー
 const picker = flatpickr("#date", {
-  locale: "ja", // ✅ これ追加🔥
+  locale: "ja",
+  disableMobile: true,
   dateFormat: "Y-m-d",
   defaultDate: "today",
   minDate: "today",
@@ -395,7 +413,7 @@ dayElem.style.position = "relative";
   const date = `${y}-${m}-${d}`;
 
   const raw = document.getElementById("name").value;
-const name = raw.split(" ").slice(1).join(" ").trim();
+const name = raw.replace(/^#\d+\s*/, "");
 
   const ev = events.find(e => e.date === date);
   const myAnswer = data.find(e => e.date === date && e.name === name);
