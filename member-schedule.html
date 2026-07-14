@@ -216,12 +216,12 @@ body{
 
 .modal-content{
   background:#0a1f3f;
-  padding:20px;
+  padding:8px 20px 20px;
   border-radius:10px;
-  width:90%;
-  max-width:400px;
-  max-height:80vh;   /* ✅追加 */
-  overflow:auto;     /* ✅追加 */
+  width:98%;
+  max-width:800px;
+  max-height:80vh;
+  overflow:auto;
 }
 
 .event-info{
@@ -290,27 +290,52 @@ h2{
   }
 
   .event-type{
-    font-size:24px;
+    font-size:18px;
     font-weight:bold;
   }
 
   .event-time{
-    font-size:20px;
+    font-size:16px;
     font-weight:bold;
   }
 
-  .event-place,
-  .event-opponent{
-    font-size:18px;
-  }
-/* スマホは時間と場所を非表示 */
-.event-time,
+.event-opponent{
+  font-size:11px;
+  line-height:1.1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
 .event-place{
   display:none;
 }
-
+/* スマホは時間と場所を非表示 */
+.event-place{
+  display:none;
+}
 }
 
+.modal-content h3{
+  font-size:36px;
+  margin-top:0;
+  margin-bottom:10px;
+}
+
+.modal-content p{
+  font-size:26px;
+  font-weight:bold;
+  margin:10px 0;
+  line-height:1.2;
+}
+
+.btn-row{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  margin-top:20px;
+  flex-wrap:wrap;
+}
 </style>
 </head>
 
@@ -549,16 +574,11 @@ ${event ? `
   ` : ""}
 
   ${event.opponent ? `
-    <div class="event-opponent">
-      vs ${event.opponent}
-    </div>
-  ` : ""}
+  <div class="event-opponent">
+    ${event.opponent}
+  </div>
+` : ""}
 
-  ${event.place ? `
-    <div class="event-place">
-      📍${event.place}
-    </div>
-  ` : ""}
 
 </div>
 ` : ""}
@@ -634,27 +654,61 @@ function handleClick(date){
 <p>対戦相手：${event.opponent || "-"}</p>
 <p>場所：${event.place || "-"}</p>
 <p>詳細：${event.note || "-"}</p>
-    <br>
+<div class="btn-row">
 
-    <button onclick="editEvent('${date}')" style="background:#ff9800;color:white;padding:8px 12px;">
-      ✏️ 編集
-    </button>
+  <button onclick="goToInput('${date}')" style="
+  background:#2196f3;
+  color:white;
+  padding:14px 20px;
+  font-size:20px;
+  font-weight:bold;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  ">
+    📝 出欠入力
+  </button>
 
-    <button onclick="goToAttendance('${date}')" style="background:#4caf50;color:white;padding:8px 12px;margin-left:10px;">
-      ✅ 出欠一覧
-    </button>
+  <button onclick="goToAttendance('${date}')" style="
+  background:#4caf50;
+  color:white;
+  padding:14px 20px;
+  font-size:20px;
+  font-weight:bold;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  ">
+    ✅ 出欠一覧
+  </button>
 
-<button onclick="goToInput('${date}')"
-  style="background:#2196f3;color:white;padding:8px 12px;margin-left:10px;">
-  📝 出欠入力
-</button>
+  <button onclick="editEvent('${date}')" style="
+  background:#ff9800;
+  color:white;
+  padding:14px 20px;
+  font-size:20px;
+  font-weight:bold;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  ">
+    ✏️ 編集(管理者限定)
+  </button>
 
-    <br><br>
+</div>
 
-    <button onclick="closeModal()" style="background:#666;color:white;padding:8px 12px;">
-      閉じる
-    </button>
-  `;
+<div style="margin-top:20px;">
+  <button onclick="closeModal()" style="
+  background:#666;
+  color:white;
+  padding:14px 20px;
+  font-size:20px;
+  font-weight:bold;
+  ">
+    閉じる
+  </button>
+</div>
+`;
 
   modal.style.display = "flex";
 }

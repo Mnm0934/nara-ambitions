@@ -98,12 +98,12 @@ button{
   }
 
   .folder h3{
-    font-size:36px;
+    font-size:24px;
   }
 
   .folder a{
-    font-size:34px;
-    padding:28px;
+    font-size:28px;
+    padding:24px;
     line-height:1.4;
   }
 
@@ -114,6 +114,41 @@ button{
 
 }
 
+/* フォルダの中身は最初隠す */
+.folder-content{
+  display:none;
+  margin-top:15px;
+}
+
+/* 開いた時だけ表示 */
+.folder.open .folder-content{
+  display:flex;
+  flex-direction:column;
+}
+
+/* タップできるように */
+.folder h3{
+  cursor:pointer;
+}
+
+.folder h3{
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.arrow{
+  font-size:0.8em;
+}
+
+.folder.open h3{
+  color:#fff;
+}
+
+.folder.open{
+  border:2px solid #ffd600;
+}
 
 </style>
 
@@ -147,33 +182,56 @@ if(saved){
 <div class="container">
 
   <div class="folder">
-  <h3>📅 出欠・スケジュール</h3>
 
-  <a href="attendance.html">出欠入力</a>
-<a href="member-schedule.html">スケジュール</a>
+  <h3 onclick="toggleFolder(this)">
+    📅 出欠・スケジュール
+  <span class="arrow">▼</span>
+  </h3>
+
+
+  <div class="folder-content">
+
+    <a href="attendance.html">出欠入力</a>
+    <a href="member-schedule.html">スケジュール</a>
+
+  </div>
+
 </div>
 
 
 <div class="folder">
-  <h3>⚾ 試合・成績・動画</h3>
-<a href="game_list.html">試合結果一覧</a>
 
-<a href="results-admin.html">選手成績一覧</a>
+  <h3 onclick="toggleFolder(this)">
+    ⚾ 試合・成績・動画
+  <span class="arrow">▼</span>
+  </h3>
 
-  <a href="video-list.html">試合動画一覧</a>
+  <div class="folder-content">
+
+    <a href="game_list.html">試合結果一覧</a>
+    <a href="results-admin.html">選手成績一覧</a>
+    <a href="video-list.html">試合動画一覧</a>
+
+  </div>
 
 </div>
 
 <div class="folder admin-folder">
-  <h3>👥 管理者メニュー</h3>
 
-  <a href="news-admin.html" class="admin-only">
-    NEWS登録（管理者限定）
-  </a>
+  <h3 onclick="toggleFolder(this)">
+    👥 管理者メニュー
+  <span class="arrow">▼</span>
+  </h3>
 
-  <a href="event.html" class="admin-only">
-    予定登録（管理者限定）
-  </a>
+  <div class="folder-content">
+
+    <a href="news-admin.html" class="admin-only">
+      NEWS登録（管理者限定）
+    </a>
+
+    <a href="event.html" class="admin-only">
+      予定登録（管理者限定）
+    </a>
 
 <a href="game_input.html" class="admin-only">
   成績入力（管理者限定）
@@ -187,12 +245,19 @@ if(saved){
     選手登録（管理者限定）
   </a>
 
+</div>
 
 </div>
 
 
 <div class="folder">
-  <h3>📄 各種書類</h3>
+
+  <h3 onclick="toggleFolder(this)">
+    📄 各種書類
+  <span class="arrow">▼</span>
+  </h3>
+
+  <div class="folder-content">
 
   <a href="rules.pdf" target="_blank">部則（PDF）</a>
 
@@ -202,15 +267,23 @@ if(saved){
 
 <a href="taibu.pdf" target="_blank">退部届（PDF）</a>
 </div>
+</div>
+
 
 <div class="folder">
-  <h3>🌐 その他</h3>
+
+  <h3 onclick="toggleFolder(this)">
+    🌐 その他
+  <span class="arrow">▼</span>
+  </h3>
+
+  <div class="folder-content">
 
   <a href="https://www.ambitions1996.com/" target="_blank">
   旧ホームページを見る
 </a>
 </div>
-
+</div>
 </div>
 
   <div class="logout">
@@ -219,6 +292,41 @@ if(saved){
 
 
 <script>
+function toggleFolder(el){
+
+  document.querySelectorAll(".folder").forEach(folder=>{
+
+    if(folder !== el.parentElement){
+
+      folder.classList.remove("open");
+
+      const otherArrow =
+        folder.querySelector(".arrow");
+
+      if(otherArrow){
+        otherArrow.textContent = "▼";
+      }
+
+    }
+
+  });
+
+  const folder = el.parentElement;
+
+  folder.classList.toggle("open");
+
+  const arrow = el.querySelector(".arrow");
+
+  if(arrow){
+
+    arrow.textContent =
+      folder.classList.contains("open")
+      ? "▲"
+      : "▼";
+
+  }
+}
+
 function logout(){
   alert("ログアウトしました");
   localStorage.removeItem("userLogin");
