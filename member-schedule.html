@@ -65,17 +65,22 @@ body{
   margin-right:auto;
 }
 /* ✅ 種類別カラー */
+/* 試合 */
 .match{
-  background:#d6002a !important; /* 赤 */
+  background:#ffd6e0 !important;
+  color:#000 !important;
 }
 
+/* 練習 */
 .practice{
-  background:#2196f3 !important; /* 青 */
+  background:#d6f4ff !important;
+  color:#000 !important;
 }
 
+/* 飲み会 */
 .party{
-  background:#ffd600 !important; /* 黄色 */
-  color:#000;
+  background:#fff5b8 !important;
+  color:#000 !important;
 }
 
 .count {
@@ -116,7 +121,7 @@ body{
   /* マス小さく */
   .day{
   height:auto;
-  aspect-ratio:1/1.4;
+  aspect-ratio:1/1.6;
   font-size:15px;
   padding:6px;
 }
@@ -133,17 +138,23 @@ body{
   }
 
 .event-info{
-  font-size:13px;
-  line-height:1.4;
-}
-
-.event-time{
-  font-size:13px;
+  font-size:16px;
+  line-height:1.5;
 }
 
 .event-type{
-  font-size:14px;
+  font-size:20px;
   font-weight:bold;
+}
+
+.event-time{
+  font-size:16px;
+  font-weight:bold;
+}
+
+.event-place,
+.event-opponent{
+  font-size:15px;
 }
 
   /* ＋ボタン */
@@ -240,10 +251,11 @@ body{
 .event-type{
   font-weight:bold;
   font-size:16px;
+  color:#b00020;
 }
 
 .event-time{
-  color:#80d8ff;
+  color:#004a99;
   font-size:14px;
   font-weight:bold;
 }

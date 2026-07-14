@@ -1135,28 +1135,49 @@ function makeCard(title, list, formatter){
       <div class="rank-title">${title}</div>
   `;
 
-  list.slice(0,5).forEach((p,i)=>{
+  let rank = 0;
+let prevValue = null;
 
-  // 1位だけ特別表示
+list.slice(0,5).forEach((p,i)=>{
+
+  const value =
+    Number(
+      Object.values(p)
+      .find(v => typeof v === "number")
+    );
+
   if(i === 0){
 
-    html += `
-    <div style="
-      background:#ffd70022;
-      border:1px solid #ffd70055;
-      padding:8px;
-      border-radius:8px;
-      margin-bottom:8px;
-      font-weight:bold;
-      text-align:center;
-    ">
-      🥇 ${p.name}<br>
-      ${formatter(p)}
-    </div>
-    `;
+    rank = 1;
 
-    return;
+  }else if(value !== prevValue){
+
+    rank = i + 1;
+
   }
+
+  prevValue = value;
+
+  // 1位だけ特別表示
+  if(rank === 1){
+
+  html += `
+  <div style="
+    background:#ffd70022;
+    border:1px solid #ffd70055;
+    padding:8px;
+    border-radius:8px;
+    margin-bottom:8px;
+    font-weight:bold;
+    text-align:center;
+  ">
+    🥇 ${p.name}<br>
+    ${formatter(p)}
+  </div>
+  `;
+
+  return;
+}
 
   html += `
   <div style="
@@ -1166,7 +1187,12 @@ function makeCard(title, list, formatter){
     border-bottom:1px solid rgba(255,255,255,.1);
   ">
     <span>
-      ${medal[i] || `${i+1}位`}
+      ${
+  rank === 1 ? "🥇" :
+  rank === 2 ? "🥈" :
+  rank === 3 ? "🥉" :
+  `${rank}位`
+}
       ${p.name}
     </span>
 

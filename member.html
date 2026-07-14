@@ -24,13 +24,15 @@ font-weight:bold;
 
 /* ===== バナー ===== */
 .hero{
-  min-height:250px;
-
-  padding:120px 5% 80px;
-
+  height:250px;
   background:url("main.jpeg") center/cover;
+
   display:flex;
   align-items:flex-end;
+
+  padding:0 5% 40px;
+
+  box-sizing:border-box;
 
   color:white;
   font-size:64px;
@@ -849,6 +851,12 @@ header.small .title img{
 
 }
 
+@media (max-width:1024px){
+  body{
+    padding-top:100px;
+  }
+}
+
 
 </style>
 
@@ -873,9 +881,8 @@ header.small .title img{
   <nav class="nav">
 <a href="index.html">HOME</a>
 <a href="index.html#news-feature">NEWS</a>
-<a href="member.html" class="active">選手・スタッフ</a>
     <a href="schedule.html">スケジュール</a>
-    <a href="index.html#sns">SNS</a>
+<a href="member.html" class="active">選手・スタッフ</a>
 <a href="#" onclick="goMember(); return false;">部員専用</a>
    </nav>
 </header>
