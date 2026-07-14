@@ -118,14 +118,6 @@ body{
     gap:3px;
   }
 
-  /* マス小さく */
-  .day{
-  height:auto;
-  aspect-ratio:1/1.6;
-  font-size:15px;
-  padding:6px;
-}
-
   /* 出欠さらに小さく */
   .count{
     font-size:10px;
@@ -142,19 +134,9 @@ body{
   line-height:1.5;
 }
 
-.event-type{
-  font-size:20px;
-  font-weight:bold;
-}
-
-.event-time{
-  font-size:16px;
-  font-weight:bold;
-}
-
 .event-place,
 .event-opponent{
-  font-size:15px;
+  font-size:18px;
 }
 
   /* ＋ボタン */
@@ -198,7 +180,7 @@ body{
   align-items:center;
   justify-content:center;
 
-  font-size:16px; /* ←ここも大きく */
+  font-size:22px; /* ←ここも大きく */
 }
 
 .week:nth-child(7),
@@ -207,6 +189,8 @@ body{
 }
 
 }
+
+
 
 .week{
   font-weight:bold;
@@ -241,30 +225,80 @@ body{
 }
 
 .event-info{
-  margin-top:4px;
-  font-size:14px;
-  line-height:1.4;
+  margin-top:6px;
+  font-size:18px;
+  line-height:1.6;
   width:100%;
   overflow:hidden;
 }
 
 .event-type{
   font-weight:bold;
-  font-size:16px;
+  font-size:20px;
   color:#b00020;
 }
 
 .event-time{
   color:#004a99;
-  font-size:14px;
+  font-size:18px;
   font-weight:bold;
 }
 
 .event-place,
 .event-opponent{
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  white-space:normal;
+  overflow:visible;
+  text-overflow:unset;
+}
+
+#title{
+  font-size:28px;
+  font-weight:700;
+  margin:0 10px;
+}
+
+h2{
+  font-size:32px;
+  margin-top:60px;
+}
+
+@media (max-width:600px){
+
+  h2{
+    font-size:32px;
+  }
+
+  #title{
+    font-size:32px;
+    font-weight:bold;
+  }
+
+  .day{
+    aspect-ratio:1/2.8;
+    font-size:22px;
+    padding:10px 6px;
+  }
+
+  .event-info{
+    font-size:18px;
+    line-height:1.6;
+  }
+
+  .event-type{
+    font-size:24px;
+    font-weight:bold;
+  }
+
+  .event-time{
+    font-size:20px;
+    font-weight:bold;
+  }
+
+  .event-place,
+  .event-opponent{
+    font-size:18px;
+  }
+
 }
 
 </style>
