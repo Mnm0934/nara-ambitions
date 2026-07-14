@@ -28,7 +28,8 @@ body{
 .draw{ background:#999; color:white; }
 
 button{
-  padding:8px 14px;
+  padding:14px 28px;
+  font-size:28px;
   margin:10px;
   border:none;
   border-radius:8px;
@@ -39,16 +40,15 @@ button{
 
 @media (max-width:600px){
 
-  .scoreboard{
-    font-size:13px;
-    min-width:600px;
+  .scoreboard th,
+.scoreboard td{
+  font-size:14px;
+  padding:4px;
 }
 
-
-  .scoreboard th,
-  .scoreboard td{
-    padding:4px;
-  }
+.scoreboard th:first-child{
+  font-size:16px;
+}
 
   select{
     font-size:18px;
@@ -62,15 +62,16 @@ h2{
 
 .scoreboard{
   border-collapse:collapse;
-  margin:15px auto;
-  font-size:16px;   /* ← 大きく */
-  min-width:80%;    /* ← 横に広げる */
+  margin:20px auto;
+  font-size:20px;
+  width:auto;
 }
 
 .scoreboard th,
 .scoreboard td{
   border:1px solid #000;
-  padding:6px 10px;
+  padding:12px 14px;
+  font-size:16px;
   background:white;
   color:black;
 }
@@ -83,6 +84,7 @@ h2{
   background:#333;
   color:white;
   font-weight:bold;
+  font-size:18px;
 }
 
 .scoreboard.win{
@@ -200,36 +202,34 @@ transition:0.3s;
 }
 
 .card-header{
-  color:white;
-
-  padding:15px;
-
-  font-size:24px;
+  font-size:42px;
   font-weight:bold;
+  padding:22px;
 }
 
 .card-body{
-  padding:20px;
+  padding:10px 20px;
 }
 
 .main-score{
-  font-size:32px;
+  font-size:28px;
   font-weight:bold;
-
-  margin:15px 0;
+  margin:5px 0;
 }
 
 .game-date{
   color:#666;
-  margin:10px 0;
+  margin:8px 0;
+  font-size:26px;
+  line-height:1.1;
 }
 
 .mvp-line{
   color:#ff6600;
   font-weight:bold;
-  font-size:20px;
-
-  margin:20px 0;
+  font-size:24px;
+  margin:10px 0;
+  line-height:1.1;
 }
 
 </style>
@@ -750,11 +750,11 @@ if(game.batters?.length){
   game.batters.forEach(p=>{
 
     const point =
-      (p.hit || 0)
-      + (p.rbi || 0) * 2
-      + (p.hr || 0) * 4
-      + (p.run || 0)
-      + (p.sb || 0);
+  (p.hit || 0) * 2
+  + (p.rbi || 0) * 3
+  + (p.hr || 0) * 5
+  + (p.run || 0)
+  + (p.sb || 0) * 0.5;
 
     if(point > maxPoint){
       maxPoint = point;
@@ -787,9 +787,9 @@ html += `
   <div class="mvp-line">
     ${
       myTotal > opTotal
-        ? `🔥 MVP ${mvpName}`
+          ? `🔥 MVP 🔥<br>${mvpName}`
         : myTotal < opTotal
-          ? `⭐ 敢闘賞 ${mvpName}`
+          ? `⭐ 敢闘賞 ⭐<br>${mvpName}`
           : ``
     }
   </div>

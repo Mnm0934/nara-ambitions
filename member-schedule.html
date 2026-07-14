@@ -349,6 +349,9 @@ if(saved){
 
   if(Date.now() < user.expire){
     document.body.style.display = "block";
+
+    window.loginUser = user; // ←追加
+
   }else{
     alert("ログイン期限切れ");
     localStorage.removeItem("userLogin");
@@ -396,59 +399,45 @@ window.startApp = function(){
 <h2>📅 部員用スケジュール</h2>
 
 <button onclick="goBack()" style="
-  position:fixed;
-  top:20px;
-  left:20px;
-  padding:10px 18px;
+position:fixed;
+bottom:100px;
+right:20px;
+  padding:16px 28px;
   background:#ff9800;
   color:black;
   border:none;
   border-radius:50px;
-  font-size:16px;
+  font-size:22px;
   font-weight:bold;
   cursor:pointer;
   box-shadow:0 5px 10px rgba(0,0,0,0.4);
   z-index:1000;
+  width:260px;
 ">
-  👤 部員ページ
+  👤 部員専用ページ
 </button>
 
-
-<button onclick="goToEvent()" style="
+<button
+  id="eventRegisterBtn"
+  onclick="goToEvent()"
+  style="
   position:fixed;
   bottom:20px;
   right:20px;
-  padding:15px 20px;
+  padding:20px 30px;
   background:#d6002a;
   color:white;
   border:none;
   border-radius:50px;
-  font-size:16px;
+  font-size:22px;
   font-weight:bold;
   cursor:pointer;
   box-shadow:0 5px 15px rgba(0,0,0,0.5);
+  width:320px;
+  white-space:nowrap;
 ">
   ＋予定登録(管理者限定)
 </button>
-
-<button onclick="location.href='attendance-list.html'" style="
-  position:fixed;
-  bottom:100px;           /* 少し上に */
-  right:20px;
-  padding:18px 24px;      /* ←ここでデカく🔥 */
-  font-size:18px;         /* ←文字大きく🔥 */
-  background:#2196f3;
-  color:white;
-  border:none;
-  border-radius:40px;     /* 丸さUP */
-  font-weight:bold;
-  box-shadow:0 8px 20px rgba(0,0,0,0.6); /* 影強め */
-  cursor:pointer;
-">
-  出欠一覧
-</button>
-
-
 
 
 
@@ -764,6 +753,16 @@ function goToInput(date){
 }
 
 window.onload = function(){
+
+  const eventBtn =
+    document.getElementById("eventRegisterBtn");
+
+if(
+  !window.loginUser ||
+  window.loginUser.id !== "admin"
+){
+  eventBtn.style.display = "none";
+}
   if(window.startApp){
     startApp();
   }

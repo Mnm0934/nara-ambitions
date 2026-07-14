@@ -94,6 +94,9 @@ if(saved){
 
   if(Date.now() < user.expire){
     document.body.style.display = "block";
+
+    window.loginUser = user;
+
   }else{
     alert("ログイン期限切れ");
     localStorage.removeItem("userLogin");
@@ -118,7 +121,7 @@ if(saved){
 
 <input type="date" id="date">
 
-<select id="name" onchange="render();"></select>
+<select id="name" onchange="changeMember();"></select>
 
 <input type="text" id="comment" placeholder="コメント">
 
@@ -138,16 +141,17 @@ if(saved){
 
 <br>
 
-<button onclick="location.href='event.html'" style="background:#ff9800;">
+<button id="eventBtn" onclick="location.href='event.html'" style="background:#ff9800;">
   予定登録(監督用)
 </button>
 
 
-<button onclick="location.href='attendance-list.html'" style="
+<button onclick="goAttendanceList()" style="
   background:#2196f3;
   color:white;">
   出欠一覧
 </button>
+
 
 
 <button onclick="location.href='member-only.html'" style="background:#999;">
@@ -233,6 +237,20 @@ if(document.body.style.display === "block"){
   document.getElementById("comment").value = "";
 }
 
+window.goAttendanceList = function(){
+
+  const date =
+    document.getElementById("date").value;
+
+  if(!date){
+    location.href = "attendance-list.html";
+    return;
+  }
+
+  location.href =
+    `attendance-list.html?date=${date}`;
+}
+
 function loadMembers(){
   const select = document.getElementById("name");
 
@@ -263,7 +281,17 @@ members.forEach(m=>{
 
 
 // ✅ 自分の回答表示
+window.changeMember = function(){
+
+  render();
+
+  // カレンダー再描画
+  picker.redraw();
+
+}
+
 window.render = function(){
+
   const list = document.getElementById("list");
   list.innerHTML = "";
 
@@ -517,6 +545,15 @@ events.push({
     loadMembers();
     render();
   }
+}
+
+const eventBtn = document.getElementById("eventBtn");
+
+if(
+  !window.loginUser ||
+  window.loginUser.id !== "admin"
+){
+  eventBtn.style.display = "none";
 }
 
 // ✅ これを最後に追加
