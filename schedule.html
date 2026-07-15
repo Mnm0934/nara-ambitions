@@ -1024,8 +1024,16 @@ let currentFilter = "all";
 let events = [];
 
 async function loadEvents(){
+
+  console.log("loadEvents開始");
+  console.log(window.db);
+  console.log(window.getDocs);
+  console.log(window.collection);
+
   try{
-    const snap = await getDocs(collection(db, "events"));
+    const snap = await window.getDocs(
+  window.collection(window.db, "events")
+);
 
     console.log("Firestore OK");
 
@@ -1238,13 +1246,17 @@ function filterMatch(e, type){
   document.querySelectorAll(".filter button").forEach(btn=>{
     btn.classList.remove("active");
   });
+
   e.target.classList.add("active");
 
   currentFilter = type;
+
   renderSchedule();
 }
 
-loadEvents();
+window.addEventListener("load", () => {
+  loadEvents();
+});
 
 function goMember(){
 
