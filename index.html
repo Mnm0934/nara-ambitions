@@ -221,7 +221,7 @@ background:rgba(0,0,0,0.6);
 
 /* ===== SECTION ===== */
 section{
-  padding:80px 5%;
+  padding:10px 5%;
   background:transparent;
   scroll-margin-top:120px;
 }
@@ -324,6 +324,10 @@ background:#d6002a;
 
 #news-feature{
   scroll-margin-top:140px;
+}
+
+#recruit{
+  scroll-margin-top:150px;
 }
 
 html{
@@ -556,7 +560,7 @@ rgba(2,20,44,0.9)
 url("main.jpeg") center/cover;
 display:flex;
 flex-direction:column;
-padding:80px 5%;
+padding:10px 5%;
 }
 
 .member-hero h1{
@@ -636,7 +640,7 @@ section h2{
   position:relative;
   display:inline-block;
 
-  margin-bottom:50px;
+  margin-bottom:20px;
   padding-left:15px;
   padding-bottom:10px;
 
@@ -692,6 +696,8 @@ margin-top:10px;
   text-align:center;
   border:2px solid #d6002a;
   border-radius:50px;
+  margin-top:20px;
+  margin-bottom:0;
 }
 
 .more-btn:hover{
@@ -983,6 +989,8 @@ footer{
   display:flex;
   flex-direction:column;
   align-items:center;
+
+  padding-top:10px;
 }
 
 .recruit h2{
@@ -992,8 +1000,8 @@ footer{
 
 .recruit-box{
   max-width:950px;
-  margin:40px auto 0;   /* ←これでもOK */
-  padding:50px 40px;
+  margin:10px auto 0;   /* ←これでもOK */
+  padding:10px 60px 15px;
   color:#fff;
   border-radius:15px;
   border:1px solid rgba(255,255,255,0.15);
@@ -1017,12 +1025,15 @@ footer{
 .recruit-box h3{
   font-size:28px;
   color:#d6002a;
-  margin-bottom:20px;
+
+  margin-top:0;
+  margin-bottom:15px;
 }
+
 
 .recruit-box p{
   color:#333;
-  line-height:2.2;
+  line-height:1.6;
   font-size:15.5px;
   letter-spacing:0.5px;
 }
@@ -1097,8 +1108,8 @@ footer{
 
 .recruit-title{
   display:inline-block;
-  margin-top:20px;
-  margin-bottom:10px;
+  margin-top:10px;
+  margin-bottom:5px;
   font-weight:700;
   color:#d6002a;
   border-left:4px solid #d6002a;
@@ -1167,7 +1178,7 @@ p{
 }
 
 .recruit-box br{
-  line-height:2;
+  line-height:1;
 }
 
 /* ===== 白BOX強調シャドウ ===== */
@@ -1364,11 +1375,15 @@ header.small .title img{
 .slide-text h2{
   font-size:clamp(30px, 8vw, 90px);
   letter-spacing:clamp(3px, 1vw, 10px);
+  margin:0;
+  line-height:1;
 }
 
 .slide-text p{
   font-size:clamp(14px, 2vw, 22px);
-  margin-top:10px;
+  margin-top:2px;
+  margin-bottom:0;
+  line-height:1.1;
   letter-spacing:clamp(1px, 0.5vw, 2px);
 }
 
@@ -1479,7 +1494,7 @@ body{
 /* ===== TOPスケジュール ===== */
 
 .schedule-preview{
-  padding:80px 5%;
+  padding:10px 5%;
 }
 
 .calendar-header{
@@ -1671,13 +1686,15 @@ loadEvents();
   </div>
 
   <nav class="nav">
-    <a href="index.html" class="active">HOME</a>
-    <a href="index.html#news-feature">NEWS</a>
-    <a href="schedule.html">スケジュール</a>
-    <a href="member.html">選手・スタッフ</a>
+  <a href="index.html">HOME</a>
+  <a href="index.html#news-feature">NEWS</a>
+  <a href="schedule.html">スケジュール</a>
+  <a href="member.html">選手・スタッフ</a>
+  <a href="index.html#recruit">RECRUIT</a>
     <a href="#" onclick="goMember()">部員専用</a>
    </nav>
 </header>
+
 
 
 
@@ -2120,11 +2137,13 @@ loadEvents();
 
 </section>
 
-<section class="recruit fade" id="recruit">
+<section class="recruit fade">
+
+  <div id="recruit-top"></div>
 
   <h2>RECRUIT</h2>
 
-  <div class="recruit-box">
+  <div class="recruit-box" id="recruit">
 
     <h3>選手募集中</h3>
 
@@ -2332,6 +2351,68 @@ window.addEventListener("resize", () => {
     document.body.style.overflow = "auto";
   }
 });
+
+const sections = [
+  {
+    id:"news-feature",
+    nav:'.nav a[href="index.html#news-feature"]'
+  },
+  {
+    id:"top-schedule",
+    nav:'.nav a[href="schedule.html"]'
+  },
+  {
+    id:"players",
+    nav:'.nav a[href="member.html"]'
+  },
+  {
+    id:"recruit",
+    nav:'.nav a[href="index.html#recruit"]'
+  }
+];
+
+function updateNavActive(){
+
+  let current = "";
+
+  sections.forEach(section => {
+
+    const el = document.getElementById(section.id);
+
+    if(!el) return;
+
+    const top = el.offsetTop - 250;
+
+    if(window.scrollY >= top){
+      current = section.nav;
+    }
+
+  });
+
+  document.querySelectorAll(".nav a")
+    .forEach(link => {
+      link.classList.remove("active");
+    });
+
+  if(current){
+
+    document
+      .querySelector(current)
+      ?.classList.add("active");
+
+  }else{
+
+    document
+      .querySelector('.nav a[href="index.html"]')
+      ?.classList.add("active");
+
+  }
+
+}
+
+window.addEventListener("scroll", updateNavActive);
+
+window.addEventListener("load", updateNavActive);
 
 let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
@@ -2566,6 +2647,42 @@ function goMember(){
     alert("IDまたはパスワードが違います");
   }
 }
+
+window.addEventListener("load", () => {
+
+  // 一旦全部消す
+  document.querySelectorAll(".nav a").forEach(link => {
+    link.classList.remove("active");
+  });
+
+  // NEWS表示
+  if(location.hash === "#news-feature"){
+
+    document
+      .querySelector('.nav a[href="index.html#news-feature"]')
+      .classList.add("active");
+
+  }
+
+  // RECRUIT表示
+  else if(location.hash === "#recruit"){
+
+    document
+      .querySelector('.nav a[href="index.html#recruit"]')
+      .classList.add("active");
+
+  }
+
+  // HOME
+  else{
+
+    document
+      .querySelector('.nav a[href="index.html"]')
+      .classList.add("active");
+
+  }
+
+});
 			
 </script>
 

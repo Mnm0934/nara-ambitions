@@ -25,13 +25,13 @@ font-weight:bold;
 
 /* ===== バナー ===== */
 .hero{
-  height:250px;
+  height:200px;
   background:url("main.jpeg") center/cover;
 
   display:flex;
   align-items:flex-end;
 
-  padding:0 5% 40px;
+  padding:0 5% 5px;
 
   box-sizing:border-box;
 
@@ -44,8 +44,8 @@ font-weight:bold;
 .category{
   display:flex;
   justify-content:center;
-  gap:20px;
-  padding:15px;
+  gap:12px;
+  padding:0 10px 5px;
   overflow-x:auto;
   flex-wrap:nowrap;
   white-space:nowrap;
@@ -65,11 +65,11 @@ font-weight:bold;
 .category button{
   white-space:nowrap;
   flex-shrink:0;
-  padding:20px 40px;
+  padding:5px 28px;
   border:1px solid #555;
   background:#02142c;
   color:white;
-  font-size:28px;
+  font-size:22px;
   font-weight:bold;
   transition:0.3s;
 }
@@ -89,13 +89,13 @@ font-weight:bold;
   display:grid;
   grid-template-columns: repeat(3, 1fr);
   gap:50px;
-  padding:50px;
+  padding:10px 50px 50px;
   max-width:1500px;
   margin:0 auto;
 }
 
 .player img{
-  height:280px;
+  height:220px;
   object-fit:cover;
   width:100%;
   border-radius:10px;
@@ -108,16 +108,14 @@ font-weight:bold;
 
 .player{
   width:100%;
-  background:#0a1f3f;
   padding:25px;
+  box-sizing:border-box;
+
+  background:#0a1f3f;
   border-radius:15px;
   display:block;
   text-decoration:none;
   color:white;
-  box-shadow:0 10px 30px rgba(0,0,0,0.6);
-  transition:0.3s;
-  cursor:pointer;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .player{
@@ -153,16 +151,18 @@ font-weight:bold;
 }
 
 .player h3{
-  font-size:40px;
+  font-size:32px;
   margin-top:15px;
+  margin-bottom:5px;
   font-weight:bold;
- letter-spacing:1px;
+  letter-spacing:1px;
 }
 
 .player p{
-  font-size:30px;
+  font-size:22px;
   display:flex;
   align-items:center;
+  margin:0;
 }
 
 .player p::before{
@@ -172,6 +172,27 @@ font-weight:bold;
   height:18px;
   background:#d6002a;
   margin-right:10px;
+}
+
+/* PC半分表示対策 */
+@media (max-width:1400px){
+
+  .player{
+    padding:15px;
+  }
+
+  .player img{
+    height:170px;
+  }
+
+  .player h3{
+    font-size:24px;
+  }
+
+  .player p{
+    font-size:18px;
+  }
+
 }
 
 
@@ -266,7 +287,7 @@ h2{
   color:#d6002a;
   border-left:4px solid #d6002a;
   padding-left:10px;
-  margin:40px 30px 10px;
+  margin:10px 30px 10px;
   font-weight:bold;
 }
 
@@ -299,14 +320,14 @@ h2{
   pointer-events:none;
   transform:translate(-50%, -50%) scale(0.9);
   will-change: transform;
-  width:90%;
-  max-width:600px;
+  width:80%;
+  max-width:500px;
   transition: all 0.25s ease;
   position:fixed;
   top:50%;
   left:50%;
   background:#0a1f3f;
-  padding:30px;
+  padding:20px;
   z-index:1000;
   border-radius:15px;
   box-shadow:0 20px 60px rgba(0,0,0,0.8);
@@ -365,21 +386,21 @@ h2{
   }
 
   #detailNumber{
-    font-size:20px;
-  }
+  font-size:24px;
+}
 
-  #detailPosition{
-    font-size:18px;
-  }
+#detailPosition{
+  font-size:22px;
+}
 
   #detailBox p{
-  font-size:16px;
-  line-height:1.6;
+  font-size:18px;
+  line-height:1.4;
 }
 
   #detailBox img{
-    max-width:250px;
-  }
+  max-width:300px;
+}
 
   #detailBox{
     top:auto;
@@ -660,13 +681,15 @@ footer{
   position:fixed;
   top:0;
   left:0;
-  width:100%;
-  height:100%;
+  width:100vw;
+  height:100vh;
   background:rgba(0,0,0,0.6);
   opacity:0;
   pointer-events:none;
   transition:0.3s;
-  backdrop-filter: blur(5px);
+  backdrop-filter:blur(5px);
+
+  z-index:999; /* 追加 */
 }
 
 .overlay.active{
@@ -693,8 +716,8 @@ footer{
 }
 
 #detailName{
-  font-size:44px;
-  margin:5px 0 20px;
+  font-size:34px;
+  margin:0 0 15px;
 }
 
 #detailNumber{
@@ -713,7 +736,7 @@ footer{
   max-width:400px;   /* ←ここが一番重要 */
   height:auto;
   display:block;
-  margin:0 auto 20px;
+  margin:0 auto 5px;
   border-radius:10px;
   box-shadow:0 10px 30px rgba(0,0,0,0.5);
 }
@@ -721,28 +744,16 @@ footer{
 /* 詳細テキスト */
 #detailBox p{
   font-size:24px;
-  line-height:1.3;
-  margin:8px 0;
+  line-height:1.1;
+  margin:0;
 }
-
-/* ボタン */
-#detailBox button{
-  margin-top:30px;
-  padding:12px 25px;
-  font-size:16px;
-  background:#d6002a;
-  color:white;
-  border:none;
-  cursor:pointer;
-}
-
 .search-box{
   text-align:center;
   position:relative;
   top:auto;
   z-index:250;
   background:#02142c;
-  padding:5px 0;
+  padding:0;
 }
 
 .search-box input{
@@ -763,13 +774,13 @@ footer{
   position:relative;
   display:inline-block;
   width:90%;
-  max-width:600px;
+  max-width:400px;
   box-sizing:border-box;
 }
 
 .search-wrapper input{
   width:100%;
-  padding:18px 25px 18px 55px;
+  padding:12px 20px 12px 45px;
   border-radius:40px;
   border:none;
   font-size:20px;
@@ -935,13 +946,13 @@ header.small .title img{
 @media (max-width:768px){
 
   .hero{
-    height:180px;
+    height:150px;
     font-size:50px;
-    padding:0 5% 30px;
+    padding:0 5% 10px;
   }
 
   .category button{
-    font-size:12px;
+    font-size:20px;
     padding:8px;
   }
 
@@ -957,6 +968,15 @@ header.small .title img{
     font-size:12px;
   }
 
+}
+
+.close{
+  position:absolute;
+  top:10px;
+  right:20px;
+  font-size:30px;
+  cursor:pointer;
+  z-index:1001; /* 追加 */
 }
 
 </style>
@@ -980,13 +1000,15 @@ header.small .title img{
   </div>
 
   <nav class="nav">
-<a href="index.html">HOME</a>
-<a href="index.html#news-feature">NEWS</a>
-    <a href="schedule.html">スケジュール</a>
-<a href="member.html" class="active">選手・スタッフ</a>
-<a href="#" onclick="goMember(); return false;">部員専用</a>
+  <a href="index.html">HOME</a>
+  <a href="index.html#news-feature">NEWS</a>
+  <a href="schedule.html">スケジュール</a>
+  <a href="member.html" class="active">選手・スタッフ</a>
+  <a href="index.html#recruit">RECRUIT</a>
+    <a href="#" onclick="goMember()">部員専用</a>
    </nav>
 </header>
+
 
 
 <div class="overlay"></div>
@@ -1743,8 +1765,6 @@ window.addEventListener("scroll", () => {
 <p><strong>出身校：</strong><span id="detailSchool"></span></p>
 <p><strong>投打：</strong><span id="detailHand"></span></p>
 
-<button onclick="closeDetail()">閉じる</button>
-
 </div>
 
 
@@ -1768,6 +1788,21 @@ function closeDetail(){
   document.getElementById("detailBox").classList.remove("active");
   document.querySelector(".overlay").classList.remove("active");
 }
+
+document.addEventListener("click", (e) => {
+
+  const detailBox = document.getElementById("detailBox");
+
+  if(
+    detailBox.classList.contains("active") &&
+    !detailBox.contains(e.target) &&
+    !e.target.closest(".player") &&
+    !e.target.closest(".close")
+  ){
+    closeDetail();
+  }
+
+});
 
 document.querySelector(".overlay").addEventListener("click", closeDetail);
 
