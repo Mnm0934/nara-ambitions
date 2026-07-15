@@ -182,15 +182,42 @@ font-weight:bold;
 }
 
 @media (max-width:600px){
-  .player img{
-    height:200px;
+
+  .hero{
+    height:70px;
+    font-size:24px;
+    padding:0 5% 10px;
   }
+
 }
 
 @media (max-width:600px){
   .players{
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3,1fr);
+    gap:15px;
+    padding:15px;
   }
+}
+
+@media (max-width:600px){
+
+  .player{
+    padding:8px;
+  }
+
+  .player img{
+    height:90px;
+  }
+
+  .player h3{
+  font-size:12px;
+  margin-top:5px;
+}
+
+  .player p{
+    font-size:12px;
+  }
+
 }
 
 @media (max-width:600px){
@@ -202,14 +229,28 @@ font-weight:bold;
 }
 }
 
+@media (max-width:600px){
+
+  .search-wrapper input{
+    height:45px;
+    font-size:14px;
+    padding:0 20px 0 45px;
+  }
+
+  .icon{
+    font-size:16px;
+  }
+
+}
+
 
 @media (max-width:600px){
 .player h3 .number{
   flex-shrink:0;   /* ←これ超重要🔥 */
 }
   .player p{
-    font-size:16px;
-  }
+  font-size:12px;
+}
 }
 
 html{
@@ -226,6 +267,14 @@ h2{
   font-weight:bold;
 }
 
+@media (max-width:600px){
+
+  h2{
+    font-size:24px;
+    margin:20px 15px;
+  }
+
+}
 
 h2{
   opacity:0;
@@ -305,15 +354,6 @@ h2{
   font-size:16px;
   padding:8px 16px;
 }
-
-
-
-  .hero{
-    height:120px;
-    font-size:40px;
-    padding-left:5%;
-  }
-
   /* ✅ ここから追加 */
   #detailName{
     font-size:26px;
@@ -853,10 +893,9 @@ header.small .title img{
 
 @media (max-width:1024px){
   body{
-    padding-top:100px;
+    padding-top:80px;
   }
 }
-
 
 </style>
 
