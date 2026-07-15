@@ -21,7 +21,7 @@
 /* ===== BASE ===== */
 body{
   margin:0;
-  padding-top:140px;
+  padding-top:230px;
   font-family:'Noto Sans JP', 'Oswald', sans-serif;
   background:#02142c;
   color:white;
@@ -2410,17 +2410,32 @@ if(event){
 
   let label = "📅予定";
 
-  if(event.type === "公式戦" || event.type === "OP戦") label = "⚾試合";
+  if(event.type === "公式戦" || event.type === "OP戦") {
+
+  label = `
+  ⚾試合
+  <div style="
+    font-size:11px;
+    margin-top:4px;
+  ">
+    ${event.opponent ? `vs ${event.opponent}` : ""}
+  </div>
+`;
+
+}
   else if(event.type === "練習") label = "🏃練習";
   else if(event.type === "飲み会") label = "🍺飲み会";
 
-  calendarEl.innerHTML += `
-    <div class="${className}">
-      ${d}
-      <span>${label}</span>
-    </div>
-  `;
-
+calendarEl.innerHTML += `
+<div
+  class="${className}"
+  onclick="showEventByDate('${fullDate}')"
+  style="cursor:pointer;"
+>
+  ${d}
+  <span>${label}</span>
+</div>
+`;
 }else{
 
   calendarEl.innerHTML += `
@@ -2447,6 +2462,94 @@ function changeMonth(step){
   }
 
   renderCalendar();
+}
+
+function showEventByDate(date){
+
+  const event =
+    window.events.find(e => e.date === date);
+
+  if(!event) return;
+
+  showEvent(event);
+}
+
+function showEvent(event){
+
+  document.getElementById("eventDetail").innerHTML = `
+  <h2 style="
+    font-size:34px;
+    margin-bottom:20px;
+    color:#fff;
+  ">
+    ⚾ 試合情報
+  </h2>
+
+  <p style="
+  font-size:22px;
+  font-weight:700;
+  margin:14px 0;
+">
+    📅 ${event.date}
+  </p>
+
+  <p style="
+  font-size:22px;
+  font-weight:700;
+  margin:14px 0;
+">
+    🏆 ${event.type || "-"}
+  </p>
+
+  <p style="
+  font-size:22px;
+  font-weight:700;
+  margin:14px 0;
+">
+    🕒 ${event.time || "-"}
+  </p>
+
+  <p style="
+  font-size:22px;
+  font-weight:700;
+  margin:14px 0;
+">
+    🤝 ${event.opponent ? `vs ${event.opponent}` : "-"}
+  </p>
+
+  <p style="
+  font-size:22px;
+  font-weight:700;
+  margin:14px 0;
+">
+    📍 ${event.place || "-"}
+  </p>
+
+  ${
+    event.note
+    ? `<p style="font-size:22px;">${event.note}</p>`
+    : ""
+  }
+`;
+
+  document.getElementById("eventModal")
+    .style.display = "flex";
+}
+
+function closeEventModal(){
+  document.getElementById("eventModal")
+    .style.display = "none";
+}
+
+window.onclick = function(e){
+
+  const modal =
+    document.getElementById("eventModal");
+
+  if(e.target === modal){
+    closeEventModal();
+  }
+
 }
 
 function goMember(){
@@ -2487,6 +2590,46 @@ function goMember(){
 }
 			
 </script>
+
+<div id="eventModal" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+z-index:9999;
+justify-content:center;
+align-items:center;
+">
+
+  <div style="
+  background:#0a1f3f;
+  color:white;
+  padding:25px;
+  border-radius:12px;
+  width:90%;
+  max-width:500px;
+  text-align:center;
+  ">
+
+    <div id="eventDetail"></div>
+
+    <button onclick="closeEventModal()" style="
+      margin-top:20px;
+      padding:10px 20px;
+      background:#d6002a;
+      color:white;
+      border:none;
+      border-radius:8px;
+    ">
+      閉じる
+    </button>
+
+  </div>
+
+</div>
 </body>
 </html>
 

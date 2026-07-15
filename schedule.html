@@ -1032,11 +1032,19 @@ async function loadEvents(){
     events = [];
 
     snap.forEach(docSnap => {
-      events.push({
-        id: docSnap.id,
-        ...docSnap.data()
-      });
-    });
+
+  console.log(
+    "取得データ",
+    docSnap.id,
+    docSnap.data()
+  );
+
+  events.push({
+    id: docSnap.id,
+    ...docSnap.data()
+  });
+
+});
 
     console.log(events);
 
