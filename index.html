@@ -374,21 +374,18 @@ transform:translateX(5px);
     display:flex;
     flex-direction:row;
     flex-wrap:nowrap;
-
-    overflow-x:visible;  /*変更*/
-
+    overflow-x:visible;
+    gap:10px;
     width:100%;
-    gap:10px;            /*20→10*/
-
-    justify-content:center; /*変更*/
-
-    padding:10px 5px;    /*変更*/
+    justify-content:center;
+    white-space:nowrap;
+    padding:10px 5px;
     text-align:center;
   }
 
   .nav a{
-    padding:8px 4px;
-    font-size:12px;
+    padding:8px 2px;
+    font-size:11px;
     letter-spacing:0;
     border-top:1px solid #333;
   }
@@ -398,23 +395,22 @@ transform:translateX(5px);
   }
 
   .nav.open{
-  display:flex;
-  flex-direction:column;
-  flex-wrap:nowrap;
+    display:flex;
+    flex-direction:column;
+    flex-wrap:nowrap;
+    overflow-x:hidden;
+    overflow-y:auto;
+    width:100%;
+    gap:0;
+    padding-right:0;
+  }
 
-  overflow-x:hidden;
-  overflow-y:auto;
-
-  width:100%;
-  gap:0;
-
-  padding-right:0;
-}
-
-.nav.open a{
-  width:100%;
-  box-sizing:border-box;
-}
+  .nav.open a{
+    padding:15px;
+    border-top:1px solid #333;
+    width:100%;
+    box-sizing:border-box;
+  }
 
   .title{
     height:80px;
@@ -1900,7 +1896,7 @@ loadEvents();
     </div>
 
     <div class="swiper-slide">
-      <a href="member.html?no=1" class="player">
+      <a href="member.html?no=13" class="player">
         <div class="img-box">
           <img src="junbi.png">
         </div>
@@ -2020,7 +2016,7 @@ loadEvents();
     </div>
 
     <div class="swiper-slide">
-      <a href="member.html?no=31" class="player">
+      <a href="member.html?no=36" class="player">
         <div class="img-box">
           <img src="junbi.png">
         </div>
@@ -2080,7 +2076,7 @@ loadEvents();
     </div>
 
     <div class="swiper-slide">
-      <a href="member.html?no=51" class="player">
+      <a href="member.html?no=50" class="player">
         <div class="img-box">
           <img src="junbi.png">
         </div>

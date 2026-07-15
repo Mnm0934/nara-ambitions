@@ -909,6 +909,29 @@ header.small .title img{
 
 }
 
+.match.focus{
+  animation: flash 1s ease;
+}
+
+@keyframes flash{
+
+  0%{
+    transform:scale(1);
+  }
+
+  50%{
+    transform:scale(1.03);
+    box-shadow:
+      0 0 30px #fff,
+      0 0 40px #d6002a;
+  }
+
+  100%{
+    transform:scale(1);
+  }
+
+}
+
 </style>
 </head>
 
@@ -1136,10 +1159,12 @@ if(event){
   else if(event.type === "飲み会") label = "🍺飲み会";
 
   calendarEl.innerHTML += `
-    <div class="${className}">
-      ${d}
-      <span>${label}</span>
-    </div>
+    <div
+  class="${className}"
+  onclick="goMatch('${fullDate}')">
+  ${d}
+  <span>${label}</span>
+</div>
   `;
 
 }else{
@@ -1151,6 +1176,26 @@ if(event){
   `;
 }
   }
+}
+
+function goMatch(date){
+
+  const target =
+    document.getElementById(`match-${date}`);
+
+  if(!target) return;
+
+  target.scrollIntoView({
+    behavior:"smooth",
+    block:"center"
+  });
+
+  target.classList.add("focus");
+
+  setTimeout(()=>{
+    target.classList.remove("focus");
+  },1000);
+
 }
 
 /* ===== 月変更 ===== */
@@ -1222,7 +1267,9 @@ if(e.result){
 }
 
 box.innerHTML += `
-  <div class="match ${isFinished ? "finished" : ""} ${matchClass}">
+  <div
+    id="match-${e.date}"
+    class="match ${isFinished ? "finished" : ""} ${matchClass}">
     
     ${badgeHTML}
 
