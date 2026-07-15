@@ -232,14 +232,15 @@ font-weight:bold;
 @media (max-width:600px){
 
   .search-wrapper input{
-    height:45px;
-    font-size:14px;
-    padding:0 20px 0 45px;
-  }
+  height:38px;
+  font-size:13px;
+  padding:0 15px 0 35px;
+}
 
   .icon{
-    font-size:16px;
-  }
+  font-size:14px;
+  left:12px;
+}
 
 }
 
@@ -342,17 +343,19 @@ h2{
 
 @media (max-width:600px){
   .category{
-    overflow-x:auto;
     white-space:nowrap;
     flex-wrap:nowrap;
     justify-content:flex-start;
-    padding:20px;
-    gap:10px;
-  }
+    padding:10px 5px;
+    gap:5px;
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    overflow:visible;
+}
 
   .category button{
-  font-size:16px;
-  padding:8px 16px;
+  font-size:14px;
+  padding:6px 10px;
 }
   /* ✅ ここから追加 */
   #detailName{
@@ -737,7 +740,7 @@ footer{
   top:auto;
   z-index:250;
   background:#02142c;
-  padding:20px 0;
+  padding:8px 0;
 }
 
 .search-box input{
