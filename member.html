@@ -175,9 +175,11 @@ font-weight:bold;
 }
 
 
-@media (max-width:900px){
+@media (max-width:1024px){
   .players{
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    gap:20px;
+    padding:20px;
   }
 }
 
@@ -193,9 +195,9 @@ font-weight:bold;
 
 @media (max-width:600px){
   .players{
-    grid-template-columns: repeat(3,1fr);
-    gap:15px;
-    padding:15px;
+    grid-template-columns: repeat(2,1fr);
+    gap:12px;
+    padding:12px;
   }
 }
 
@@ -899,7 +901,7 @@ header.small .title img{
 
 @media (max-width:1024px){
   body{
-    padding-top:80px;
+    padding-top:100px;
   }
 }
 
@@ -918,6 +920,41 @@ header.small .title img{
     font-size:13px;
     padding:0 15px 0 35px;
     box-sizing:border-box;
+  }
+
+}
+
+@media (max-width:600px){
+
+  .filter-area{
+    top:120px;
+  }
+
+}
+
+@media (max-width:768px){
+
+  .hero{
+    height:180px;
+    font-size:50px;
+    padding:0 5% 30px;
+  }
+
+  .category button{
+    font-size:12px;
+    padding:8px;
+  }
+
+  .player img{
+    height:120px;
+  }
+
+  .player h3{
+    font-size:14px;
+  }
+
+  .player p{
+    font-size:12px;
   }
 
 }
