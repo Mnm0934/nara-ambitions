@@ -532,6 +532,7 @@ footer{
     position:absolute;
     right:20px;
     top:20px;
+    position:absolute;
     z-index:1000;
   }
 
@@ -539,24 +540,21 @@ footer{
     display:flex;
     flex-direction:row;
     flex-wrap:nowrap;
-
     overflow-x:visible;
-
-    width:100%;
     gap:10px;
-
+    width:100%;
     justify-content:center;
-
+    white-space:nowrap;
     padding:10px 5px;
     text-align:center;
   }
 
-.nav a{
-  padding:8px 4px;
-  font-size:12px;
-  letter-spacing:0;
-  border-top:1px solid #333;
-}
+  .nav a{
+    padding:8px 2px;
+    font-size:11px;
+    letter-spacing:0;
+    border-top:1px solid #333;
+  }
 
   .nav::-webkit-scrollbar{
     display:none;
@@ -566,17 +564,16 @@ footer{
     display:flex;
     flex-direction:column;
     flex-wrap:nowrap;
-
     overflow-x:hidden;
     overflow-y:auto;
-
     width:100%;
     gap:0;
-
     padding-right:0;
   }
 
   .nav.open a{
+    padding:15px;
+    border-top:1px solid #333;
     width:100%;
     box-sizing:border-box;
   }
@@ -588,7 +585,10 @@ footer{
   .title img{
     height:50px;
   }
+
 }
+
+
 
 .menu-btn span{
   transition:0.3s;
