@@ -8,7 +8,7 @@
 <style>
 body{
   margin:0;
-  padding-top:230px;
+  padding-top:140px;
   font-family:'Noto Sans JP', 'Oswald', sans-serif;
   background:#02142c;
   color:white;
@@ -24,7 +24,7 @@ font-weight:bold;
 
 /* ===== バナー ===== */
 .hero{
-  height:200px;
+  height:120px;
   background:url("main.jpeg") center/cover;
 
   display:flex;
@@ -38,6 +38,8 @@ font-weight:bold;
   font-size:64px;
   font-weight:bold;
 }
+
+
 
 /* ===== カテゴリ ===== */
 .category{
@@ -812,8 +814,8 @@ footer{
 
 .filter-area{
   position:sticky;
-  top:230px;
-  z-index:300;
+  top:128px;
+  z-index:998;
   background:#02142c;
 }
 
@@ -913,8 +915,15 @@ header.small .title img{
 
 @media (max-width:1024px){
   body{
-    padding-top:100px;
+    padding-top:110px;
   }
+}
+@media (max-width:1024px){
+
+  .filter-area{
+    top:100px;
+  }
+
 }
 
 @media (max-width:600px){
@@ -947,13 +956,16 @@ header.small .title img{
 @media (max-width:768px){
 
   .hero{
-    height:150px;
+    height:auto;
+    min-height:0;
     font-size:50px;
-    padding:0 5% 10px;
+    line-height:1;
+
+    padding:0 5% 0;
   }
 
   .category button{
-    font-size:20px;
+    font-size:15px;
     padding:8px;
   }
 
@@ -968,9 +980,7 @@ header.small .title img{
   .player p{
     font-size:12px;
   }
-
 }
-
 .close{
   position:absolute;
   top:10px;
