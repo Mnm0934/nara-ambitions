@@ -226,6 +226,10 @@ section{
   scroll-margin-top:120px;
 }
 
+#recruit{
+  scroll-margin-top:200px;
+}
+
 .fade{
 opacity:0;
 transform:translateY(50px);
@@ -324,10 +328,6 @@ background:#d6002a;
 
 #news-feature{
   scroll-margin-top:140px;
-}
-
-#recruit{
-  scroll-margin-top:150px;
 }
 
 html{
@@ -996,6 +996,7 @@ footer{
 .recruit h2{
   text-align:left;
   width:100%;
+  margin-top:0;
 }
 
 .recruit-box{
@@ -1592,6 +1593,15 @@ body{
   visibility:hidden;
 }
 
+.recruit-catch{
+  text-align:center;
+  color:#d6002a;
+  font-weight:700;
+  font-size:22px;
+  margin-top:3px;
+  margin-bottom:0px;
+}
+
 </style>
 </head>
 
@@ -1694,6 +1704,28 @@ async function loadEvents(){
 
 renderNews();
 loadEvents();
+
+
+window.addEventListener("load", () => {
+
+  if(location.hash === "#recruit"){
+
+    const recruit =
+      document.getElementById("recruit");
+
+    setTimeout(() => {
+
+      recruit.scrollIntoView({
+        behavior: "instant",
+        block: "start"
+      });
+
+    }, 100);
+
+  }
+
+});
+
 </script>
 
 <header>
@@ -1712,7 +1744,9 @@ loadEvents();
   <a href="index.html#news-feature">NEWS</a>
   <a href="schedule.html">スケジュール</a>
   <a href="member.html">選手・スタッフ</a>
-  <a href="index.html#recruit">RECRUIT</a>
+  <a href="index.html#recruit">
+  RECRUIT
+</a>
     <a href="#" onclick="goMember()">部員専用</a>
    </nav>
 </header>
@@ -2155,17 +2189,17 @@ loadEvents();
 </div>
 
 
-<a href="member.html" class="more-btn">VIEW MORE</a>
+<a href="member.html" class="more-btn">
+  VIEW MORE
+</a>
 
 </section>
 
 <section class="recruit fade">
 
-  <div id="recruit-top"></div>
+  <h2 id="recruit">RECRUIT</h2>
 
-  <h2>RECRUIT</h2>
-
-  <div class="recruit-box" id="recruit">
+  <div class="recruit-box">
 
     <h3>選手募集中</h3>
 
@@ -2185,17 +2219,20 @@ loadEvents();
 
       ※体験・見学も随時受け付けています。<br>
       チームの雰囲気を実際にご覧いただけます。<br>
-      応募の際は、氏名・年齢・ポジション・球歴等をご記入の上ご連絡ください。<br><br>
+<p>
+応募の際は、氏名・年齢・ポジション・球歴等をご記入の上ご連絡ください。
+</p>
 
-      ＼まずは見学だけでもOKです！／
-    </p>
+<p class="recruit-catch">
+  ＼まずは見学だけでもOKです！／
+</p>
 
 <p style="
-  margin-top:30px;
+  margin-top:3px;
   font-weight:700;
   text-align:center;
   color:#d6002a;
-  font-size:18px;
+  font-size:22px;
 ">
   お好きな方法でご応募ください
 </p>
@@ -2724,6 +2761,8 @@ window.addEventListener("load", () => {
   }
 
 });
+
+
 			
 </script>
 
