@@ -88,7 +88,8 @@ h2{
 }
 
 .next-match p{
-  margin:3px 0;
+  margin:0;
+  line-height:1.1;
 }
 
 .next-match .date{
@@ -118,12 +119,42 @@ h2{
   font-size:12px;
 }
 
+.next-date{
+  font-size:26px;
+  font-weight:700;
+  letter-spacing:2px;
+  margin:0;
+}
+
+.next-opponent{
+  font-size:32px;
+  font-weight:900;
+  margin:5px 0;
+  text-align:center;
+  line-height:1;
+}
+
+.next-place{
+  font-size:18px;
+  margin:0;
+  line-height:1;
+}
+
+.next-time{
+  font-size:22px;
+  font-weight:700;
+  margin:0;
+  line-height:1;
+}
+
 .match p{
-  margin:2px 0;
+  margin:0;
+  line-height:1.1;
 }
 
 .match .date{
-  margin-top:0;
+  margin-bottom:2px;
+  line-height:1;
   color:#fff;
   font-size:18px;
   font-weight:700;
@@ -137,16 +168,24 @@ h2{
 }
 
 .match .teams{
-  font-size:22px;
+  font-size:32px;
+  font-weight:900;
+  text-align:center;
+  margin:2px 0;
+  line-height:1;
 }
 
 .match .place{
-  font-size:12px;
-  color:#eee;
+  font-size:16px;
+  margin-top:2px;
+  line-height:1.1;
 }
 
 .match .time{
-  margin:6px 0;
+  font-size:20px;
+  font-weight:700;
+  margin-top:0;
+  line-height:1.1;
 }
 
 .match:hover{
@@ -170,6 +209,23 @@ h2{
   font-weight:700;
   margin:10px 0;
   letter-spacing:2px;
+}
+
+.event-type{
+  width:fit-content;
+  margin:0 auto 2px;
+
+  background:#000;
+  color:#fff;
+
+  padding:6px 16px;
+
+  border-radius:999px;
+
+  font-size:13px;
+  font-weight:700;
+
+  letter-spacing:1px;
 }
 
 /* 場所 */
@@ -910,6 +966,32 @@ header.small .title img{
 
 }
 
+@media(max-width:768px){
+
+  .next-match{
+    padding:12px 15px;
+  }
+
+  .next-date{
+    font-size:22px;
+    text-align:center;
+  }
+
+  .next-opponent{
+    font-size:32px;
+    margin:20px 0;
+  }
+
+  .next-place{
+    font-size:16px;
+  }
+
+  .next-time{
+    font-size:20px;
+  }
+
+}
+
 .match.focus{
   animation: flash 1s ease;
 }
@@ -1104,15 +1186,26 @@ function renderNext(){
     .find(e => new Date(e.date) >= today);
 
   if(next){
-    nextBox.innerHTML = `
-      <p class="date">${next.date}</p>
-      <p class="teams">
-        奈良アンビションズ <span class="vs">vs</span> ${next.opponent || ""}
-      </p>
-      <p class="place">${next.place || ""}</p>
-      <p class="time">${next.time || ""}</p>
-    `;
-  }
+
+  const displayDate =
+    new Date(next.date).toLocaleDateString("ja-JP");
+
+  nextBox.innerHTML = `
+  <p class="next-date">${displayDate}</p>
+
+  <p class="next-opponent">
+    vs ${next.opponent || ""}
+  </p>
+
+  <p class="next-place">
+    📍 ${next.place || ""}
+  </p>
+
+  <p class="next-time">
+    🕒 ${next.time || ""}
+  </p>
+`;
+}
 }
 
 
@@ -1232,9 +1325,12 @@ function renderSchedule(){
 
   sorted.forEach(e => {
 
-    if(!e.public) return;
+  if(!e.public) return;
 
-const date = new Date(e.date);
+  const date = new Date(e.date);
+
+  const displayDate =
+    new Date(e.date).toLocaleDateString("ja-JP");
   const isFinished = date < today;
 
   // ✅ フィルタ
@@ -1276,16 +1372,27 @@ box.innerHTML += `
     
     ${badgeHTML}
 
-    <p class="date">${e.date}</p>
+<p class="date">
+  ${displayDate}
+</p>
 
-    <p class="teams">
-      ${e.type} vs ${e.opponent || ""}
-    </p>
+<p class="teams">
+  vs ${e.opponent || ""}
+</p>
 
-    ${scoreHTML}
+<p class="event-type">
+  ${e.type}
+</p>
 
-    <p class="place">${e.place || ""}</p>
-    <p class="time">${e.time || ""}</p>
+${scoreHTML}
+
+<p class="place">
+  📍 ${e.place || ""}
+</p>
+
+<p class="time">
+  🕒 ${e.time || ""}
+</p>
   
   </div>
 `;

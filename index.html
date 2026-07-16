@@ -227,13 +227,12 @@ section{
 }
 
 #recruit{
-  scroll-margin-top:200px;
+  scroll-margin-top:150px;
 }
 
 .fade{
-opacity:0;
-transform:translateY(50px);
-transition:1s;
+  opacity:0;
+  transition:1s;
 }
 
 .fade.active{
@@ -1705,27 +1704,6 @@ async function loadEvents(){
 renderNews();
 loadEvents();
 
-
-window.addEventListener("load", () => {
-
-  if(location.hash === "#recruit"){
-
-    const recruit =
-      document.getElementById("recruit");
-
-    setTimeout(() => {
-
-      recruit.scrollIntoView({
-        behavior: "instant",
-        block: "start"
-      });
-
-    }, 100);
-
-  }
-
-});
-
 </script>
 
 <header>
@@ -1747,7 +1725,7 @@ window.addEventListener("load", () => {
   <a href="index.html#recruit">
   RECRUIT
 </a>
-    <a href="#" onclick="goMember()">部員専用</a>
+    <a href="#" class="member-link" onclick="goMember()">部員専用</a>
    </nav>
 </header>
 
@@ -2195,9 +2173,9 @@ window.addEventListener("load", () => {
 
 </section>
 
-<section class="recruit fade" id="recruit-section">
+<section class="recruit fade" id="recruit">
 
-  <h2 id="recruit">RECRUIT</h2>
+  <h2>RECRUIT</h2>
 
   <div class="recruit-box">
 
@@ -2425,9 +2403,13 @@ const sections = [
     nav:'.nav a[href="member.html"]'
   },
   {
-    id:"recruit-section",
+    id:"recruit",
     nav:'.nav a[href="index.html#recruit"]'
-  }
+  },
+ {
+  id:"member",
+  nav:'.member-link'
+}
 ];
 
 function updateNavActive(){
@@ -2761,7 +2743,20 @@ window.addEventListener("load", () => {
   }
 
 });
+window.addEventListener("load", () => {
 
+  if(location.hash === "#recruit"){
+
+    setTimeout(() => {
+
+      document.getElementById("recruit")
+      ?.scrollIntoView();
+
+    },500);
+
+  }
+
+});
 
 			
 </script>

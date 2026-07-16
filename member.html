@@ -365,21 +365,21 @@ h2{
 }
 
 @media (max-width:600px){
+
   .category{
-    white-space:nowrap;
-    flex-wrap:nowrap;
-    justify-content:flex-start;
-    padding:10px 5px;
+    display:flex;
+    justify-content:center;
     gap:5px;
-    display:grid;
-    grid-template-columns:repeat(6,1fr);
-    overflow:visible;
-}
+    padding:10px 5px;
+    overflow:hidden;
+  }
 
   .category button{
-  font-size:14px;
-  padding:6px 10px;
-}
+    flex:1;
+    min-width:0;
+    font-size:11px;
+    padding:8px 2px;
+  }
   /* ✅ ここから追加 */
   #detailName{
     font-size:26px;
