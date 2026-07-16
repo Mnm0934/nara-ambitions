@@ -1550,6 +1550,28 @@ body{
   text-align:center;
 }
 
+.day span{
+  display:block;
+  margin-top:4px;
+  font-size:12px;
+}
+
+@media (max-width:768px){
+
+  .day{
+    min-height:55px;
+    padding:4px;
+    font-size:14px;
+  }
+
+  .day span{
+    font-size:20px;
+    margin-top:2px;
+    line-height:1;
+  }
+
+}
+
 .match-day{
   background:#ffd6e0;
   color:#000;
@@ -2381,33 +2403,28 @@ function updateNavActive(){
 
     if(!el) return;
 
-    const top = el.offsetTop - 250;
+    const rect = el.getBoundingClientRect();
 
-    if(window.scrollY >= top){
+    if(
+      rect.top <= window.innerHeight * 0.4 &&
+      rect.bottom >= window.innerHeight * 0.4
+    ){
       current = section.nav;
     }
 
   });
 
-  document.querySelectorAll(".nav a")
-    .forEach(link => {
-      link.classList.remove("active");
-    });
+  document.querySelectorAll(".nav a").forEach(link => {
+    link.classList.remove("active");
+  });
 
   if(current){
-
-    document
-      .querySelector(current)
-      ?.classList.add("active");
-
+    document.querySelector(current)?.classList.add("active");
   }else{
-
     document
       .querySelector('.nav a[href="index.html"]')
       ?.classList.add("active");
-
   }
-
 }
 
 window.addEventListener("scroll", updateNavActive);
@@ -2469,21 +2486,45 @@ if(event){
 
   let label = "📅予定";
 
-  if(event.type === "公式戦" || event.type === "OP戦") {
+  if(window.innerWidth <= 768){
 
-  label = `
-  ⚾試合
-  <div style="
-    font-size:11px;
-    margin-top:4px;
-  ">
-    ${event.opponent ? `vs ${event.opponent}` : ""}
-  </div>
-`;
+  if(event.type === "公式戦" || event.type === "OP戦"){
+    label = "⚾";
+  }
+
+  else if(event.type === "練習"){
+    label = "🏃";
+  }
+
+  else if(event.type === "飲み会"){
+    label = "🍺";
+  }
+
+}else{
+
+  if(event.type === "公式戦" || event.type === "OP戦"){
+
+    label = `
+      ⚾試合
+      <div style="
+        font-size:11px;
+        margin-top:4px;
+      ">
+        ${event.opponent ? `vs ${event.opponent}` : ""}
+      </div>
+    `;
+
+  }
+
+  else if(event.type === "練習"){
+    label = "🏃練習";
+  }
+
+  else if(event.type === "飲み会"){
+    label = "🍺飲み会";
+  }
 
 }
-  else if(event.type === "練習") label = "🏃練習";
-  else if(event.type === "飲み会") label = "🍺飲み会";
 
 calendarEl.innerHTML += `
 <div
