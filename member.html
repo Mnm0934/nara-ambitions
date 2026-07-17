@@ -406,20 +406,32 @@ h2{
 }
 
   #detailBox{
-    top:auto;
+
+    position:fixed;
+
     left:0;
-    transform:translateY(100%);
+    right:0;
+    bottom:0;
+    top:auto;
+
     width:100%;
     height:70vh;
+
+    transform:translateY(100%);
+
     border-radius:20px 20px 0 0;
+
     padding:15px;
+
     max-height:none;
+
     overflow-y:auto;
   }
 
   #detailBox.active{
     transform:translateY(0);
   }
+
   #detailBox::before{
     content:"";
     width:50px;
@@ -1801,8 +1813,11 @@ function closeDetail(){
   document.getElementById("detailBox")
     .classList.remove("active");
 
-  document.querySelector(".overlay")
-    .classList.remove("active");
+  const overlay =
+    document.querySelector(".overlay");
+
+  overlay.classList.remove("active");
+  overlay.style.pointerEvents = "none";
 }
 
 
