@@ -333,37 +333,47 @@ html{
 scroll-behavior:smooth;
 }
 
-.menu-btn{
-display:none;
-flex-direction:column;
-cursor:pointer;
-gap:5px;
-z-index:2000;
+.menu-btn span{
+  transition:0.3s;
+  transform-origin: center;
 }
 
-.menu-btn span{
-width:25px;
-height:3px;
-background:white;
-display:block;
-transition:0.3s;
+#news-feature{
+  scroll-margin-top:140px;
 }
 
 .menu-btn.active span:nth-child(1){
-transform:rotate(45deg) translate(5px,5px);
+  transform: rotate(45deg) translate(5px, 5px);
 }
 
 .menu-btn.active span:nth-child(2){
-opacity:0;
+  opacity:0;
 }
 
 .menu-btn.active span:nth-child(3){
-transform:rotate(-45deg) translate(5px,-5px);
+  transform: rotate(-45deg) translate(5px, -5px);
 }
 
-.menu-btn:hover span:nth-child(1){
-transform:translateX(5px);
+/* ハンバーガーボタン本体（←これが足りてない！） */
+.menu-btn{
+  display:none;
+  flex-direction:column;
+  cursor:pointer;
+  gap:5px;
+  z-index:2000;
+  position:absolute;
+  right:20px;
+  top:20px;
 }
+
+.menu-btn span{
+  width:25px;
+  height:3px;
+  background:white;
+  display:block;
+  transition:0.3s;
+}
+
 @media (max-width:1024px){
 
   .menu-btn{

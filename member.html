@@ -319,7 +319,7 @@ h2{
   left:50%;
   background:#0a1f3f;
   padding:20px;
-  z-index:1000;
+  z-index:4000;
   border-radius:15px;
   box-shadow:0 20px 60px rgba(0,0,0,0.8);
   overflow:auto;
@@ -368,11 +368,21 @@ h2{
   .category button{
     flex:1;
     min-width:0;
-    font-size:8px;
-    padding:7px 1px;
+
+    height:40px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-size:10px;
+
+    padding:0;
+
     letter-spacing:0;
+    box-sizing:border-box;
   }
-  /* ✅ ここから追加 */
+
   #detailName{
     font-size:20px;
   }
@@ -435,7 +445,7 @@ header{
   background:#000;
   border-bottom:2px solid #d6002a;
   box-shadow:0 5px 20px rgba(0,0,0,0.8);
-  z-index:999;
+  z-index:2000;
 }
 
 
@@ -683,7 +693,7 @@ footer{
   transition:0.3s;
   backdrop-filter:blur(5px);
 
-  z-index:999; /* 追加 */
+  z-index:3000; /* 追加 */
 }
 
 .overlay.active{
@@ -806,8 +816,24 @@ footer{
 .filter-area{
   position:sticky;
   top:128px;
-  z-index:998;
+  z-index:1999;
   background:#02142c;
+}
+
+@media (max-width:1024px){
+
+  .filter-area{
+    top:100px;
+  }
+
+}
+
+@media (max-width:600px){
+
+  .filter-area{
+    top:92px;
+  }
+
 }
 
 footer p{
@@ -909,13 +935,6 @@ header.small .title img{
     padding-top:110px;
   }
 }
-@media (max-width:1024px){
-
-  .filter-area{
-    top:100px;
-  }
-
-}
 
 @media (max-width:600px){
 
@@ -932,14 +951,6 @@ header.small .title img{
     font-size:13px;
     padding:0 15px 0 35px;
     box-sizing:border-box;
-  }
-
-}
-
-@media (max-width:600px){
-
-  .filter-area{
-    top:120px;
   }
 
 }
@@ -1764,7 +1775,9 @@ window.addEventListener("scroll", () => {
 <!-- ③ ✅ detail用JS -->
 <script>
 function openDetail(name, img, number, position, birth, school, hand){
+
   document.body.style.overflow = "hidden";
+
   document.getElementById("detailName").innerText = name;
   document.getElementById("detailImg").src = img;
   document.getElementById("detailNumber").innerText = number || '';
@@ -1772,15 +1785,26 @@ function openDetail(name, img, number, position, birth, school, hand){
   document.getElementById("detailBirth").innerText = birth || '-';
   document.getElementById("detailSchool").innerText = school || '-';
   document.getElementById("detailHand").innerText = hand || '-';
+
   document.getElementById("detailBox").classList.add("active");
-  document.querySelector(".overlay").classList.add("active");
+
+  const overlay = document.querySelector(".overlay");
+
+  overlay.classList.add("active");
+  overlay.style.pointerEvents = "auto";   /* ←追加 */
 }
 
 function closeDetail(){
+
   document.body.style.overflow = "auto";
-  document.getElementById("detailBox").classList.remove("active");
-  document.querySelector(".overlay").classList.remove("active");
+
+  document.getElementById("detailBox")
+    .classList.remove("active");
+
+  document.querySelector(".overlay")
+    .classList.remove("active");
 }
+
 
 document.addEventListener("click", (e) => {
 
