@@ -206,16 +206,6 @@ font-weight:bold;
 }
 
 @media (max-width:600px){
-
-  .hero{
-    height:70px;
-    font-size:24px;
-    padding:0 5% 10px;
-  }
-
-}
-
-@media (max-width:600px){
   .players{
     grid-template-columns: repeat(2,1fr);
     gap:12px;
@@ -384,45 +374,42 @@ h2{
   }
   /* ✅ ここから追加 */
   #detailName{
-    font-size:26px;
+    font-size:20px;
   }
 
   #detailNumber{
-  font-size:24px;
+  font-size:18px;
 }
 
 #detailPosition{
-  font-size:22px;
+  font-size:18px;
 }
 
   #detailBox p{
-  font-size:18px;
+  font-size:14px;
   line-height:1.4;
 }
 
   #detailBox img{
-  max-width:300px;
+  max-width:200px;
+  margin-bottom:10px;
 }
 
   #detailBox{
     top:auto;
     left:0;
-    bottom:0;
     transform:translateY(100%);
     width:100%;
-    height:80vh;
+    height:70vh;
     border-radius:20px 20px 0 0;
-    padding:20px;
+    padding:15px;
     max-height:none;
     overflow-y:auto;
   }
 
-#detailBox.active{
-  opacity:1;
-  pointer-events:auto;
-  transform:translateY(0);
-}
-
+  #detailBox.active{
+    transform:translateY(0);
+  }
   #detailBox::before{
     content:"";
     width:50px;
@@ -586,16 +573,18 @@ footer{
   flex-direction:column;
   cursor:pointer;
   gap:5px;
+  z-index:2000;
   position:absolute;
   right:20px;
   top:20px;
-
 }
 
 .menu-btn span{
-  width:30px;
+  width:25px;
   height:3px;
   background:white;
+  display:block;
+  transition:0.3s;
 }
 
 /* スマホ用 */
@@ -661,8 +650,6 @@ footer{
   }
 
 }
-
-
 
 .menu-btn span{
   transition:0.3s;
@@ -958,15 +945,6 @@ header.small .title img{
 }
 
 @media (max-width:768px){
-
-  .hero{
-    height:auto;
-    min-height:0;
-    font-size:50px;
-    line-height:1;
-
-    padding:0 5% 0;
-  }
 
   .category button{
     font-size:15px;
