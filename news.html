@@ -6,19 +6,29 @@
 
 <style>
 body{
-margin:0;
-font-family:'Oswald', sans-serif;
-background:#02142c;
-color:white;
+  margin:0;
+  padding-top:170px;
+  font-family:'Oswald', sans-serif;
+  background:#02142c;
+  color:white;
 }
 
 /* ===== タイトル ===== */
 h1{
-text-align:center;
-margin-top:200px;
-font-size:40px;
-letter-spacing:4px;
-color:#d6002a;
+  margin:15px 0 20px 80px;
+  font-size:64px;
+  font-weight:bold;
+  color:white;
+  letter-spacing:2px;
+}
+
+@media (max-width:1024px){
+
+  h1{
+    margin:10px 0 20px 20px;
+    font-size:50px;
+  }
+
 }
 
 /* ===== 一覧 ===== */
@@ -85,40 +95,6 @@ header{
   z-index:999;
 }
 
-/* ロゴ */
-.title{
-position:relative;
-width:100%;
-display:flex;
-justify-content:center;
-cursor:pointer;
-background:linear-gradient(
-to bottom,
-#02142c,
-#062452,
-#02142c
-);
-border-bottom:3px solid #d6002a;
-box-shadow: 0 5px 20px rgba(0,0,0,0.6);
-overflow:hidden;
-}
-
-.title::before{
-content:"";
-position:absolute;
-top:0;
-left:-100%;
-width:60%;
-height:100%;
-background:linear-gradient(
-120deg,
-transparent,
-rgba(255,255,255,0.6),
-transparent
-);
-animation: shine 3s infinite;
-}
-
 @keyframes shine{
 0% { left:-100%; }
 50% { left:120%; }
@@ -134,50 +110,106 @@ animation: shine 3s infinite;
 /* ナビ */
 .nav{
   display:flex;
-  gap:30px;
+  gap:40px;
+  margin-top:2px;
+  background:rgba(0,0,0,0.3);
+  backdrop-filter:blur(10px);
+
+  padding:4px 20px;
+
+  max-width:1200px;
+  margin-left:auto;
+  margin-right:auto;
+
+  box-sizing:border-box;
+  overflow-x:auto;
+  flex-wrap:nowrap;
+  justify-content:flex-start;
+}
+
+.nav::-webkit-scrollbar{
+  display:none;
 }
 
 .nav a{
-color:white;
-text-decoration:none;
-font-size:22px;
-font-weight:500;
-letter-spacing:3px;
-position:relative;
-transition:0.3s;
-padding:8px 15px;
-border-radius:5px;
+  color:white;
+  text-decoration:none;
+  font-size:22px;
+  font-weight:500;
+  letter-spacing:3px;
+  position:relative;
+  transition:0.3s;
+  display:inline-block;
+  padding:4px 15px;
+  border-radius:5px;
+  white-space:nowrap;
+  font-size:clamp(14px, 2vw, 22px);
 }
 
 .nav a::after{
-content:"";
-position:absolute;
-bottom:-5px;
-left:50%;
-width:0;
-height:2px;
-background:#d6002a;
-transition:0.3s;
-transform:translateX(-50%);
+  content:"";
+  position:absolute;
+  bottom:-5px;
+  left:50%;
+  width:0;
+  height:2px;
+  background:#d6002a;
+  transition:0.3s;
+  transform:translateX(-50%);
 }
 
 .nav a:hover{
-color:#d6002a;
-background:rgba(214,0,42,0.2);
-transform:translateY(-2px);
+  color:#d6002a;
+  background:rgba(214,0,42,0.2);
+  transform:translateY(-2px);
 }
 
 .nav a:hover::after{
-width:100%;
+  width:100%;
 }
 
 .nav a.active{
-color:#d6002a;
-background:rgba(214,0,42,0.2);
+  color:#d6002a;
+  background:rgba(214,0,42,0.2);
 }
 
 .nav a.active::after{
-width:100%;
+  width:100%;
+}
+
+.title{
+  position:relative;
+  width:100%;
+  height:120px;            /* ✅ 高さを固定（これが一番重要） */
+  display:flex;
+  justify-content:center;
+  align-items:center;      /* ✅ 中央揃え */
+  background:linear-gradient(
+    to bottom,
+    #02142c,
+    #062452,
+    #02142c
+  );
+  border-bottom:3px solid #d6002a;
+  box-shadow:0 5px 20px rgba(0,0,0,0.6);
+  overflow:hidden;
+}
+
+
+.title::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:60%;
+  height:100%;
+  background:linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.6),
+    transparent
+  );
+  animation: shine 3s infinite;
 }
 
 
@@ -230,6 +262,93 @@ footer{
   transform:translateY(-2px);
 }
 
+@media (max-width:1024px){
+
+  .menu-btn{
+    display:flex;
+    position:absolute;
+    right:20px;
+    top:20px;
+    position:absolute;
+    z-index:1000;
+  }
+
+  .nav{
+    display:flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    overflow-x:visible;
+    gap:10px;
+    width:100%;
+    justify-content:center;
+    white-space:nowrap;
+    padding:2px 5px;
+    text-align:center;
+  }
+
+  .nav a{
+    padding:2px 2px;
+    font-size:11px;
+    letter-spacing:0;
+    border-top:1px solid #333;
+  }
+
+  .nav::-webkit-scrollbar{
+    display:none;
+  }
+
+  .nav.open{
+    display:flex;
+    flex-direction:column;
+    flex-wrap:nowrap;
+    overflow-x:hidden;
+    overflow-y:auto;
+    width:100%;
+    gap:0;
+    padding-right:0;
+  }
+
+  .nav.open a{
+    padding:15px;
+    border-top:1px solid #333;
+    width:100%;
+    box-sizing:border-box;
+  }
+
+  .title{
+    height:80px;
+  }
+
+  .title img{
+    height:50px;
+  }
+
+}
+
+@media (min-width:1025px){
+
+  .nav{
+    display:flex;
+    flex-direction:row;
+    max-height:none;
+    overflow:visible;
+  }
+
+}
+
+/* スマホ・半画面だけ調整 */
+@media (max-width:1024px){
+
+  h1{
+    margin-top:-40px;
+    margin-left:20px;
+    font-size:50px;
+  }
+
+}
+
+
+
 </style>
 
 </head>
@@ -262,7 +381,7 @@ window.collection = collection;
 <!-- ✅ ヘッダー追加 -->
 <header>
   <div class="title">
-    <img src="title.gif" alt="NARA AMBITIONS CLUB">
+    <img src="title.gif">
   </div>
 
   <div class="menu-btn">
@@ -272,14 +391,17 @@ window.collection = collection;
   </div>
 
   <nav class="nav">
-    <a href="index.html">HOME</a>
-    <a href="index.html#news-feature" class="active">NEWS</a>
-    <a href="member.html">選手・スタッフ</a>
-    <a href="schedule.html">スケジュール</a>
-    <a href="index.html#sns">SNS</a>
-    <a href="index.html#member">部員専用</a>
-  </nav>
+  <a href="index.html">HOME</a>
+  <a href="index.html#news-feature" class="active">NEWS</a>
+  <a href="schedule.html">スケジュール</a>
+  <a href="member.html">選手・スタッフ</a>
+  <a href="index.html#recruit">RECRUIT</a>
+    <a href="#" onclick="goMember()">部員専用</a>
+   </nav>
 </header>
+
+<div class="overlay"></div>
+
 
 <h1>NEWS</h1>
 
