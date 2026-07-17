@@ -138,9 +138,20 @@ window.startApp = function(){
      ondrop="dropFile(event)">
   ここに画像をドラッグ or タップで選択
 </div>
-<img id="preview" style="width:200px; margin-top:10px; display:none;">
-<input type="file" id="file" accept="image/*" style="display:none" onchange="selectFile(this)">
+<img id="preview"
+     style="width:200px; margin-top:10px; display:none;">
 
+<br>
+
+<button type="button" onclick="removeCurrentImage()">
+🗑️画像を消す
+</button>
+
+<input type="file"
+       id="file"
+       accept="image/*"
+       style="display:none"
+       onchange="selectFile(this)">
 <br>
 
 <input id="link" placeholder="リンクURL"><br>
@@ -277,7 +288,11 @@ function renderList(){
   news.forEach((n, i) => {
     box.innerHTML += `
   <div style="border:1px solid #fff; margin:10px; padding:10px;">
-    ${n.img ? `<img src="${n.img}" width="100">` : ""}
+    ${n.img ? `
+<img src="${n.img}" width="ck="deleteImage(${i})">
+🖼️画像だけ削除
+</button>
+` : ""}
     <br>
     <strong>${n.title}</strong><br>
     ${n.date}<br>
@@ -304,6 +319,25 @@ async function deleteNews(i){
   if(!confirm("削除する？")) return;
 
   await deleteDoc(doc(db, "news", news[i].id));
+
+  loadNews();
+}
+
+// 画像だけ削除
+async function deleteImage(i){
+
+  if(!confirm("画像だけ削除しますか？")){
+    return;
+  }
+
+  await updateDoc(
+    doc(db, "news", news[i].id),
+    {
+      img: ""
+    }
+  );
+
+  alert("画像を削除しました");
 
   loadNews();
 }
@@ -338,6 +372,18 @@ function preview(i){
     "日付：" + n.date + "\n\n" +
     "本文：" + n.content
   );
+}
+function removeCurrentImage(){
+
+  imgData = "";
+
+  const preview =
+    document.getElementById("preview");
+
+  preview.src = "";
+  preview.style.display = "none";
+
+  document.getElementById("file").value = "";
 }
 
 // フォームクリア

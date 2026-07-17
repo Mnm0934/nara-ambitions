@@ -42,33 +42,45 @@ h1{
 
 /* 各記事 */
 .news-item{
-  display:flex;
-  align-items:center;
-  gap:20px;
+  display:block;
 
   padding:20px;
   margin-bottom:20px;
 
-  border-radius:15px;
-  background:rgba(255,255,255,0.05);
+  background:#fff;
+  color:#222;
 
-  border:1px solid rgba(255,255,255,0.1);
+  border-radius:20px;
 
-  transition:0.4s;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.15);
+
+  transition:0.3s;
 }
+
 
 
 /* 日付 */
 .news-item .date{
-color:#aaa;
+color:#666;
 font-size:14px;
 }
 
 /* タイトル */
 .news-item .title{
-font-size:20px;
-font-weight:700;
+  font-size:24px;
+  font-weight:700;
+  color:#d6002a;
+
+  background:transparent;
+
+  text-shadow:none;
+
+  box-shadow:none;
+
+  margin-top:10px;
 }
+
 
 @media (max-width:600px){
 
@@ -80,15 +92,15 @@ font-weight:700;
 
 /* hover */
 .news-item:hover{
-background:rgba(214,0,42,0.2);
-transform:translateX(10px);
+  background:#f8f8f8;
+  transform:translateX(10px);
 }
 
 /* リンク */
 .news-link{
-text-decoration:none;
-color:white;
-display:block;
+  text-decoration:none;
+  color:#222;
+  display:block;
 }
 
 header{
@@ -479,6 +491,37 @@ footer p{
 
 }
 
+.news-modal-img{
+  width:auto;
+  max-width:70%;
+  max-height:500px;
+  object-fit:contain;
+  display:block;
+  margin:10px auto;
+  border-radius:10px;
+}
+
+#modal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
+
+  display:none;
+
+  justify-content:center;
+  align-items:center;
+
+  z-index:99999;
+}
+
+#modalContent{
+  position:relative;
+  z-index:100000;
+}
+
 </style>
 
 </head>
@@ -615,7 +658,13 @@ console.log(approvedNews);
           <div style="display:flex;align-items:center;gap:15px;">
 
             ${n.img ? `
-  <img src="${n.img}" style="width:100px;height:70px;object-fit:cover;">
+  <img src="${n.img}"
+ style="
+   width:120px;
+   height:90px;
+   object-fit:cover;
+   border-radius:10px;
+">
 ` : ""}
 
             <div>
@@ -644,7 +693,20 @@ function openModal(i){
   <h3>${n.title}</h3>
   <p style="color:#aaa;">${n.date}</p>
 
-  ${n.img ? `<img src="${n.img}" style="width:100%;margin:10px 0;">` : ""}
+  ${n.img ? `
+<img
+  src="${n.img}"
+  style="
+    width:auto;
+    max-width:50%;
+    max-height:500px;
+    object-fit:contain;
+    display:block;
+    margin:10px auto;
+    border-radius:10px;
+  "
+>
+` : ""}
 
   <p>${n.content || ""}</p>
 
@@ -693,17 +755,19 @@ loadNews();
   display:none;
   justify-content:center;
   align-items:center;
-  z-index:2000;
+  z-index:99999;
 ">
 
   <div id="modalContent" style="
-    background:#0a1f3f;
-    padding:30px;
-    max-width:800px;
-    width:95%;
-    border-radius:15px;
-    text-align:left;
-  ">
+  background:#0a1f3f;
+  padding:30px;
+  max-width:800px;
+  width:95%;
+  max-height:90vh;
+  overflow-y:auto;
+  border-radius:15px;
+  text-align:left;
+">
   </div>
 
 </div>
