@@ -128,31 +128,41 @@ input[id^="p_inning"]{
 const saved = localStorage.getItem("userLogin");
 
 if(!saved){
+
   alert("ログインしてください");
   location.href = "index.html";
+
 }else{
+
   const user = JSON.parse(saved);
 
-  // ✅ 期限切れチェック
+  // 有効期限
   if(Date.now() > user.expire){
+
     alert("ログインの有効期限が切れました");
+
     localStorage.removeItem("userLogin");
+
     location.href = "index.html";
+
   }else{
 
-    // ✅ 管理者だけ
-    if(user.id !== "admin"){
-      alert("管理者のみアクセスできます");
-      location.href = "member-only.html";
-    }
+    // admin と result のみ
+    if(
+  user.role !== "admin" &&
+  user.role !== "result"
+){
+  alert("権限がありません");
+  location.href = "member-only.html";
+}
 
     document.body.style.display = "block";
 
-    // ✅ 延長
     localStorage.setItem("userLogin", JSON.stringify({
       ...user,
       expire: Date.now() + 3600000
     }));
+
   }
 }
 
@@ -784,20 +794,32 @@ async function loadEdit(){
 
   console.log("exists:", snap.exists());   // ✅ ここ追加
 
-  if(!snap.exists()) return;
+if(!snap.exists()) return;
 
-  const gameData = snap.data();
+const gameData = snap.data();
 
-  document.getElementById("date").value = gameData.date;
+console.log(gameData);
+
+console.log(
+  "打者数",
+  gameData.batters?.length
+);
+
+console.log(
+  "投手数",
+  gameData.pitchers?.length
+);
+
+document.getElementById("date").value = gameData.date;
   document.getElementById("game").value = gameData.game;
   document.getElementById("opponent").value = gameData.opponent;
   document.getElementById("batFirst").value = gameData.batFirst || "home";
 
-  gameData.myInnings.forEach((v,i)=>{
+  (gameData.myInnings || []).forEach((v,i)=>{
     document.getElementById("my"+(i+1)).value = v ?? "";
   });
 
-  gameData.opInnings.forEach((v,i)=>{
+  (gameData.opInnings || []).forEach((v,i)=>{
     document.getElementById("op"+(i+1)).value = v ?? "";
   });
 
@@ -869,9 +891,16 @@ window.addEventListener("load", () => {
   const id = new URLSearchParams(location.search).get("id");
 
   // 管理者じゃない or 新規作成なら非表示
-  if(!user || user.id !== "admin" || !id){
-    if(btn) btn.style.display = "none";
-  }
+  if(
+  !user ||
+  (
+    user.role !== "admin" &&
+    user.role !== "result"
+  ) ||
+  !id
+){
+  if(btn) btn.style.display = "none";
+}
 
   const wait = setInterval(async () => {
 

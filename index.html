@@ -2288,25 +2288,48 @@ function login(){
   const id = document.getElementById("id").value;
   const pass = document.getElementById("pass").value;
 
-  if(
-  (id === "admin" && pass === "0725") ||
-  (id === "nakano" && pass === "1996")
-){
+  let role = "";
 
-    const data = {
+if(id === "admin" && pass === "0725"){
+
+  role = "admin";
+
+}else if(id === "nakano" && pass === "1996"){
+
+  role = "nakano";
+
+}else if(id === "video" && pass === "1111"){
+
+  role = "video";
+
+}else if(id === "result" && pass === "2222"){
+
+  role = "result";
+
+}else if(id === "members" && pass === "3333"){
+
+  role = "members";
+
+}else{
+
+  alert("IDまたはパスワードが違います");
+  return;
+
+}
+
+const data = {
   id,
+  role,
   expire: Date.now() + (30 * 60 * 1000)
 };
 
-    localStorage.setItem("userLogin", JSON.stringify(data));
+localStorage.setItem(
+  "userLogin",
+  JSON.stringify(data)
+);
 
-    alert("ログイン成功");
-
-    location.href = "member-only.html";
-
-  }else{
-    alert("IDまたはパスワード違う");
-  }
+alert("ログイン成功");
+location.href = "member-only.html";
 }
 /* ===== Swiper ===== */
 new Swiper(".mainSwiper",{
@@ -2698,24 +2721,48 @@ function goMember(){
   const id = prompt("IDを入力してください");
   const pass = prompt("パスワードを入力してください");
 
-  if(
-  (id === "admin" && pass === "0725") ||
-  (id === "nakano" && pass === "1996")
-){
+let role = "";
 
-    const data = {
+if(id === "admin" && pass === "0725"){
+
+  role = "admin";
+
+}else if(id === "nakano" && pass === "1996"){
+
+  role = "nakano";
+
+}else if(id === "video" && pass === "1111"){
+
+  role = "video";
+
+}else if(id === "result" && pass === "2222"){
+
+  role = "result";
+
+}else if(id === "members" && pass === "3333"){
+
+  role = "members";
+
+}else{
+
+  alert("IDまたはパスワードが違います");
+  return;
+
+}
+
+const data = {
   id,
+  role,
   expire: Date.now() + (30 * 60 * 1000)
 };
 
-    localStorage.setItem("userLogin", JSON.stringify(data));
+localStorage.setItem(
+  "userLogin",
+  JSON.stringify(data)
+);
 
-    alert("ログイン成功");
-    location.href = "member-only.html";
-
-  }else{
-    alert("IDまたはパスワードが違います");
-  }
+alert("ログイン成功");
+location.href = "member-only.html";
 }
 
 window.addEventListener("load", () => {

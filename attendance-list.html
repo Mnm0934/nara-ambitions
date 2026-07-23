@@ -188,6 +188,14 @@ if(!saved){
 ">
 出席者コピー
 </button>
+<button onclick="copyUnansweredNames()" style="
+  background:#ff5252;
+  color:white;
+  padding:10px 15px;
+  border-radius:20px;
+">
+未回答者コピー
+</button>
 </div>
 
 <div id="tabs"></div>
@@ -617,6 +625,48 @@ window.copyAttendanceNames = async function(){
 
   }
 }
+
+window.copyUnansweredNames = async function(){
+
+  if(!selectedDate){
+    alert("先に日付を選択してください");
+    return;
+  }
+
+  const names = members
+    .filter(m => {
+
+      if(m.active === false) return false;
+
+      const rec = data.find(d =>
+        d.name === m.name &&
+        d.date === selectedDate
+      );
+
+      return !rec;
+    })
+    .map(m => m.name);
+
+  const text = `【出欠未回答者】
+${selectedDate}
+
+${names.join("\n")}
+
+出欠の回答をお願いします。`;
+
+  try{
+
+    await navigator.clipboard.writeText(text);
+
+    alert("未回答者一覧をコピーしました");
+
+  }catch(e){
+
+    prompt("コピーしてください", text);
+
+  }
+}
+
 
 function renderAttendanceDetail(date){
 

@@ -1926,28 +1926,42 @@ const params = new URLSearchParams(window.location.search);
 const no = params.get("no");
 
 window.addEventListener("load", () => {
+
   if(no){
+
     document.querySelectorAll(".player").forEach(el => {
 
-      const numberText = el.querySelector("p").innerText;
+      const numberText =
+        el.querySelector("p").innerText;
 
-      if(numberText.includes(`#${no}`)){
+      const playerNo =
+        numberText.match(/#\d+/)?.[0];
 
-        const headerHeight = document.querySelector("header").offsetHeight;
+      if(playerNo === `#${no}`){
 
-        const y = el.getBoundingClientRect().top + window.pageYOffset - headerHeight - 50;
+        const headerHeight =
+          document.querySelector("header").offsetHeight;
+
+        const y =
+          el.getBoundingClientRect().top +
+          window.pageYOffset -
+          headerHeight - 50;
 
         window.scrollTo({
-          top: y,
-          behavior: "smooth"
+          top:y,
+          behavior:"smooth"
         });
 
         setTimeout(() => {
-  el.click();
-}, 300);
+          el.click();
+        },300);
+
       }
+
     });
+
   }
+
 });
 
 function goMember(){

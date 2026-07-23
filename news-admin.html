@@ -232,7 +232,10 @@ async function saveNews(){
     link: document.getElementById("link").value,
     tag: document.getElementById("tag").value,
     content: document.getElementById("content").value,
-    approved: false
+    approved:
+  editIndex !== null
+    ? news[editIndex].approved
+    : false
   };
 
   if(!data.title || !data.date){
@@ -280,7 +283,11 @@ async function loadNews(){
 // 一覧表示
 function renderList(){
 
-  const role = localStorage.getItem("role");
+  const saved = localStorage.getItem("userLogin");
+
+const role = saved
+  ? JSON.parse(saved).role
+  : "";
   const box = document.getElementById("list");
 
   box.innerHTML = "";
@@ -406,7 +413,12 @@ function clearForm(){
 
 async function approveNews(i){
 
-  const role = localStorage.getItem("role");
+  const saved = localStorage.getItem("userLogin");
+
+const role = saved
+  ? JSON.parse(saved).role
+  : "";
+
 
   if(role !== "admin"){
     alert("権限がありません");

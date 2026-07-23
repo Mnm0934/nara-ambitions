@@ -225,7 +225,7 @@ if(saved){
 
   <div class="folder-content">
 
-    <a href="news-admin.html" class="admin-only">
+    <a href="news-admin.html" class="news-only">
       NEWS登録
     </a>
 
@@ -233,15 +233,15 @@ if(saved){
       予定登録
     </a>
 
-<a href="game_input.html" class="admin-only">
+<a href="game_input.html" class="result-only">
   成績入力
 </a>
 
-  <a href="video-form.html" class="admin-only">
+  <a href="video-form.html" class="video-only">
     試合動画登録
   </a>
 
-  <a href="members.html" class="admin-only">
+  <a href="members.html" class="members-only">
     選手登録
   </a>
 
@@ -337,15 +337,79 @@ window.onload = function(){
   const saved = localStorage.getItem("userLogin");
   const user = saved ? JSON.parse(saved) : null;
 
-  const isAdmin = user && user.id === "admin";
+  const role = user ? user.role : "";
 
-  if(!isAdmin){
+  // admin以外はadmin機能を隠す
+  if(role !== "admin"){
 
-    document.querySelectorAll(".admin-only").forEach(el=>{
+    document.querySelectorAll(".admin-only")
+      .forEach(el=>{
+        el.style.display = "none";
+      });
+  }
+
+// adminとnakano以外はNEWS登録を隠す
+if(
+  role !== "admin" &&
+  role !== "nakano"
+){
+
+  document.querySelectorAll(".news-only")
+    .forEach(el=>{
       el.style.display = "none";
     });
 
-    const folder = document.querySelector(".admin-folder");
+}
+
+  // adminとvideo以外は動画登録を隠す
+  if(
+    role !== "admin" &&
+    role !== "video"
+  ){
+
+    document.querySelectorAll(".video-only")
+      .forEach(el=>{
+        el.style.display = "none";
+      });
+  }
+
+  // adminとresult以外は成績入力を隠す
+  if(
+    role !== "admin" &&
+    role !== "result"
+  ){
+
+    document.querySelectorAll(".result-only")
+      .forEach(el=>{
+        el.style.display = "none";
+      });
+  }
+
+// adminとmembers以外は選手登録を隠す
+if(
+  role !== "admin" &&
+  role !== "members"
+){
+
+  document.querySelectorAll(".members-only")
+    .forEach(el=>{
+      el.style.display = "none";
+    });
+
+}
+
+
+  // 管理者メニューを丸ごと消す判定
+  if(
+  role !== "admin" &&
+  role !== "video" &&
+  role !== "result" &&
+  role !== "members" &&
+  role !== "nakano"
+){
+
+    const folder =
+      document.querySelector(".admin-folder");
 
     if(folder){
       folder.style.display = "none";

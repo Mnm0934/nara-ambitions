@@ -234,20 +234,36 @@ if(!hasEvent){
   return;
 }
 
-  await addDoc(collection(db, "attendance"), {
-    name,
-    status,
-    date,
-    comment
-  });
+// 既存回答削除
+const oldRecords = data.filter(d =>
+  d.name === name &&
+  d.date === date
+);
+
+for(const rec of oldRecords){
+
+  await deleteDoc(
+    doc(db, "attendance", rec.id)
+  );
+
+}
+
+// 新規保存
+await addDoc(collection(db, "attendance"), {
+  name,
+  status,
+  date,
+  comment
+});
 
 alert("保存しました");
 
 if(document.body.style.display === "block"){
-  loadAll();
+  await loadAll();
 }
-  document.getElementById("date").value = "";
-  document.getElementById("comment").value = "";
+
+document.getElementById("date").value = "";
+document.getElementById("comment").value = "";
 }
 
 window.goAttendanceList = function(){
@@ -322,9 +338,25 @@ window.render = function(){
 
   const today = new Date().toISOString().split("T")[0];
 
-const myData = data
-  .filter(d => d.name === name && d.date >= today)
-  .sort((a, b) => a.date.localeCompare(b.date));
+const myData = [
+  ...new Map(
+
+    data
+      .filter(d =>
+        d.name === name &&
+        d.date >= today
+      )
+
+      .map(d => [
+        d.date,
+        d
+      ])
+
+  ).values()
+
+].sort((a,b)=>
+  a.date.localeCompare(b.date)
+);
 
 
   if(myData.length === 0){

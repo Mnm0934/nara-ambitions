@@ -92,8 +92,11 @@ if(!saved){
   location.href = "index.html";
 }
 
-if(user.id !== "admin"){
-  alert("管理者のみ");
+if(
+  user.role !== "admin" &&
+  user.role !== "members"
+){
+  alert("権限がありません");
   location.href = "member-only.html";
 }
   // ✅ 表示ON

@@ -256,7 +256,9 @@ if(!saved){
   }
 
   // ✅ 管理者判定
-  window.isAdmin = user.id === "admin";
+  window.isAdmin =
+  user.role === "admin" ||
+  user.role === "result";
 
   // ✅ セッション延長（1時間再セット）
   user.expire = Date.now() + (1 * 60 * 60 * 1000);
@@ -568,12 +570,16 @@ function isAdminUser(){
 
     const user = JSON.parse(saved);
 
-    return String(user.id).trim().toLowerCase() === "admin";
+    return (
+      user.role === "admin" ||
+      user.role === "result"
+    );
 
   }catch(e){
     return false;
   }
 }
+
 
 function changeYear(year){
 

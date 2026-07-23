@@ -46,11 +46,15 @@ if(!saved){
     location.href = "index.html";
   }else{
 
-    // ✅ 管理者チェック
-    if(user.id !== "admin"){
-      alert("管理者のみ登録できます");
-      location.href = "member-only.html";
-    }
+    // ✅ admin または video を許可
+if(
+  user.role !== "admin" &&
+  user.role !== "video"
+){
+  alert("登録権限がありません");
+  location.href = "member-only.html";
+}
+
 
     document.body.style.display = "block";
 
