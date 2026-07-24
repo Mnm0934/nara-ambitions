@@ -20,6 +20,8 @@ body{
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:20px;
+
+  align-items:start;
 }
 
 h1{
@@ -337,7 +339,13 @@ window.onload = function(){
   const saved = localStorage.getItem("userLogin");
   const user = saved ? JSON.parse(saved) : null;
 
-  const role = user ? user.role : "";
+  const role = user
+    ? (user.role || user.id)
+    : "";
+
+  console.log("saved =", saved);
+  console.log("user =", user);
+  console.log("role =", role);
 
   // admin以外はadmin機能を隠す
   if(role !== "admin"){

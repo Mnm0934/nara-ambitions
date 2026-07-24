@@ -293,31 +293,40 @@ const role = saved
   box.innerHTML = "";
 
   news.forEach((n, i) => {
-    box.innerHTML += `
+
+  box.innerHTML += `
   <div style="border:1px solid #fff; margin:10px; padding:10px;">
+
     ${n.img ? `
-<img src="${n.img}" width="ck="deleteImage(${i})">
-🖼️画像だけ削除
-</button>
-` : ""}
+    <img
+      src="${n.img}"
+      style="
+        max-width:200px;
+        display:block;
+        margin:0 auto 10px;
+      "
+    >
+    ` : ""}
+
     <br>
+
     <strong>${n.title}</strong><br>
     ${n.date}<br>
 
     <button onclick="editNews(${i})">編集</button>
     <button onclick="deleteNews(${i})">削除</button>
 
-        ${
-          n.approved
-            ? `<span style="color:#00e676;">✅ 承認済</span>`
-            : (role === "admin"
-              ? `<button onclick="approveNews(${i})">承認</button>`
-              : `<span style="color:#ff9800;">⏳ 承認待ち</span>`
-            )
-        }
-      </div>
-    `;
-  });
+    ${
+      n.approved
+      ? `<span style="color:#00e676;">✅ 承認済</span>`
+      : (role === "admin"
+        ? `<button onclick="approveNews(${i})">承認</button>`
+        : `<span style="color:#ff9800;">⏳ 承認待ち</span>`)
+    }
+
+  </div>
+  `;
+});
 }
 
 // 削除
