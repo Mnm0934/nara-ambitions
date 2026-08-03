@@ -503,8 +503,16 @@ ${d}
   dayEvents.forEach(ev => {
 
     // 色分け
-    if(ev.type === "公式戦" || ev.type === "OP戦") className += " match";
-    if(ev.type === "練習") className += " practice";
+    if(ev.type === "公式戦" || ev.type === "OP戦"){
+  className += " match";
+}
+
+if(
+  ev.type === "練習" ||
+  ev.type === "合同練習"
+){
+  className += " practice";
+}
 
     html += `
   <div class="event">
