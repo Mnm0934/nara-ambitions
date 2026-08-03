@@ -523,19 +523,20 @@ let noAnswer = Math.max(0, membersCount - uniqueList.length);
 
     if(event){
 
-  if(
-    event.type === "公式戦" ||
-    event.type === "OP戦"
-  ){
-    className += " match";
+if(
+  event.type === "公式戦" ||
+  event.type === "OP戦"
+){
+  className += " match";
 
-  }else if(event.type === "練習"){
-    className += " practice";
+}else if(
+  ["練習","合同練習"].includes(event.type)
+){
+  className += " practice";
 
-  }else if(event.type === "飲み会"){
-    className += " party";
-  }
-
+}else if(event.type === "飲み会"){
+  className += " party";
+}
 }
 
     if(
