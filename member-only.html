@@ -348,13 +348,17 @@ window.onload = function(){
   console.log("role =", role);
 
   // admin以外はadmin機能を隠す
-  if(role !== "admin"){
+  if(
+  role !== "admin" &&
+  role !== "event"
+){
 
-    document.querySelectorAll(".admin-only")
-      .forEach(el=>{
-        el.style.display = "none";
-      });
-  }
+  document.querySelectorAll(".admin-only")
+    .forEach(el=>{
+      el.style.display = "none";
+    });
+}
+
 
 // adminとnakano以外はNEWS登録を隠す
 if(
@@ -408,21 +412,22 @@ if(
 
 
   // 管理者メニューを丸ごと消す判定
-  if(
+if(
   role !== "admin" &&
   role !== "video" &&
   role !== "result" &&
   role !== "members" &&
-  role !== "nakano"
+  role !== "nakano" &&
+  role !== "event"
 ){
 
-    const folder =
-      document.querySelector(".admin-folder");
+  const folder =
+    document.querySelector(".admin-folder");
 
-    if(folder){
-      folder.style.display = "none";
-    }
+  if(folder){
+    folder.style.display = "none";
   }
+}
 };
 </script>
 

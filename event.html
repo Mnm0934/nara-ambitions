@@ -139,11 +139,14 @@ if(!saved){
     location.href = "index.html";
   }
 
-  // ✅ 管理者チェック
-  if(user.id !== "admin"){
-    alert("管理者のみ");
-    location.href = "member-only.html";
-  }
+ // ✅ admin と event を許可
+if(
+  user.role !== "admin" &&
+  user.role !== "event"
+){
+  alert("権限がありません");
+  location.href = "member-only.html";
+}
 
   document.body.style.display = "block";
 
@@ -206,6 +209,7 @@ window.startApp = function(){
   <option value="公式戦">公式戦</option>
   <option value="OP戦">OP戦</option>
   <option value="練習">練習</option>
+  <option value="合同練習">合同練習</option>
   <option value="飲み会">飲み会</option>
 </select>
 

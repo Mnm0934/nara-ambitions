@@ -190,8 +190,11 @@ if(saved){
 
 <div style="margin:10px;">
   <button onclick="changeMode('all')">通算</button>
-  <button onclick="changeMode('year')">今年度</button>
   <button onclick="changeMode('recent')">直近5試合</button>
+
+  <select id="yearSelect" onchange="changeYear()">
+    <option value="all">年度選択</option>
+  </select>
 </div>
 
 <h2>打者成績一覧</h2>
@@ -307,20 +310,63 @@ async function loadResults(){
 
   snap.forEach(docSnap => {
     resultsData.push({
-  firestoreId: docSnap.id,
-  ...docSnap.data()
-});
+      firestoreId: docSnap.id,
+      ...docSnap.data()
+    });
   });
 
+  createYearSelect();
   render();
 }
 
+function createYearSelect(){
+
+  const years = [
+    ...new Set(
+      resultsData
+        .filter(r => r.date)
+        .map(r => new Date(r.date).getFullYear())
+    )
+  ].sort((a,b)=>b-a);
+
+  const select =
+    document.getElementById("yearSelect");
+
+  select.innerHTML =
+  '<option value="all">全年度</option>';
+
+  years.forEach(year => {
+
+  select.innerHTML += `
+    <option value="${year}">
+      ${year}年
+    </option>
+  `;
+
+});
+
+select.value = String(selectedYear);
+
+}
+
 let mode = "year";
+let selectedYear = new Date().getFullYear();
 
 function changeMode(m){
   mode = m;
   render();
 }
+
+function changeYear(){
+
+  selectedYear =
+    document.getElementById("yearSelect").value;
+
+  mode = "year";
+
+  render();
+}
+
 
 function goInput(){
   window.location.href = "game_input.html";
@@ -352,12 +398,22 @@ function render(){
   if(mode === "recent") data = data.slice(-5);
 
   if(mode === "year"){
-  const thisYear = new Date().getFullYear();
 
-  data = data.filter(g => {
-    if(!g.date) return false;
-    return new Date(g.date).getFullYear() === thisYear;
-  });
+  if(selectedYear !== "all"){
+
+    data = data.filter(g => {
+
+      if(!g.date) return false;
+
+      return (
+        new Date(g.date).getFullYear()
+        === Number(selectedYear)
+      );
+
+    });
+
+  }
+
 }
 
   // 対象試合一覧
