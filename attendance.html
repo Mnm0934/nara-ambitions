@@ -177,7 +177,8 @@ import {
   addDoc,
   getDocs,
   deleteDoc,
-  doc   // ←追加
+  doc,
+  serverTimestamp
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -249,11 +250,20 @@ for(const rec of oldRecords){
 }
 
 // 新規保存
-await addDoc(collection(db, "attendance"), {
+await addDoc(collection(db,"attendance"),{
   name,
-  status,
   date,
-  comment
+  status,
+  comment,
+  createdAt: serverTimestamp()
+});
+
+console.log("保存データ", {
+  name,
+  date,
+  status,
+  comment,
+  createdAt: "serverTimestamp"
 });
 
 alert("保存しました");

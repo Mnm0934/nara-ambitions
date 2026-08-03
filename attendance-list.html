@@ -410,6 +410,39 @@ if(ev){
 targetDates.forEach(date => {
       const rec = data.find(d => d.name === id && d.date === date);
 
+let answerTime = "-";
+
+if(rec?.createdAt){
+
+  if(rec.createdAt.toDate){
+
+    answerTime =
+      rec.createdAt
+        .toDate()
+        .toLocaleString("ja-JP", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+
+  }else{
+
+    answerTime =
+      new Date(rec.createdAt)
+        .toLocaleString("ja-JP", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+
+  }
+
+}
+
       let mark = "";
 const isActive = m.active !== false; // ←休部判定
 
@@ -483,6 +516,9 @@ async function loadAll(){
   attSnap.forEach(d => {
 
   const item = d.data();
+
+console.log("Firestoreデータ", item);
+
 
   if(!item.date) return;
 
@@ -677,15 +713,52 @@ function renderAttendanceDetail(date){
       <th>選手名</th>
       <th>出欠</th>
       <th>コメント</th>
+      <th>回答日時</th>
+
     </tr>
   `;
 
-  members.forEach(m => {
+members.forEach(m => {
 
   const rec = data.find(d =>
     d.name === m.name &&
     d.date === date
   );
+
+  console.log("rec=", rec);
+
+  let answerTime = "-";
+
+  if(rec?.createdAt){
+
+    if(rec.createdAt.toDate){
+
+      answerTime =
+        rec.createdAt
+          .toDate()
+          .toLocaleString("ja-JP",{
+            year:"numeric",
+            month:"2-digit",
+            day:"2-digit",
+            hour:"2-digit",
+            minute:"2-digit"
+          });
+
+    }else{
+
+      answerTime =
+        new Date(rec.createdAt)
+          .toLocaleString("ja-JP",{
+            year:"numeric",
+            month:"2-digit",
+            day:"2-digit",
+            hour:"2-digit",
+            minute:"2-digit"
+          });
+
+    }
+
+  }
 
   let mark = "未回答";
 
@@ -702,13 +775,14 @@ if(rec){
 }
 
   html += `
-    <tr>
-      <td>${m.number}</td>
-      <td>${m.name}</td>
-      <td>${mark}</td>
-      <td>${rec?.comment || rec?.message || rec?.note || ""}</td>
-          </tr>
-  `;
+<tr>
+  <td>${m.number}</td>
+  <td>${m.name}</td>
+  <td>${mark}</td>
+  <td>${rec?.comment || rec?.message || rec?.note || ""}</td>
+  <td>${answerTime}</td>
+</tr>
+`;
 
 });
 
