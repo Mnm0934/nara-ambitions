@@ -251,17 +251,211 @@ opacity:1;
 transform:translateY(0);
 }
 
-/* ===== NEWS ===== */
-.news-item{
-display:flex;
-justify-content:space-between;
-padding:15px 0;
-border-bottom:1px solid #ccc;
-background:#0a1f3f;
-margin-bottom:15px;
-border-radius:10px;
+/* ===== NEWS CARD ===== */
+
+.newsSwiper{
+  position:relative;
+  padding:10px 40px 30px;
 }
 
+.newsSwiper .swiper-slide{
+  width:clamp(280px, 30vw, 380px);
+  height:auto;
+}
+
+.news-item{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  height:100%;
+  min-height:380px;
+
+  background:linear-gradient(
+    180deg,
+    #102b55 0%,
+    #081d3b 100%
+  );
+
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:4px;
+
+  overflow:hidden;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.45);
+
+  transition:0.3s;
+}
+
+/* 左側の赤ライン */
+.news-item::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  width:5px;
+  height:100%;
+  background:#d6002a;
+  z-index:5;
+}
+
+/* 写真 */
+.news-image{
+  width:100%;
+  height:220px;
+  overflow:hidden;
+  background:#000;
+}
+
+.news-image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:0.4s;
+}
+
+/* 写真がない場合 */
+.news-image.no-image{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #071a35,
+      #173764
+    );
+}
+
+.news-image.no-image::after{
+  content:"NARA AMBITIONS CLUB";
+  font-family:'Oswald', sans-serif;
+  font-size:18px;
+  letter-spacing:2px;
+  color:rgba(255,255,255,0.35);
+}
+
+/* カード本文 */
+.news-text{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+
+  padding:18px 22px 20px;
+
+  background:#0b2245;
+}
+
+/* タグ */
+.news-text .tag{
+  align-self:flex-start;
+
+  margin:0 0 12px;
+
+  padding:5px 12px;
+
+  border-radius:2px;
+
+  font-family:'Oswald', sans-serif;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:1.5px;
+}
+
+/* タイトル */
+.news-text h3{
+  margin:0;
+
+  color:#fff;
+
+  font-size:20px;
+  line-height:1.5;
+  font-weight:900;
+
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+/* 日付 */
+.news-text .date{
+  margin-top:auto;
+  padding-top:18px;
+
+  color:#9caac0;
+
+  font-family:'Oswald', sans-serif;
+  font-size:14px;
+  letter-spacing:1px;
+}
+
+/* ホバー */
+.news-item:hover{
+  transform:translateY(-8px);
+
+  border-color:#d6002a;
+
+  box-shadow:
+    0 20px 45px rgba(0,0,0,0.65),
+    0 0 20px rgba(214,0,42,0.25);
+}
+
+.news-item:hover .news-image img{
+  transform:scale(1.06);
+}
+
+/* スライドの矢印 */
+.newsSwiper .swiper-button-next,
+.newsSwiper .swiper-button-prev{
+  width:42px;
+  height:42px;
+
+  background:rgba(0,0,0,0.7);
+
+  border:1px solid rgba(255,255,255,0.2);
+
+  color:#fff;
+}
+
+.newsSwiper .swiper-button-next::after,
+.newsSwiper .swiper-button-prev::after{
+  font-size:18px;
+  font-weight:bold;
+}
+
+.newsSwiper .swiper-button-next:hover,
+.newsSwiper .swiper-button-prev:hover{
+  background:#d6002a;
+}
+
+/* スマホ */
+@media(max-width:768px){
+
+  .newsSwiper{
+    padding:10px 20px 30px;
+  }
+
+  .newsSwiper .swiper-slide{
+    width:85vw;
+    max-width:360px;
+  }
+
+  .news-item{
+    min-height:360px;
+  }
+
+  .news-image{
+    height:200px;
+  }
+
+  .news-text h3{
+    font-size:18px;
+  }
+
+}
 /* ===== RESULT ===== */
 
 /* ===== TEAM ===== */
@@ -1729,7 +1923,12 @@ async function renderNews(){
     const snap = await getDocs(collection(db, "news"));
     let items = [];
 
-    snap.forEach(d => items.push(d.data()));
+snap.forEach(d => {
+  items.push({
+    id: d.id,
+    ...d.data()
+  });
+});
 
 items = items.filter(n => n.approved === true); // ✅ここ追加🔥
 
@@ -1742,18 +1941,73 @@ items.sort((a,b)=> b.date.localeCompare(a.date));
 
     let html = "";
     items.slice(0,5).forEach(n => {
-      html += `
-<div class="swiper-slide">
-  <div class="news-item">
-    <div class="news-text">
-      <div class="tag ${n.tag}">${n.tag}</div>
-      <h3>${n.title}</h3>
-      <div class="date">${n.date}</div>
+
+  // NEWS写真を取得
+  let firstImage = "";
+
+  if(n.photos && n.photos.length > 0){
+    firstImage = n.photos[0];
+  }
+  else if(n.img){
+    firstImage = n.img;
+  }
+
+  // タグを日本語表示
+  let tagText = "NEWS";
+
+  if(n.tag === "result"){
+    tagText = "RESULT";
+  }
+  else if(n.tag === "info"){
+    tagText = "INFO";
+  }
+  else if(n.tag === "event"){
+    tagText = "EVENT";
+  }
+
+  html += `
+    <div class="swiper-slide">
+
+<a href="news.html?id=${n.id}" class="news-item">
+        ${
+          firstImage
+          ?
+          `
+          <div class="news-image">
+            <img
+              src="${firstImage}"
+              alt="${n.title}"
+              loading="lazy"
+            >
+          </div>
+          `
+          :
+          `
+          <div class="news-image no-image"></div>
+          `
+        }
+
+        <div class="news-text">
+
+          <div class="tag ${n.tag}">
+            ${tagText}
+          </div>
+
+          <h3>
+            ${n.title}
+          </h3>
+
+          <div class="date">
+            ${n.date}
+          </div>
+
+        </div>
+
+      </a>
+
     </div>
-  </div>
-</div>
-`;
-    });
+  `;
+});
 
     list.innerHTML = html;
 new Swiper(".newsSwiper",{

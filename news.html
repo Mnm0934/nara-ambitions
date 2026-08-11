@@ -633,6 +633,27 @@ async function loadNews(){
 
 console.log(newsData);
   renderNews();
+
+// URLにNEWSのIDがある場合、そのNEWSを自動で開く
+const params = new URLSearchParams(window.location.search);
+const newsId = params.get("id");
+
+if(newsId){
+
+  const approvedNews =
+    newsData
+      .filter(n => n.approved === true)
+      .sort((a,b) => new Date(b.date) - new Date(a.date));
+
+  const index = approvedNews.findIndex(
+    n => n.id === newsId
+  );
+
+  if(index !== -1){
+    openModal(index);
+  }
+
+}
 }
 
 
