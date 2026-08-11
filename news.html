@@ -658,16 +658,37 @@ console.log(approvedNews);
         <div class="news-item">
           <div style="display:flex;align-items:center;gap:15px;">
 
-            ${n.img ? `
-  <img src="${n.img}"
- style="
-   width:120px;
-   height:90px;
-   object-fit:contain;
-   border-radius:10px;
-   background:white;
-">
-` : ""}
+            ${
+  n.photos && n.photos.length > 0
+  ? `
+    <img
+      src="${n.photos[0]}"
+      style="
+        width:120px;
+        height:90px;
+        object-fit:contain;
+        border-radius:10px;
+        background:white;
+      "
+    >
+  `
+  : (
+      n.img
+      ? `
+        <img
+          src="${n.img}"
+          style="
+            width:120px;
+            height:90px;
+            object-fit:contain;
+            border-radius:10px;
+            background:white;
+          "
+        >
+      `
+      : ""
+    )
+}
 
             <div>
               <div class="date">${n.date}</div>

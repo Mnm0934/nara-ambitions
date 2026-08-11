@@ -102,13 +102,6 @@ import {
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
-  getStorage,
-  ref,
-  uploadString,
-  getDownloadURL
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
@@ -120,12 +113,10 @@ const app = initializeApp({
 });
 
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 
 // Firebaseをグローバル化
 window.db = db;
-window.storage = storage;
 
 window.collection = collection;
 window.addDoc = addDoc;
@@ -133,11 +124,6 @@ window.getDocs = getDocs;
 window.deleteDoc = deleteDoc;
 window.doc = doc;
 window.updateDoc = updateDoc;
-
-window.storageRef = ref;
-window.uploadString = uploadString;
-window.getDownloadURL = getDownloadURL;
-
 
 // アプリ開始
 window.startApp = function(){
@@ -234,13 +220,13 @@ function selectFiles(input){
     return;
   }
 
-  imgData = [];
+  // 選択した順番をそのまま保持する
+  imgData = new Array(files.length);
 
-  files.forEach(file => {
-    readFile(file);
+  files.forEach((file, index) => {
+    readFile(file, index);
   });
 }
-
 
 // ドラッグ＆ドロップ
 function dropFile(e){
@@ -256,13 +242,15 @@ function dropFile(e){
 
   imgData = [];
 
-  files.forEach(file => {
-    readFile(file);
-  });
+  imgData = new Array(files.length);
+
+files.forEach((file, index) => {
+  readFile(file, index);
+});
 }
 
 // 写真を読み込んで自動圧縮
-function readFile(file){
+function readFile(file, index){
 
   if(!file.type.startsWith("image/")){
     return;
@@ -277,7 +265,7 @@ function readFile(file){
     img.onload = function(){
 
       // 最大幅・高さ
-      const maxSize = 1600;
+const maxSize = 1000;
 
       let width = img.width;
       let height = img.height;
@@ -325,13 +313,13 @@ function readFile(file){
 
       // JPEGとして圧縮
       const compressed =
-        canvas.toDataURL(
-          "image/jpeg",
-          0.8
-        );
+  canvas.toDataURL(
+    "image/jpeg",
+    0.6
+  );
 
 
-      imgData.push(compressed);
+      imgData[index] = compressed;
 
       renderPreview();
 
@@ -351,7 +339,9 @@ function renderPreview(){
 
   preview.innerHTML = "";
 
-  imgData.forEach((img, index) => {
+imgData.forEach((img, index) => {
+
+  if(!img) return;
 
     preview.innerHTML += `
       <div style="
@@ -404,10 +394,9 @@ function removeImage(index){
 // 保存（新規 or 編集）
 async function saveNews(){
 
-  try {
+  const saveBtn = document.getElementById("saveBtn");
 
-    const saveBtn =
-      document.getElementById("saveBtn");
+  try {
 
     saveBtn.disabled = true;
     saveBtn.innerText = "⏳ 保存中...";
@@ -417,42 +406,6 @@ async function saveNews(){
       return;
     }
 
-
-    // Firebase Storageへ写真をアップロード
-    const photoUrls = [];
-
-    for(let i = 0; i < imgData.length; i++){
-
-      const image = imgData[i];
-
-      // すでにStorage URLの場合
-      if(image.startsWith("http")){
-        photoUrls.push(image);
-        continue;
-      }
-
-      const fileName =
-        `news/${Date.now()}_${i}.jpg`;
-
-      const storageRef =
-        window.storageRef(
-          window.storage,
-          fileName
-        );
-
-      await window.uploadString(
-        storageRef,
-        image,
-        "data_url"
-      );
-
-      const url =
-        await window.getDownloadURL(storageRef);
-
-      photoUrls.push(url);
-    }
-
-
     const data = {
 
       title:
@@ -461,13 +414,13 @@ async function saveNews(){
       date:
         document.getElementById("date").value,
 
-      // 写真URLを保存
-      photos: photoUrls,
+      // 写真をFirestoreへ直接保存
+      photos: imgData,
 
-      // 古いデータとの互換用
+      // 古いNEWSとの互換用
       img:
-        photoUrls.length > 0
-          ? photoUrls[0]
+        imgData.length > 0
+          ? imgData[0]
           : "",
 
       link:
@@ -494,7 +447,10 @@ async function saveNews(){
     }
 
 
+    // =========================
     // 編集
+    // =========================
+
     if(editIndex !== null){
 
       await window.updateDoc(
@@ -511,13 +467,13 @@ async function saveNews(){
 
       editIndex = null;
 
-      document.getElementById("saveBtn")
-        .innerText = "💾 保存";
-
     }
 
 
-    // 新規
+    // =========================
+    // 新規登録
+    // =========================
+
     else{
 
       await window.addDoc(
@@ -543,27 +499,26 @@ async function saveNews(){
 
   } catch(error){
 
-  console.error(error);
+    console.error(error);
 
-  alert(
-    "保存に失敗しました。\n\n" +
-    error.message
-  );
+    alert(
+      "保存に失敗しました。\n\n" +
+      error.message
+    );
 
-} finally {
 
-  const saveBtn =
-    document.getElementById("saveBtn");
+  } finally {
 
-  saveBtn.disabled = false;
-  saveBtn.innerText =
-    editIndex !== null
-      ? "✏️ 更新する"
-      : "💾 保存";
+    saveBtn.disabled = false;
+
+    saveBtn.innerText =
+      editIndex !== null
+        ? "✏️ 更新する"
+        : "💾 保存";
+
+  }
+
 }
-
-}
-
 window.saveNews = saveNews;
 
 document.getElementById("saveBtn").addEventListener("click", function(){
