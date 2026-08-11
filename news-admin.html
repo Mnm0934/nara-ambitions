@@ -261,8 +261,7 @@ function dropFile(e){
   });
 }
 
-
-// 写真を読み込む
+// 写真を読み込んで自動圧縮
 function readFile(file){
 
   if(!file.type.startsWith("image/")){
@@ -273,15 +272,77 @@ function readFile(file){
 
   reader.onload = function(e){
 
-    imgData.push(e.target.result);
+    const img = new Image();
 
-    renderPreview();
+    img.onload = function(){
+
+      // 最大幅・高さ
+      const maxSize = 1600;
+
+      let width = img.width;
+      let height = img.height;
+
+      // 大きすぎる写真を縮小
+      if(width > maxSize || height > maxSize){
+
+        if(width > height){
+
+          height =
+            Math.round(height * maxSize / width);
+
+          width = maxSize;
+
+        }else{
+
+          width =
+            Math.round(width * maxSize / height);
+
+          height = maxSize;
+
+        }
+      }
+
+
+      // Canvasを作成
+      const canvas =
+        document.createElement("canvas");
+
+      canvas.width = width;
+      canvas.height = height;
+
+
+      const ctx =
+        canvas.getContext("2d");
+
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        width,
+        height
+      );
+
+
+      // JPEGとして圧縮
+      const compressed =
+        canvas.toDataURL(
+          "image/jpeg",
+          0.8
+        );
+
+
+      imgData.push(compressed);
+
+      renderPreview();
+
+    };
+
+    img.src = e.target.result;
 
   };
 
   reader.readAsDataURL(file);
 }
-
 
 // プレビュー表示
 function renderPreview(){
@@ -344,6 +405,12 @@ function removeImage(index){
 async function saveNews(){
 
   try {
+
+    const saveBtn =
+      document.getElementById("saveBtn");
+
+    saveBtn.disabled = true;
+    saveBtn.innerText = "⏳ 保存中...";
 
     if(imgData.length > 10){
       alert("写真は10枚までです");
@@ -476,14 +543,24 @@ async function saveNews(){
 
   } catch(error){
 
-    console.error(error);
+  console.error(error);
 
-    alert(
-      "保存に失敗しました。\n\n" +
-      error.message
-    );
+  alert(
+    "保存に失敗しました。\n\n" +
+    error.message
+  );
 
-  }
+} finally {
+
+  const saveBtn =
+    document.getElementById("saveBtn");
+
+  saveBtn.disabled = false;
+  saveBtn.innerText =
+    editIndex !== null
+      ? "✏️ 更新する"
+      : "💾 保存";
+}
 
 }
 
