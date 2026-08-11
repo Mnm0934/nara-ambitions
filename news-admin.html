@@ -87,7 +87,10 @@ if(saved){
 </script>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
   getFirestore,
   collection,
@@ -96,7 +99,16 @@ import {
   deleteDoc,
   doc,
   updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+  getStorage,
+  ref,
+  uploadString,
+  getDownloadURL
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyAiyyqdgn6RaS_6-GlGcZzkaebgFnTUh8U",
@@ -108,8 +120,13 @@ const app = initializeApp({
 });
 
 const db = getFirestore(app);
+const storage = getStorage(app);
 
+
+// Firebaseをグローバル化
 window.db = db;
+window.storage = storage;
+
 window.collection = collection;
 window.addDoc = addDoc;
 window.getDocs = getDocs;
@@ -117,14 +134,19 @@ window.deleteDoc = deleteDoc;
 window.doc = doc;
 window.updateDoc = updateDoc;
 
-// ✅ ここ追加（重要🔥）
+window.storageRef = ref;
+window.uploadString = uploadString;
+window.getDownloadURL = getDownloadURL;
+
+
+// アプリ開始
 window.startApp = function(){
   if(window.loadNews){
-    loadNews();
+    window.loadNews();
   }
 };
-</script>
 
+</script>
 
 <h2>NEWS登録</h2>
 
@@ -138,9 +160,15 @@ window.startApp = function(){
      ondrop="dropFile(event)">
   ここに画像をドラッグ or タップで選択
 </div>
-<img id="preview"
-     style="width:200px; margin-top:10px; display:none;">
-
+<div id="preview"
+     style="
+       display:grid;
+       grid-template-columns:repeat(2, 1fr);
+       gap:10px;
+       max-width:420px;
+       margin:20px auto;
+     ">
+</div>
 <br>
 
 <button type="button" onclick="removeCurrentImage()">
@@ -150,8 +178,9 @@ window.startApp = function(){
 <input type="file"
        id="file"
        accept="image/*"
+       multiple
        style="display:none"
-       onchange="selectFile(this)">
+       onchange="selectFiles(this)">
 <br>
 
 <input id="link" placeholder="リンクURL"><br>
@@ -191,80 +220,280 @@ function updatePendingCount(){
       : `✅ 承認待ちなし`;
 }
 
-let imgData = "";
+let imgData = [];
 let editIndex = null;
 
 // 画像選択
-function selectFile(input){
-  const file = input.files[0];
-  readFile(file);
+// 写真を複数選択
+function selectFiles(input){
+
+  const files = Array.from(input.files);
+
+  if(files.length > 10){
+    alert("写真は10枚まで選択できます");
+    input.value = "";
+    return;
+  }
+
+  imgData = [];
+
+  files.forEach(file => {
+    readFile(file);
+  });
 }
 
-// ドロップ
+
+// ドラッグ＆ドロップ
 function dropFile(e){
+
   e.preventDefault();
-  const file = e.dataTransfer.files[0];
-  readFile(file);
+
+  const files = Array.from(e.dataTransfer.files);
+
+  if(files.length > 10){
+    alert("写真は10枚までです");
+    return;
+  }
+
+  imgData = [];
+
+  files.forEach(file => {
+    readFile(file);
+  });
 }
 
-// 読み込み
-function readFile(file){
-  const reader = new FileReader();
-  reader.onload = function(e){
-    imgData = e.target.result;
 
-    // ✅ ここが追加ポイント
-    const preview = document.getElementById("preview");
-    preview.src = imgData;
-    preview.style.display = "block";
+// 写真を読み込む
+function readFile(file){
+
+  if(!file.type.startsWith("image/")){
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function(e){
+
+    imgData.push(e.target.result);
+
+    renderPreview();
+
   };
+
   reader.readAsDataURL(file);
 }
 
 
-// 保存（新規 or 編集）
-async function saveNews(){
+// プレビュー表示
+function renderPreview(){
 
-  const data = {
-    title: document.getElementById("title").value,
-    date: document.getElementById("date").value,
-    img: imgData,
-    link: document.getElementById("link").value,
-    tag: document.getElementById("tag").value,
-    content: document.getElementById("content").value,
-    approved:
-  editIndex !== null
-    ? news[editIndex].approved
-    : false
-  };
+  const preview = document.getElementById("preview");
 
-  if(!data.title || !data.date){
-    alert("タイトルと日付は必須です");
-    return;
-  }
+  preview.innerHTML = "";
 
-  // 🔥 編集モードなら更新
-  if(editIndex !== null){
-    await updateDoc(doc(db, "news", news[editIndex].id), data);
-    editIndex = null;
-    document.getElementById("saveBtn").innerText = "💾 保存";
-  }
+  imgData.forEach((img, index) => {
 
-  // 🔥 新規なら追加
-  else{
-    await addDoc(collection(db, "news"), data);
-  }
+    preview.innerHTML += `
+      <div style="
+        position:relative;
+        border:1px solid #555;
+        padding:3px;
+      ">
 
-  clearForm();
-  loadNews();
+        <img
+          src="${img}"
+          style="
+            width:100%;
+            height:150px;
+            object-fit:cover;
+          "
+        >
 
-  alert("保存しました！");
+        <button
+          type="button"
+          onclick="removeImage(${index})"
+          style="
+            position:absolute;
+            top:5px;
+            right:5px;
+            padding:4px 8px;
+            font-size:14px;
+            background:#d6002a;
+          "
+        >
+          ×
+        </button>
+
+      </div>
+    `;
+
+  });
 }
 
 
-async function loadNews(){
+// 写真を1枚削除
+function removeImage(index){
 
-  const snap = await getDocs(collection(db, "news"));
+  imgData.splice(index, 1);
+
+  renderPreview();
+
+  document.getElementById("file").value = "";
+}
+
+// 保存（新規 or 編集）
+async function saveNews(){
+
+  try {
+
+    if(imgData.length > 10){
+      alert("写真は10枚までです");
+      return;
+    }
+
+
+    // Firebase Storageへ写真をアップロード
+    const photoUrls = [];
+
+    for(let i = 0; i < imgData.length; i++){
+
+      const image = imgData[i];
+
+      // すでにStorage URLの場合
+      if(image.startsWith("http")){
+        photoUrls.push(image);
+        continue;
+      }
+
+      const fileName =
+        `news/${Date.now()}_${i}.jpg`;
+
+      const storageRef =
+        window.storageRef(
+          window.storage,
+          fileName
+        );
+
+      await window.uploadString(
+        storageRef,
+        image,
+        "data_url"
+      );
+
+      const url =
+        await window.getDownloadURL(storageRef);
+
+      photoUrls.push(url);
+    }
+
+
+    const data = {
+
+      title:
+        document.getElementById("title").value,
+
+      date:
+        document.getElementById("date").value,
+
+      // 写真URLを保存
+      photos: photoUrls,
+
+      // 古いデータとの互換用
+      img:
+        photoUrls.length > 0
+          ? photoUrls[0]
+          : "",
+
+      link:
+        document.getElementById("link").value,
+
+      tag:
+        document.getElementById("tag").value,
+
+      content:
+        document.getElementById("content").value,
+
+      approved:
+        editIndex !== null
+          ? news[editIndex].approved
+          : false
+    };
+
+
+    if(!data.title || !data.date){
+
+      alert("タイトルと日付は必須です");
+      return;
+
+    }
+
+
+    // 編集
+    if(editIndex !== null){
+
+      await window.updateDoc(
+
+        window.doc(
+          window.db,
+          "news",
+          news[editIndex].id
+        ),
+
+        data
+
+      );
+
+      editIndex = null;
+
+      document.getElementById("saveBtn")
+        .innerText = "💾 保存";
+
+    }
+
+
+    // 新規
+    else{
+
+      await window.addDoc(
+
+        window.collection(
+          window.db,
+          "news"
+        ),
+
+        data
+
+      );
+
+    }
+
+
+    clearForm();
+
+    await loadNews();
+
+    alert("保存しました！");
+
+
+  } catch(error){
+
+    console.error(error);
+
+    alert(
+      "保存に失敗しました。\n\n" +
+      error.message
+    );
+
+  }
+
+}
+
+
+window.loadNews = async function(){
+
+  const snap = await window.getDocs(
+    window.collection(window.db, "news")
+  );
 
   news = [];
 
@@ -276,88 +505,164 @@ async function loadNews(){
   });
 
   renderList();
-  updatePendingCount(); // ←ここに移動🔥
-}
-
+  updatePendingCount();
+};
 
 // 一覧表示
 function renderList(){
 
   const saved = localStorage.getItem("userLogin");
 
-const role = saved
-  ? JSON.parse(saved).role
-  : "";
+  const role = saved
+    ? JSON.parse(saved).role
+    : "";
+
   const box = document.getElementById("list");
 
   box.innerHTML = "";
 
   news.forEach((n, i) => {
 
-  box.innerHTML += `
-  <div style="border:1px solid #fff; margin:10px; padding:10px;">
+    // 表示する写真は1枚目だけ
+    let firstImage = "";
 
-    ${n.img ? `
-    <img
-      src="${n.img}"
-      style="
-        max-width:200px;
-        display:block;
-        margin:0 auto 10px;
-      "
-    >
-    ` : ""}
-
-    <br>
-
-    <strong>${n.title}</strong><br>
-    ${n.date}<br>
-
-    <button onclick="editNews(${i})">編集</button>
-    <button onclick="deleteNews(${i})">削除</button>
-
-    ${
-      n.approved
-      ? `<span style="color:#00e676;">✅ 承認済</span>`
-      : (role === "admin"
-        ? `<button onclick="approveNews(${i})">承認</button>`
-        : `<span style="color:#ff9800;">⏳ 承認待ち</span>`)
+    if(n.photos && n.photos.length > 0){
+      firstImage = n.photos[0];
+    }
+    else if(n.img){
+      firstImage = n.img;
     }
 
-  </div>
-  `;
-});
-}
 
+    box.innerHTML += `
+
+      <div style="
+        border:1px solid #fff;
+        margin:10px;
+        padding:10px;
+      ">
+
+        ${
+          firstImage
+          ?
+          `
+          <img
+            src="${firstImage}"
+            style="
+              width:200px;
+              height:150px;
+              object-fit:cover;
+              display:block;
+              margin:0 auto 10px;
+              border-radius:5px;
+            "
+          >
+          `
+          :
+          ""
+        }
+
+
+        <br>
+
+        <strong>${n.title}</strong>
+        <br>
+
+        ${n.date}
+        <br><br>
+
+
+        <button onclick="editNews(${i})">
+          編集
+        </button>
+
+        <button onclick="deleteNews(${i})">
+          削除
+        </button>
+
+
+        ${
+          n.approved
+          ?
+          `
+          <span style="color:#00e676;">
+            ✅ 承認済
+          </span>
+          `
+          :
+          (
+            role === "admin"
+            ?
+            `
+            <button onclick="approveNews(${i})">
+              承認
+            </button>
+            `
+            :
+            `
+            <span style="color:#ff9800;">
+              ⏳ 承認待ち
+            </span>
+            `
+          )
+        }
+
+      </div>
+
+    `;
+  });
+}
 // 削除
 async function deleteNews(i){
 
   if(!confirm("削除する？")) return;
 
-  await deleteDoc(doc(db, "news", news[i].id));
-
+await window.deleteDoc(
+  window.doc(
+    window.db,
+    "news",
+    news[i].id
+  )
+);
   loadNews();
 }
 
 // 画像だけ削除
 async function deleteImage(i){
 
-  if(!confirm("画像だけ削除しますか？")){
+  if(!confirm("画像をすべて削除しますか？")){
     return;
   }
 
-  await updateDoc(
-    doc(db, "news", news[i].id),
-    {
-      img: ""
-    }
-  );
+  try{
 
-  alert("画像を削除しました");
+    await window.updateDoc(
+      window.doc(
+        window.db,
+        "news",
+        news[i].id
+      ),
+      {
+        photos: [],
+        img: ""
+      }
+    );
 
-  loadNews();
+    alert("画像を削除しました");
+
+    await loadNews();
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "画像の削除に失敗しました。\n\n" +
+      error.message
+    );
+
+  }
 }
-
 // 編集
 function editNews(i){
 
@@ -368,11 +673,15 @@ function editNews(i){
   document.getElementById("link").value = n.link;
   document.getElementById("tag").value = n.tag;
   document.getElementById("content").value = n.content;
-  imgData = n.img;
+  imgData = n.photos || [];
 
-  const preview = document.getElementById("preview");
-  preview.src = imgData;
-  preview.style.display = imgData ? "block" : "none";
+
+// 古いNEWSでphotosがない場合
+if(imgData.length === 0 && n.img){
+  imgData = [n.img];
+}
+
+renderPreview();
 
   editIndex = i;
   document.getElementById("saveBtn").innerText = "✏️ 更新する";
@@ -389,57 +698,60 @@ function preview(i){
     "本文：" + n.content
   );
 }
+
 function removeCurrentImage(){
 
-  imgData = "";
+  imgData = [];
 
-  const preview =
-    document.getElementById("preview");
-
-  preview.src = "";
-  preview.style.display = "none";
+  document.getElementById("preview").innerHTML = "";
 
   document.getElementById("file").value = "";
+
 }
 
 // フォームクリア
 function clearForm(){
+
   document.getElementById("title").value = "";
   document.getElementById("date").value = "";
   document.getElementById("link").value = "";
   document.getElementById("content").value = "";
   document.getElementById("tag").value = "result";
 
-  imgData = "";
-  editIndex = null; // 🔥これ重要
+  imgData = [];
+  editIndex = null;
 
-  const preview = document.getElementById("preview");
-  preview.src = "";
-  preview.style.display = "none";
+  document.getElementById("preview").innerHTML = "";
+  document.getElementById("file").value = "";
 
-  document.getElementById("saveBtn").innerText = "💾 保存"; // 🔥戻す
+  document.getElementById("saveBtn").innerText = "💾 保存";
 }
 
 async function approveNews(i){
 
   const saved = localStorage.getItem("userLogin");
 
-const role = saved
-  ? JSON.parse(saved).role
-  : "";
-
+  const role = saved
+    ? JSON.parse(saved).role
+    : "";
 
   if(role !== "admin"){
     alert("権限がありません");
     return;
   }
 
-  await updateDoc(doc(db, "news", news[i].id), {
-    approved: true
-  });
+  await window.updateDoc(
+    window.doc(
+      window.db,
+      "news",
+      news[i].id
+    ),
+    {
+      approved: true
+    }
+  );
 
-  loadNews();
-  updatePendingCount();
+  await loadNews();
 
   alert("承認しました");
 }

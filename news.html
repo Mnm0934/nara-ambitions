@@ -639,13 +639,14 @@ console.log(newsData);
 // ✅ 一覧表示
 function renderNews(){
 
-  const approvedNews = newsData.filter(n => n.approved === true);
+const approvedNews =
+  newsData
+    .filter(n => n.approved === true)
+    .sort((a,b) => new Date(b.date) - new Date(a.date));
 
-  const box = document.getElementById("news-list");
+const box = document.getElementById("news-list");
 
-  box.innerHTML = "";
-
-  approvedNews.sort((a,b) => new Date(b.date) - new Date(a.date));
+box.innerHTML = "";
 
 console.log(approvedNews);
 
@@ -683,50 +684,190 @@ console.log(approvedNews);
 
 
 // ✅ モーダル表示
+let currentPhotoIndex = 0;
+let currentPhotos = [];
+
 function openModal(i){
 
-  const approvedNews = newsData.filter(n => n.approved === true);
+  const approvedNews =
+  newsData
+    .filter(n => n.approved === true)
+    .sort((a,b) => new Date(b.date) - new Date(a.date));
+
   const n = approvedNews[i];
 
-  const box = document.getElementById("modalContent");
+  // 写真一覧
+  currentPhotos =
+    n.photos && n.photos.length > 0
+      ? n.photos
+      : (n.img ? [n.img] : []);
+
+  currentPhotoIndex = 0;
+
+  const box =
+    document.getElementById("modalContent");
 
   box.innerHTML = `
-  <h3>${n.title}</h3>
-  <p style="color:#aaa;">${n.date}</p>
 
-  ${n.img ? `
-<img
-  src="${n.img}"
-  style="
-    width:auto;
-    max-width:50%;
-    max-height:500px;
-    object-fit:contain;
-    display:block;
-    margin:10px auto;
-    border-radius:10px;
-  "
->
-` : ""}
+    <h3>${n.title}</h3>
 
-  <p>${n.content || ""}</p>
+    <p style="color:#aaa;">
+      ${n.date}
+    </p>
 
-  <br>
+    ${
+      currentPhotos.length > 0
+      ?
+      `
+      <div style="
+        position:relative;
+        width:100%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        margin:20px 0;
+      ">
 
-  <button onclick="closeModal()" style="
-    width:100%;
-    background:#666;
-    color:white;
-    padding:10px;
-    border:none;
-  ">
-    閉じる
-  </button>
-`;
+        <!-- 左ボタン -->
+        <button
+          onclick="changePhoto(-1)"
+          style="
+            position:absolute;
+            left:10px;
+            z-index:2;
+            width:45px;
+            height:60px;
+            border:none;
+            border-radius:10px;
+            background:rgba(0,0,0,0.6);
+            color:white;
+            font-size:32px;
+            cursor:pointer;
+          "
+        >
+          ‹
+        </button>
+
+
+        <!-- 写真 -->
+        <img
+          id="modalPhoto"
+          src="${currentPhotos[0]}"
+          style="
+            width:100%;
+            max-width:700px;
+            max-height:60vh;
+            object-fit:contain;
+            border-radius:10px;
+            background:white;
+            display:block;
+          "
+        >
+
+
+        <!-- 右ボタン -->
+        <button
+          onclick="changePhoto(1)"
+          style="
+            position:absolute;
+            right:10px;
+            z-index:2;
+            width:45px;
+            height:60px;
+            border:none;
+            border-radius:10px;
+            background:rgba(0,0,0,0.6);
+            color:white;
+            font-size:32px;
+            cursor:pointer;
+          "
+        >
+          ›
+        </button>
+
+      </div>
+
+
+      <!-- 枚数 -->
+      <div
+        id="photoCounter"
+        style="
+          text-align:center;
+          color:#fff;
+          margin-top:5px;
+          font-size:14px;
+        "
+      >
+        1 / ${currentPhotos.length}
+      </div>
+
+      `
+      :
+      ""
+    }
+
+
+    <p style="
+      margin-top:20px;
+      white-space:pre-wrap;
+    ">
+      ${n.content || ""}
+    </p>
+
+    <br>
+
+
+    <button
+      onclick="closeModal()"
+      style="
+        width:100%;
+        background:#666;
+        color:white;
+        padding:10px;
+        border:none;
+        border-radius:5px;
+        cursor:pointer;
+      "
+    >
+      閉じる
+    </button>
+
+  `;
 
   document.getElementById("modal").style.display = "flex";
 }
 
+function changePhoto(direction){
+
+  if(currentPhotos.length <= 1){
+    return;
+  }
+
+  currentPhotoIndex += direction;
+
+
+  // 最後 → 最初
+  if(currentPhotoIndex >= currentPhotos.length){
+    currentPhotoIndex = 0;
+  }
+
+
+  // 最初 → 最後
+  if(currentPhotoIndex < 0){
+    currentPhotoIndex =
+      currentPhotos.length - 1;
+  }
+
+
+  // 写真変更
+  document.getElementById("modalPhoto").src =
+    currentPhotos[currentPhotoIndex];
+
+
+  // 枚数変更
+  document.getElementById("photoCounter").innerText =
+    `${currentPhotoIndex + 1} / ${currentPhotos.length}`;
+}
 
 // ✅ モーダル閉じる
 function closeModal(){
@@ -739,10 +880,6 @@ window.onclick = function(e){
     modal.style.display = "none";
   }
 }
-
-
-// ✅ 初期表示
-loadNews();
 
 </script>
 
