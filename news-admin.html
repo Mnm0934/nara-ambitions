@@ -193,8 +193,7 @@ window.startApp = function(){
 
 <textarea id="content" placeholder="詳細文章"></textarea><br>
 
-<button id="saveBtn" onclick="saveNews()">💾 保存</button>
-
+<button id="saveBtn" type="button">💾 保存</button>
 <br><br>
 
 <button onclick="location.href='member-only.html'">
@@ -487,6 +486,16 @@ async function saveNews(){
   }
 
 }
+
+window.saveNews = saveNews;
+
+document.getElementById("saveBtn").addEventListener("click", function(){
+
+  console.log("保存ボタンが押されました");
+
+  saveNews();
+
+});
 
 
 window.loadNews = async function(){
