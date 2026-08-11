@@ -139,17 +139,19 @@ if(!saved){
     location.href = "index.html";
   }
 
- // ✅ admin と event を許可
-if(
-  user.role !== "admin" &&
-  user.role !== "event"
-){
-  alert("権限がありません");
-  location.href = "member-only.html";
-}
+  // ✅ roleがなければIDを権限として使用
+  const role = user.role || user.id;
+
+  // ✅ admin と event を許可
+  if(
+    role !== "admin" &&
+    role !== "event"
+  ){
+    alert("権限がありません");
+    location.href = "member-only.html";
+  }
 
   document.body.style.display = "block";
-
   // ✅ 延長
   localStorage.setItem("userLogin", JSON.stringify({
     ...user,
