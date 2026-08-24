@@ -748,26 +748,52 @@ else{
   titleText = "⚪ DRAW";
 }
 let mvpName = "-";
+let mvpType = "";
 
-if(game.batters?.length){
+let candidates = [];
 
-  let maxPoint = -1;
+// 打者
+(game.batters || []).forEach(p => {
 
-  game.batters.forEach(p=>{
+  const point =
+    (p.hit || 0) * 2 +
+    (p.rbi || 0) * 3 +
+    (p.hr || 0) * 5 +
+    (p.run || 0) +
+    (p.sb || 0) * 0.5;
 
-    const point =
-  (p.hit || 0) * 2
-  + (p.rbi || 0) * 3
-  + (p.hr || 0) * 5
-  + (p.run || 0)
-  + (p.sb || 0) * 0.5;
-
-    if(point > maxPoint){
-      maxPoint = point;
-      mvpName = p.name;
-    }
-
+  candidates.push({
+    type: "batter",
+    point,
+    name: p.name
   });
+
+});
+
+// 投手
+(game.pitchers || []).forEach(p => {
+
+  const point =
+    (p.k || 0) * 1.5 +
+    (p.inning || 0) * 2 -
+    (p.er || 0) * 3 -
+    (p.bb || 0);
+
+  candidates.push({
+    type: "pitcher",
+    point,
+    name: p.name
+  });
+
+});
+
+if(candidates.length){
+
+  const mvp =
+    candidates.sort((a,b)=>b.point-a.point)[0];
+
+  mvpName = mvp.name;
+  mvpType = mvp.type;
 }
 html += `
 <div class="game-card">
@@ -793,9 +819,17 @@ html += `
   <div class="mvp-line">
     ${
       myTotal > opTotal
-          ? `🔥 MVP 🔥<br>${mvpName}`
+        ? (
+            mvpType === "pitcher"
+              ? `⚾ MVP ⚾<br>${mvpName}`
+              : `🔥 MVP 🔥<br>${mvpName}`
+          )
         : myTotal < opTotal
-          ? `⭐ 敢闘賞 ⭐<br>${mvpName}`
+          ? (
+              mvpType === "pitcher"
+                ? `⚾ 敢闘賞 ⚾<br>${mvpName}`
+                : `⭐ 敢闘賞 ⭐<br>${mvpName}`
+            )
           : ``
     }
   </div>

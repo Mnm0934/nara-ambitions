@@ -353,72 +353,147 @@ else{
 </div>
 `;
 
-let mvp = null;
-let maxPoint = -1;
+let candidates = [];
 
-(match.batters || []).forEach(p=>{
+// 打者評価
+(match.batters || []).forEach(p => {
 
   const point =
-  (p.hit || 0) * 2
-  + (p.rbi || 0) * 3
-  + (p.hr || 0) * 5
-  + (p.run || 0)
-  + (p.sb || 0) * 0.5;
+    (p.hit || 0) * 2 +
+    (p.rbi || 0) * 3 +
+    (p.hr || 0) * 5 +
+    (p.run || 0) +
+    (p.sb || 0) * 0.5;
 
-  if(point > maxPoint){
-    maxPoint = point;
-    mvp = p;
-  }
+  candidates.push({
+    type: "batter",
+    point,
+    data: p
+  });
 
 });
+
+// 投手評価
+(match.pitchers || []).forEach(p => {
+
+  const point =
+    (p.k || 0) * 1.5 +
+    (p.inning || 0) * 2 -
+    (p.er || 0) * 3 -
+    (p.bb || 0);
+
+  candidates.push({
+    type: "pitcher",
+    point,
+    data: p
+  });
+
+});
+
+// MVP決定
+const mvp =
+candidates.length > 0
+  ? candidates.sort((a,b)=>b.point-a.point)[0]
+  : null;
 
 if(mvp){
 
   const awardTitle =
-  result === "負け"
-    ? "敢闘賞"
-    : result === "引分"
-      ? "⭐ 活躍選手"
-      : "🏆 MVP";
+    result === "負け"
+      ? "敢闘賞"
+      : result === "引分"
+        ? "⭐ 活躍選手"
+        : "🏆 MVP";
 
   const awardBox =
     document.getElementById("mvp");
 
-  // 背景色変更
   if(result === "負け"){
 
-    awardBox.style.background = "#c0c0c0"; // 銀色
+    awardBox.style.background = "#c0c0c0";
 
   }else if(result === "引分"){
 
-    awardBox.style.background = "#87ceeb"; // 水色
+    awardBox.style.background = "#87ceeb";
 
   }else{
 
-    awardBox.style.background = "#ffd700"; // 金色
+    awardBox.style.background = "#ffd700";
+
+  }
+
+  let detail = "";
+
+  if(mvp.type === "batter"){
+
+  const ab = mvp.data.ab || 0;
+  const hit = mvp.data.hit || 0;
+  const bb = mvp.data.bb || 0;
+  const sf = mvp.data.sf || 0;
+  const tb = mvp.data.tb || 0;
+
+  const obp =
+    (ab + bb + sf)
+      ? ((hit + bb)/(ab + bb + sf)).toFixed(3)
+      : "-";
+
+  const slg =
+    ab
+      ? (tb / ab).toFixed(3)
+      : "-";
+
+  const ops =
+    (obp !== "-" && slg !== "-")
+      ? (parseFloat(obp) + parseFloat(slg)).toFixed(3)
+      : "-";
+
+  detail = `
+    ${ab}打数
+    ${hit}安打<br>
+
+    ${mvp.data.hr || 0}本塁打
+    ${mvp.data.rbi || 0}打点<br>
+
+    OPS ${ops}
+  `;
+
+}else{
+
+    const era =
+      mvp.data.inning
+      ? ((mvp.data.er || 0) / mvp.data.inning * 9).toFixed(2)
+      : "-";
+
+    detail = `
+    ${mvp.data.inning || 0}回
+    ${mvp.data.k || 0}奪三振<br>
+
+    自責点 ${mvp.data.er || 0}<br>
+
+    防御率 ${era}
+    `;
 
   }
 
   awardBox.innerHTML = `
   <div style="
-font-size:36px;
-font-weight:bold;
-color:#ff6600;
-margin-bottom:10px;
-">
-    ${awardTitle}
+  font-size:36px;
+  font-weight:bold;
+  color:#ff6600;
+  margin-bottom:10px;
+  ">
+  ${awardTitle}
   </div>
 
   <div style="
-font-size:34px;
-font-weight:bold;
-margin-bottom:8px;
-">
-${mvp.name}
-</div>
-  ${mvp.ab || 0}打数 ${mvp.hit || 0}安打<br>
-  ${mvp.hr || 0}本塁打 ${mvp.rbi || 0}打点<br>
-  OPS ${calcOPS(mvp)}
+  font-size:34px;
+  font-weight:bold;
+  margin-bottom:8px;
+  ">
+  ${mvp.data.name}
+  </div>
+
+  ${detail}
   `;
 }
 
