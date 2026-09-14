@@ -1017,6 +1017,12 @@ header.small .title img{
 
 }
 
+.secret-day{
+  background:#666 !important;
+  color:white;
+}
+
+
 </style>
 </head>
 
@@ -1241,20 +1247,43 @@ function renderCalendar(){
 
     let className = "day";
 
-    const event = events.find(e => e.date === fullDate && e.public);
+    const event = events.find(
+  e => e.date === fullDate
+);
 
 // ✅ マッチ日
 if(event){
-  className += " match-day";
+
+  if(event.public === false){
+    className += " secret-day";
+  }else{
+    className += " match-day";
+  }
+
 }
 
 if(event){
 
   let label = "📅予定";
 
-  if(event.type === "公式戦" || event.type === "OP戦") label = "⚾試合";
-  else if(event.type === "練習") label = "🏃練習";
-  else if(event.type === "飲み会") label = "🍺飲み会";
+  // 非公開
+  if(event.public === false){
+
+    label = "🔒活動";
+
+  }else{
+
+    if(event.type === "公式戦" || event.type === "OP戦"){
+      label = "⚾試合";
+    }
+    else if(event.type === "練習"){
+      label = "🏃練習";
+    }
+    else if(event.type === "飲み会"){
+      label = "🍺飲み会";
+    }
+
+  }
 
   calendarEl.innerHTML += `
     <div
@@ -1327,8 +1356,6 @@ function renderSchedule(){
 
   sorted.forEach(e => {
 
-  if(!e.public) return;
-
   const date = new Date(e.date);
 
   const displayDate =
@@ -1367,6 +1394,22 @@ if(e.result){
   }
 }
 
+let opponentText = e.opponent || "";
+let placeText = e.place || "";
+let timeText = e.time || "";
+let eventTypeText = e.type;
+
+if(e.public === false){
+
+opponentText = "詳細非公開";
+placeText = "詳細非公開";
+timeText = "詳細非公開";
+eventTypeText = "活動予定";
+
+  scoreHTML = "";
+  badgeHTML = "";
+}
+
 box.innerHTML += `
   <div
     id="match-${e.date}"
@@ -1379,21 +1422,21 @@ box.innerHTML += `
 </p>
 
 <p class="teams">
-  vs ${e.opponent || ""}
+${opponentText}
 </p>
 
 <p class="event-type">
-  ${e.type}
+${eventTypeText}
 </p>
 
 ${scoreHTML}
 
 <p class="place">
-  📍 ${e.place || ""}
+📍 ${placeText}
 </p>
 
 <p class="time">
-  🕒 ${e.time || ""}
+🕒 ${timeText}
 </p>
   
   </div>
