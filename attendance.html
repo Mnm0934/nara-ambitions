@@ -213,6 +213,7 @@ window.add = async function(status){
     .value
     .replace(/\//g, "-");
   const comment = document.getElementById("comment").value;
+const keepDate = date;
 
   if(name === "" || date === ""){
     alert("入力してください");
@@ -272,7 +273,8 @@ if(document.body.style.display === "block"){
   await loadAll();
 }
 
-document.getElementById("date").value = "";
+picker.setDate(keepDate, true);
+
 document.getElementById("comment").value = "";
 }
 
@@ -564,7 +566,7 @@ const params = new URLSearchParams(location.search);
 const selectedDate = params.get("date");
 
 if(selectedDate){
-  document.getElementById("date").value = selectedDate;
+  picker.setDate(selectedDate, true);
 }
 
 async function loadAll(){
