@@ -590,7 +590,9 @@ const obp = (ab+bb+sf) ? Number((hit+bb)/(ab+bb+sf)) : 0;
 const ops = avg + obp;
 
     const regulation =
-  data.length * 3.1;
+  viewMode.includes("official")
+    ? data.length * 3.1
+    : data.length * 2.1;
 
 const isQualified =
   pa >= regulation;
@@ -771,7 +773,9 @@ er += row.er || 0;
 
     const realInning = inningOut / 3;
     const regulationInning =
-  data.length * 2.1;
+  viewMode.includes("official")
+    ? data.length * 2.1
+    : data.length * 1.5;
 
 const isQualified =
   realInning >= regulationInning;
@@ -996,14 +1000,25 @@ const teamEra =
   ? (teamEr / (teamOuts / 3)) * 9
   : 0;
 
-  document.getElementById("teamRecord")
+const displayRegulationPA =
+  viewMode.includes("official")
+    ? games * 3.1
+    : games * 2.1;
+
+const displayRegulationIP =
+  viewMode.includes("official")
+    ? games * 2.1
+    : games * 1.5;
+
+
+document.getElementById("teamRecord")
 .innerHTML = `
 試合数：${games}<br>
 ${win}勝 ${lose}敗 ${draw}分<br>
 勝率：${winRate.toFixed(3)}<br><br>
 
-規定打席：${(games * 3.1).toFixed(1)}<br>
-規定投球回：${(games * 2.1).toFixed(1)}<br><br>
+規定打席：${displayRegulationPA.toFixed(1)}<br>
+規定投球回：${displayRegulationIP.toFixed(1)}<br><br>
 
 得点：${totalRun}<br>
 失点：${totalLostRun}<br>
@@ -1104,7 +1119,9 @@ pitcherStats[cleanName].so += p.k||0;
 const avg = p.ab ? p.hit / p.ab : 0;
 
   const regulation =
-  data.length * 3.1;
+  viewMode.includes("official")
+    ? data.length * 3.1
+    : data.length * 2.1;
 
 const isQualified =
   p.pa >= regulation;
@@ -1115,19 +1132,31 @@ const isQualified =
   .sort((a,b)=>b.avg - a.avg);
 
   // ---- 防御率ランキング ----
-  const pitchers = Object.keys(pitcherStats).map(name=>{
-    const p = pitcherStats[name];
+  const pitchers = Object.keys(pitcherStats)
+.map(name=>{
 
-    const realInning = p.inningOut / 3;
-    const era = realInning ? p.er / realInning * 9 : 999;
+  const p = pitcherStats[name];
 
-    const isQualified =
-  realInning >= data.length * 2.1;
+  const realInning = p.inningOut / 3;
+  const era = realInning ? p.er / realInning * 9 : 999;
 
-    return {name, era, isQualified};
-  })
-  .filter(p => p.isQualified)
-  .sort((a,b)=>a.era - b.era);
+  const pitcherRegulation =
+    viewMode.includes("official")
+      ? data.length * 2.1
+      : data.length * 1.5;
+
+  const isQualified =
+    realInning >= pitcherRegulation;
+
+  return {
+    name,
+    era,
+    isQualified
+  };
+
+})
+.filter(p => p.isQualified)
+.sort((a,b)=>a.era - b.era);
 
 // ---- 奪三振ランキング ----
 const soRank = Object.keys(pitcherStats)
@@ -1138,8 +1167,13 @@ const soRank = Object.keys(pitcherStats)
 const inning =
   p.inningOut / 3;
 
-  const qualified =
-  inning >= data.length * 2.1;
+const pitcherRegulation =
+  viewMode.includes("official")
+    ? data.length * 2.1
+    : data.length * 1.5;
+
+const qualified =
+  inning >= pitcherRegulation;
 
   return {
     name,
@@ -1160,9 +1194,13 @@ const whipRank = Object.keys(pitcherStats)
 const inning =
   p.inningOut / 3;
 
-  const qualified =
-  inning >= data.length * 2.1;
+const pitcherRegulation =
+  viewMode.includes("official")
+    ? data.length * 2.1
+    : data.length * 1.5;
 
+const qualified =
+  inning >= pitcherRegulation;
 
   return {
     name,
@@ -1184,7 +1222,9 @@ const opsRank = Object.keys(batterStats)
   const p = batterStats[name];
 
 const regulation =
-  data.length * 3.1;
+  viewMode.includes("official")
+    ? data.length * 3.1
+    : data.length * 2.1;
 
 
 const qualified =
@@ -1217,8 +1257,13 @@ const kbbRank = Object.keys(pitcherStats)
 const inning =
   p.inningOut / 3;
 
-  const qualified =
-  inning >= data.length * 2.1;
+const pitcherRegulation =
+  viewMode.includes("official")
+    ? data.length * 2.1
+    : data.length * 1.5;
+
+const qualified =
+  inning >= pitcherRegulation;
 
   return {
     name,
