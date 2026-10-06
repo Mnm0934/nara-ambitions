@@ -189,12 +189,13 @@ if(saved){
 <div id="teamRecord"></div>
 
 <div style="margin:10px;">
-  <button onclick="changeMode('all')">通算</button>
-  <button onclick="changeMode('recent')">直近5試合</button>
 
-  <select id="yearSelect" onchange="changeYear()">
-    <option value="all">年度選択</option>
-  </select>
+<select
+  id="viewMode"
+  onchange="changeViewMode()"
+>
+</select>
+
 </div>
 
 <h2>打者成績一覧</h2>
@@ -315,56 +316,78 @@ async function loadResults(){
     });
   });
 
-  createYearSelect();
-  render();
+  createViewSelect();
+render();
 }
 
-function createYearSelect(){
+function createViewSelect(){
 
   const years = [
     ...new Set(
       resultsData
         .filter(r => r.date)
-        .map(r => new Date(r.date).getFullYear())
+        .map(r =>
+          new Date(r.date).getFullYear()
+        )
     )
   ].sort((a,b)=>b-a);
 
   const select =
-    document.getElementById("yearSelect");
+    document.getElementById("viewMode");
 
-  select.innerHTML =
-  '<option value="all">全年度</option>';
-
-  years.forEach(year => {
+  select.innerHTML = "";
 
   select.innerHTML += `
-    <option value="${year}">
-      ${year}年
+    <option value="currentYear">
+      今年度通算
     </option>
   `;
 
-});
+  select.innerHTML += `
+    <option value="all">
+      通算成績
+    </option>
+  `;
 
-select.value = String(selectedYear);
+  select.innerHTML += `
+    <option value="recent">
+      直近5試合
+    </option>
+  `;
+
+  years.forEach(year => {
+
+    select.innerHTML += `
+      <option value="${year}_all">
+        ${year}年度 通算
+      </option>
+    `;
+
+    select.innerHTML += `
+      <option value="${year}_official">
+        ${year}年度 公式戦
+      </option>
+    `;
+
+    select.innerHTML += `
+      <option value="${year}_op">
+        ${year}年度 OP戦
+      </option>
+    `;
+
+  });
 
 }
 
-let mode = "year";
-let selectedYear = new Date().getFullYear();
+let viewMode = "currentYear";
 
-function changeMode(m){
-  mode = m;
-  render();
-}
+function changeViewMode(){
 
-function changeYear(){
-
-  selectedYear =
-    document.getElementById("yearSelect").value;
-
-  mode = "year";
+  viewMode =
+    document.getElementById("viewMode").value;
 
   render();
+
 }
 
 
@@ -394,27 +417,67 @@ function render(){
   // 日付ソート
   data.sort((a,b)=> new Date(a.date) - new Date(b.date));
 
-  // モード処理
-  if(mode === "recent") data = data.slice(-5);
+  const currentYear =
+  new Date().getFullYear();
 
-  if(mode === "year"){
+if(viewMode === "currentYear"){
 
-  if(selectedYear !== "all"){
+  data = data.filter(g =>
 
-    data = data.filter(g => {
+    g.date &&
+    new Date(g.date).getFullYear()
+    === currentYear
 
-      if(!g.date) return false;
-
-      return (
-        new Date(g.date).getFullYear()
-        === Number(selectedYear)
-      );
-
-    });
-
-  }
+  );
 
 }
+else if(viewMode === "all"){
+
+  // 通算
+
+}
+else if(viewMode === "recent"){
+
+  data = data.slice(-5);
+
+}
+else{
+
+  const [year, type]
+    = viewMode.split("_");
+
+  data = data.filter(g => {
+
+    if(!g.date){
+      return false;
+    }
+
+    const gameYear =
+      new Date(g.date)
+      .getFullYear();
+
+    if(gameYear !== Number(year)){
+      return false;
+    }
+
+    if(type === "all"){
+  return true;
+}
+
+if(type === "official"){
+  return g.gameType === "official";
+}
+
+if(type === "op"){
+  return g.gameType === "op";
+}
+
+return false;
+
+  });
+
+}
+
 
   // 対象試合一覧
   renderGameList(data);
@@ -444,6 +507,7 @@ renderTeamRecord(data);
 <th>得点</th>
 <th>盗塁</th>
 <th>盗塁失敗</th>
+<th>失策</th>
 <th>二塁打</th>
 <th>三塁打</th>
 <th>本塁打</th>
@@ -468,8 +532,8 @@ renderTeamRecord(data);
 
     let games=0, pa=0, ab=0, hit=0, bb=0, rbi=0, run=0;
     let sac=0, sf=0, so=0;
-    let sb=0, sb_fail=0;
-    let double=0, triple=0, hr=0, tb=0;
+    let sb=0, sb_fail=0, error=0;
+let double=0, triple=0, hr=0, tb=0;
     let risp_ab=0, risp_hit=0;
 
     data.forEach(game=>{
@@ -493,9 +557,10 @@ renderTeamRecord(data);
       rbi += row.rbi||0;
 run += row.run || 0;
       sb += row.sb||0;
-      sb_fail += row.cs||0;
+sb_fail += row.cs||0;
+error += row.error||0;
 
-      double += row.double||0;
+double += row.double||0;
       triple += row.triple||0;
       hr += row.hr||0;
 
@@ -524,10 +589,10 @@ run += row.run || 0;
 const obp = (ab+bb+sf) ? Number((hit+bb)/(ab+bb+sf)) : 0;
 const ops = avg + obp;
 
-    const regulation = games * 3.0;
+    const regulation =
+  data.length * 3.1;
 
 const isQualified =
-  games >= data.length * 0.5 &&
   pa >= regulation;
 
     list.push({
@@ -536,7 +601,13 @@ const isQualified =
   pa,ab,hit,bb,rbi,run,
       sac,sf,so,
       risp_ab, risp_hit,
-      sb,sb_fail,double,triple,hr,tb,
+      sb,
+sb_fail,
+error,
+double,
+triple,
+hr,
+tb,
       avg,obp,ops,
       risp: risp_ab ? risp_hit/risp_ab : 0,
       isQualified
@@ -577,8 +648,9 @@ const isQualified =
       <td>${p.rbi}</td>
 <td>${p.run}</td>
 <td>${p.sb}</td>
-      <td>${p.sb_fail}</td>
-      <td>${p.double}</td>
+<td>${p.sb_fail}</td>
+<td>${p.error}</td>
+<td>${p.double}</td>
       <td>${p.triple}</td>
       <td>${p.hr}</td>
       <td>${p.tb}</td>
@@ -698,7 +770,11 @@ er += row.er || 0;
       Math.floor(inningOut / 3) + "." + (inningOut % 3);
 
     const realInning = inningOut / 3;
-    const isQualified = games > 0 && realInning >= games * 1.2;
+    const regulationInning =
+  data.length * 2.1;
+
+const isQualified =
+  realInning >= regulationInning;
 
     list.push({
   num,
@@ -921,15 +997,19 @@ const teamEra =
   : 0;
 
   document.getElementById("teamRecord")
-  .innerHTML = `
-    試合数：${games}<br>
-    ${win}勝 ${lose}敗 ${draw}分<br>
-    勝率：${winRate.toFixed(3)}<br>
-    得点：${totalRun}<br>
-    失点：${totalLostRun}<br>
-    チーム打率：${teamAvg.toFixed(3)}<br>
-    チーム防御率：${teamEra.toFixed(2)}
-  `;
+.innerHTML = `
+試合数：${games}<br>
+${win}勝 ${lose}敗 ${draw}分<br>
+勝率：${winRate.toFixed(3)}<br><br>
+
+規定打席：${(games * 3.1).toFixed(1)}<br>
+規定投球回：${(games * 2.1).toFixed(1)}<br><br>
+
+得点：${totalRun}<br>
+失点：${totalLostRun}<br>
+チーム打率：${teamAvg.toFixed(3)}<br>
+チーム防御率：${teamEra.toFixed(2)}
+`;
 }
 
 // ================= ランキング =================
@@ -1021,14 +1101,13 @@ pitcherStats[cleanName].so += p.k||0;
   // ---- 打率ランキング ----
   const hitters = Object.keys(batterStats).map(name=>{
   const p = batterStats[name];
-  const games = batterGames[name].size;
-  const avg = p.ab ? p.hit / p.ab : 0;
+const avg = p.ab ? p.hit / p.ab : 0;
 
-  const regulation = games * 3.0;
+  const regulation =
+  data.length * 3.1;
 
-  const isQualified =
-    games >= data.length * 0.5 &&
-    p.pa >= regulation;
+const isQualified =
+  p.pa >= regulation;
 
   return {name, avg, isQualified};
 })
@@ -1038,14 +1117,12 @@ pitcherStats[cleanName].so += p.k||0;
   // ---- 防御率ランキング ----
   const pitchers = Object.keys(pitcherStats).map(name=>{
     const p = pitcherStats[name];
-    const games = pitcherGames[name].size;
 
     const realInning = p.inningOut / 3;
     const era = realInning ? p.er / realInning * 9 : 999;
 
     const isQualified =
-  games > 0 &&
-  realInning >= games * 1.2;
+  realInning >= data.length * 2.1;
 
     return {name, era, isQualified};
   })
@@ -1058,15 +1135,11 @@ const soRank = Object.keys(pitcherStats)
 
   const p = pitcherStats[name];
 
-  const games =
-    pitcherGames[name].size;
-
-  const inning =
-    p.inningOut / 3;
+const inning =
+  p.inningOut / 3;
 
   const qualified =
-  games > 0 &&
-  inning >= games * 1.2;
+  inning >= data.length * 2.1;
 
   return {
     name,
@@ -1075,7 +1148,7 @@ const soRank = Object.keys(pitcherStats)
   };
 
 })
-.filter(p => p.so > 0)
+.filter(p => p.so > 0 && p.qualified)
 .sort((a,b)=>b.so-a.so);
 
 // ---- WHIPランキング ----
@@ -1084,15 +1157,12 @@ const whipRank = Object.keys(pitcherStats)
 
   const p = pitcherStats[name];
 
-  const games =
-    pitcherGames[name].size;
-
-  const inning =
-    p.inningOut / 3;
+const inning =
+  p.inningOut / 3;
 
   const qualified =
-  games > 0 &&
-  inning >= games * 1.2;
+  inning >= data.length * 2.1;
+
 
   return {
     name,
@@ -1113,15 +1183,12 @@ const opsRank = Object.keys(batterStats)
 
   const p = batterStats[name];
 
-  const games =
-    batterGames[name].size;
+const regulation =
+  data.length * 3.1;
 
-  const regulation =
-    games * 3.0;
 
-  const qualified =
-    games >= data.length * 0.5 &&
-    p.pa >= regulation;
+const qualified =
+  p.pa >= regulation;
 
   const avg =
     p.ab ? p.hit / p.ab : 0;
@@ -1147,15 +1214,11 @@ const kbbRank = Object.keys(pitcherStats)
 
   const p = pitcherStats[name];
 
-  const games =
-    pitcherGames[name].size;
-
-  const inning =
-    p.inningOut / 3;
+const inning =
+  p.inningOut / 3;
 
   const qualified =
-  games > 0 &&
-  inning >= games * 1.2;
+  inning >= data.length * 2.1;
 
   return {
     name,

@@ -218,7 +218,17 @@ window.loadMembers = async function() {
 
 <div>
   日付：<input type="date" id="date"><br><br>
-  試合名：<input type="text" id="game"><br><br>
+  試合種別：
+
+<select id="gameType">
+  <option value="official">公式戦</option>
+  <option value="op">OP戦</option>
+</select>
+
+<br><br>
+
+試合名：
+<input type="text" id="game"><br><br>
   対戦相手：<input type="text" id="opponent"><br><br>
 
   先攻/後攻：
@@ -379,6 +389,11 @@ function addBatter(){
 </div>
 
 <div class="stat-item">
+  <span>失策</span>
+  <input type="number" id="error_${batterCount}">
+</div>
+
+<div class="stat-item">
   <span>二塁打</span>
   <input type="number"
          id="double_${batterCount}"
@@ -498,9 +513,19 @@ function calcTB(i){
 function collectData(){
 
   const date = document.getElementById("date").value;
-  const game = document.getElementById("game").value;
-  const opponent = document.getElementById("opponent").value;
-  const batFirst = document.getElementById("batFirst").value;
+
+const gameType =
+  document.getElementById("gameType").value;
+
+const game =
+  document.getElementById("game").value;
+
+const opponent =
+  document.getElementById("opponent").value;
+
+const batFirst =
+  document.getElementById("batFirst").value;
+
 
   let myInnings = [];
   let opInnings = [];
@@ -537,8 +562,9 @@ function collectData(){
       run: Number(document.getElementById("run_"+i).value)||0,
       rbi: Number(document.getElementById("rbi_"+i).value)||0,
       sb: Number(document.getElementById("sb_"+i).value)||0,
-      cs: Number(document.getElementById("cs_"+i).value)||0,
-      double: Number(document.getElementById("double_"+i).value)||0,
+cs: Number(document.getElementById("cs_"+i).value)||0,
+error: Number(document.getElementById("error_"+i).value)||0,
+double: Number(document.getElementById("double_"+i).value)||0,
       triple: Number(document.getElementById("triple_"+i).value)||0,
       hr: Number(document.getElementById("hr_"+i).value)||0,
       tb: Number(document.getElementById("tb_"+i).value)||0
@@ -576,14 +602,15 @@ function collectData(){
 
   return {
   date,
+  gameType,
   game,
   opponent,
-    batFirst,
-    myInnings,
-    opInnings,
-    batters,
-    pitchers
-  };
+  batFirst,
+  myInnings,
+  opInnings,
+  batters,
+  pitchers
+};
 }
 
 /* ============================
@@ -631,8 +658,13 @@ function resetForm(){
 
   // 基本情報
   document.getElementById("date").value = "";
-  document.getElementById("game").value = "";
-  document.getElementById("opponent").value = "";
+
+document.getElementById("gameType").value =
+  "official";
+
+document.getElementById("game").value = "";
+
+document.getElementById("opponent").value = "";
   document.getElementById("batFirst").value = "home";
 
   // スコア
@@ -693,10 +725,13 @@ function loadTempGame(){
   const data = JSON.parse(saved);
 
   document.getElementById("date").value =
-    data.date || "";
+  data.date || "";
 
-  document.getElementById("game").value =
-    data.game || "";
+document.getElementById("gameType").value =
+  data.gameType || "official";
+
+document.getElementById("game").value =
+  data.game || "";
 
   document.getElementById("opponent").value =
     data.opponent || "";
@@ -736,8 +771,10 @@ function loadTempGame(){
     document.getElementById("run_"+i).value = p.run;
     document.getElementById("rbi_"+i).value = p.rbi;
     document.getElementById("sb_"+i).value = p.sb;
-    document.getElementById("cs_"+i).value = p.cs;
-    document.getElementById("double_"+i).value = p.double;
+document.getElementById("cs_"+i).value = p.cs;
+document.getElementById("error_"+i).value = p.error || 0;
+
+document.getElementById("double_"+i).value = p.double;
     document.getElementById("triple_"+i).value = p.triple;
     document.getElementById("hr_"+i).value = p.hr;
     document.getElementById("tb_"+i).value = p.tb;
@@ -811,8 +848,14 @@ console.log(
 );
 
 document.getElementById("date").value = gameData.date;
-  document.getElementById("game").value = gameData.game;
-  document.getElementById("opponent").value = gameData.opponent;
+
+document.getElementById("gameType").value =
+  gameData.gameType || "official";
+
+document.getElementById("game").value = gameData.game;
+
+document.getElementById("opponent").value =
+  gameData.opponent;
   document.getElementById("batFirst").value = gameData.batFirst || "home";
 
   (gameData.myInnings || []).forEach((v,i)=>{
@@ -843,9 +886,10 @@ document.getElementById("date").value = gameData.date;
     document.getElementById("rbi_"+i).value = p.rbi;
 
     document.getElementById("sb_"+i).value = p.sb;
-    document.getElementById("cs_"+i).value = p.cs;
+document.getElementById("cs_"+i).value = p.cs;
+document.getElementById("error_"+i).value = p.error || 0;
 
-    document.getElementById("double_"+i).value = p.double;
+document.getElementById("double_"+i).value = p.double;
     document.getElementById("triple_"+i).value = p.triple;
     document.getElementById("hr_"+i).value = p.hr;
     document.getElementById("tb_"+i).value = p.tb;

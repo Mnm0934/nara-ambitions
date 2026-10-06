@@ -516,6 +516,7 @@ let teamBB = 0;
 let teamR = 0;
 let teamRBI = 0;
 let teamSB = 0;
+let teamError = 0;
 
 (match.batters || []).forEach(p=>{
 
@@ -526,6 +527,7 @@ let teamSB = 0;
   teamR += p.run || 0;
   teamRBI += p.rbi || 0;
   teamSB += p.sb || 0;
+teamError += p.error || 0;
 
 });
 
@@ -624,6 +626,17 @@ font-weight:bold;
 </div>
 
 <div style="
+background:white;
+color:#02142c;
+padding:15px;
+border-radius:12px;
+font-size:28px;
+font-weight:bold;
+">
+失策<br>${teamError}
+</div>
+
+<div style="
 background:#ffd700;
 color:black;
 padding:15px;
@@ -633,7 +646,6 @@ font-weight:bold;
 ">
 打率<br>${teamAVG}
 </div>
-
 </div>
 `;
 
@@ -768,6 +780,7 @@ batHTML += `
 <th>打点</th>
 <th>盗塁</th>
 <th>盗刺</th>
+<th>失策</th>
 <th>二塁打</th>
 <th>三塁打</th>
 <th>本塁打</th>
@@ -803,8 +816,9 @@ batHTML += "</tr>";
 
 <td>${p.sb||0}</td>
 <td>${p.cs||0}</td>
+<td>${p.error||0}</td>
 
-    <td>${p.double||0}</td>
+<td>${p.double||0}</td>
     <td>${p.triple||0}</td>
     <td>${p.hr||0}</td>
     <td>${p.tb||0}</td>
